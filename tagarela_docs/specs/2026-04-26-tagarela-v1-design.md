@@ -6,9 +6,13 @@ versao: v1
 
 # tagarela — design da v1
 
-Spec consolidada da primeira versão do **tagarela**: aplicativo macOS nativo de ditado universal por voz com pós-processamento opcional por LLM. Resultado do brainstorming de 2026-04-26.
+Spec consolidada da primeira versão do **tagarela**: aplicativo macOS nativo de ditado universal por voz com pós-processamento opcional por LLM. Resultado do brainstorming de 2026-04-26, atualizada na mesma data com as decisões visuais do Claude Design.
 
 > Regras de processo: ver [`/CLAUDE.md`](../../CLAUDE.md). Nada é implementado sem ler a doc; nada é dado como pronto sem atualizar a doc.
+>
+> **Sistema visual:** [`tagarela_docs/05-design/README.md`](../05-design/README.md) — fonte da verdade pra cores, tipografia, copy pt-BR, componentes, layouts. Bundle do Claude Design preservado em [`05-design/bundle/`](../05-design/bundle/).
+>
+> **Decisões de design registradas:** [`ADR-0001-sistema-visual.md`](../04-decisoes/ADR-0001-sistema-visual.md).
 
 ---
 
@@ -17,6 +21,8 @@ Spec consolidada da primeira versão do **tagarela**: aplicativo macOS nativo de
 ### 1.1 O que é
 
 Aplicativo macOS nativo de **ditado universal por voz** com pós-processamento opcional por LLM. O usuário aperta `right ⌥` em qualquer aplicativo, fala, aperta de novo, e o texto **refinado** (sem muletas, com pontuação, no estilo configurado) é colado onde o cursor estiver. Foco em português brasileiro com regionalização e vocabulário técnico configurável. Funciona 100% offline com WhisperKit + Ollama; opcionalmente com OpenAI; ou sem LLM (texto cru).
+
+**Nome final do produto:** `tagarela` (deixa de ser apenas codinome).
 
 ### 1.2 Persona alvo da v1
 
@@ -28,7 +34,11 @@ Registrados pra ficarem fora explicitamente:
 
 - Comandos por voz embutidos ("novo parágrafo", "negrito", etc.)
 - Detecção/troca automática de idioma (PT/EN/ES)
-- Histórico rico em janela própria (apenas últimos N no menu da status bar)
+- Histórico rico em janela própria
+- **Aba "Histórico" rica nas Preferências** com cru+refinado lado a lado (existe no design; fica pra v2). Na v1 só os 5 últimos itens no menu da status bar.
+- **Botão "testar conexão" do Ollama** na aba LLM (existe no design; v2)
+- **5º preset de estilo "bullet points"** (existe no design; v2 — usuário pode criar custom)
+- **Modo push-to-talk como opção** (apenas toggle na v1; PTT entra na v2 se houver demanda)
 - Snippets / atalhos de texto
 - Multi-usuário, sincronização entre Macs
 - App Store (escolha consciente — sandbox impede o que precisamos)
@@ -42,10 +52,11 @@ Registrados pra ficarem fora explicitamente:
 | D2 | ASR = WhisperKit (Swift, CoreML/Neural Engine) | Speech framework Apple, whisper.cpp, faster-whisper, MLX Whisper, Whisper API |
 | D3 | LLM = 3 backends (Ollama / OpenAI / Sem LLM) atrás de protocolo `TextRefiner` | Só Ollama, só OpenAI, sem LLM na v1 |
 | D4 | Ativação = toggle com `right ⌥` (configurável); injeção via clipboard + ⌘V | Push-to-talk; toggle por toque curto; AX direto; keystroke simulation |
-| D5 | UI = `MenuBarExtra` na status bar + `NSPanel` flutuante perto do cursor | Só status bar / janela rica de histórico / sem status bar |
+| D5 | UI = `MenuBarExtra` na status bar + `NSPanel` flutuante perto do cursor. **Indicador default da v1 = variação A (pílula horizontal)**; B/C/D ficam selecionáveis em Preferências | Só status bar / janela rica de histórico / sem status bar |
 | D6 | Regionalização = `language: pt` forçado + `initialPrompt` com vocabulário técnico + modelo `large-v3` default + system prompts do refiner com regras de code-switching | Cada alavanca isolada; multi-idioma automático |
 | D7 | Histórico = SwiftData, texto cru + refinado, sem áudio, retenção 200/30 dias | Áudio incluído; só texto final; SQLite/GRDB; JSON; sem persistência |
 | D8 | Stack = macOS 14+, SwiftUI + AppKit pontual, sem sandbox, Developer ID + notarized, distribuição via DMG | Catalyst, AppKit puro, sandbox, App Store |
+| D9 | Sistema visual = paper warm + carmim + amber + moss, mono (JetBrains Mono) + serif italic (Instrument Serif) + ui (Inter Tight), **3 fontes empacotadas no bundle**. Tokens em [`05-design/bundle/project/tokens.css`](../05-design/bundle/project/tokens.css), copy pt-BR catalogada em [05-design](../05-design/README.md) | Usar fallback de sistema; identidade neutra |
 
 Cada decisão vira ADR detalhado em `tagarela_docs/04-decisoes/` na implementação.
 
@@ -76,8 +87,8 @@ Cada decisão vira ADR detalhado em `tagarela_docs/04-decisoes/` na implementaç
 | `Injector` | Salva pasteboard atual → coloca texto → simula `⌘V` via `CGEvent` → restaura após delay | `NSPasteboard`, `CGEvent` |
 | `HistoryStore` | Persiste `Transcription`, aplica retenção (N itens / N dias) | SwiftData |
 | `PreferencesStore` | Lê/escreve preferências; expõe Combine publishers | `UserDefaults` + Keychain (só pra API key OpenAI) |
-| `MenuBarController` | Ícone na status bar (estados `idle` / `recording` / `processing` / `error`), menu com últimos N itens | SwiftUI `MenuBarExtra` |
-| `FloatingIndicator` | Janelinha não-ativadora perto do cursor: waveform animada, timer, botão cancelar | `NSPanel` (`.floating`, `.nonactivatingPanel`) embebendo SwiftUI |
+| `MenuBarController` | Ícone na status bar (estados `idle` / `recording` / `processing` / `refining` / `error`), menu com últimos N itens, variante de "permissões faltando" | SwiftUI `MenuBarExtra` |
+| `FloatingIndicator` | Janelinha não-ativadora perto do cursor: waveform animada, timer, botão cancelar. **Variação default = A (pílula horizontal)**; B (orb), C (vertical), D (HUD) selecionáveis nas Preferências. Specs visuais em [`05-design/bundle/project/indicators.jsx`](../05-design/bundle/indicators.jsx) | `NSPanel` (`.floating`, `.nonactivatingPanel`) embebendo SwiftUI |
 | `PreferencesUI` | Tela de preferências (Geral / Atalho / Modelo / LLM / Estilos / Vocabulário / Histórico) | SwiftUI `Settings` scene |
 | `OnboardingUI` | Primeira execução: 3 cards de permissão + escolha inicial de modelo Whisper + scan de Ollama | SwiftUI |
 | `PipelineCoordinator` | Orquestra todo o fluxo. Mantém máquina de estados. É um `actor`. | Swift puro |
@@ -180,9 +191,9 @@ Cada decisão vira ADR detalhado em `tagarela_docs/04-decisoes/` na implementaç
      fim
 ```
 
-**Máquina de estados.** `idle → recording → processing → idle`. Durante `processing`, novas chegadas de `.toggle` da hotkey são **ignoradas** (sem fila, sem encadeamento). Apenas `.cancel` é aceito.
+**Máquina de estados.** `idle → recording → processing → refining → idle`. `processing` cobre transcrição (Whisper); `refining` cobre o passo do `TextRefiner` (pulado se `IdentityRefiner` for o ativo). Durante `processing` ou `refining`, novas chegadas de `.toggle` da hotkey são **ignoradas** (sem fila, sem encadeamento). Apenas `.cancel` é aceito.
 
-**Cancelamento.** Botão "X" no `FloatingIndicator` emite `.cancel`. Em qualquer estado pós-captura, descarta resultado, não chama `Injector` nem `HistoryStore`. Em `recording`, descarta o buffer.
+**Cancelamento.** Botão "X" no `FloatingIndicator` emite `.cancel`. Tecla `Esc` (quando preferência `cancelarComEsc` estiver ativa, default `true`) também emite `.cancel`. Em qualquer estado pós-captura, descarta resultado, não chama `Injector` nem `HistoryStore`. Em `recording`, descarta o buffer.
 
 **Concorrência.** `PipelineCoordinator` é `actor`. `AudioCapture` roda em queue própria do `AVAudioEngine`. WhisperKit gerencia threading interno. HTTP do refiner usa `async/await`. UI é atualizada via `@MainActor` publishers.
 
@@ -215,20 +226,27 @@ final class Transcription {
 Chave-raiz: `com.tagarela.preferences`. Defaults da v1:
 
 ```
-hotkey                 : Hotkey  (default: rightOption, mode: .toggle)
+hotkey                 : Hotkey  (default: rightOption; modo é fixo .toggle na v1)
 whisperModel           : enum    (default: largeV3 se RAM>=16GB, senão medium)
+whisperMinDurationSec  : Double  (default 0.5)
+whisperMaxDurationSec  : Double  (default 300; soft limit — só avisa)
 refinerKind            : enum    (default: .none na 1ª execução)
+refinerTimeoutSec      : Double  (default 30)
 ollamaBaseURL          : String  (default: "http://localhost:11434")
 ollamaModel            : String  (default: "qwen3.5:9b-nvfp4")
 openAIBaseURL          : String  (default: "https://api.openai.com/v1")
 openAIModel            : String  (default: "gpt-5.4-mini")
 selectedStyleID        : UUID    (aponta pra um Style em customStyles)
-customStyles           : [Style] (presets: Informal / Profissional / Notas técnicas / Cru)
-technicalVocabulary    : String  (campo livre, separado por vírgula ou nova linha)
+customStyles           : [Style] (presets: "conversa informal" / "e-mail profissional" / "notas técnicas" / "cru — sem reescrita")
+technicalVocabulary    : [String] (chip-list editor; persistido como array de palavras/frases. Bullet-points e import-de-arquivo ficam pra v2)
+indicatorVariant       : enum    (default: .pill (A); opções: .pill | .orb | .vertical | .hud)
+beepOnStartStop        : Bool    (default false)
+cancelarComEsc         : Bool    (default true)
 historyMaxItems        : Int     (default 200)
 historyMaxDays         : Int     (default 30)
 launchAtLogin          : Bool    (default false; usa SMAppService.mainApp)
 showFloatingIndicator  : Bool    (default true)
+theme                  : enum    (default .system; opções: .system | .light | .dark)
 logLevel               : enum    (default .info)
 ```
 
@@ -256,7 +274,7 @@ struct Style: Codable, Identifiable, Hashable {
 }
 ```
 
-Presets embutidos da v1: `Conversa informal`, `E-mail profissional`, `Notas técnicas`, `Cru — sem reescrita`.
+Presets embutidos da v1 (4, em minúsculas, conforme design): `conversa informal`, `e-mail profissional`, `notas técnicas`, `cru — sem reescrita`. O preset `bullet points` que aparece no design é v2.
 
 Todo `systemPrompt` da v1 inclui, como bloco fixo no fim, instruções sobre code-switching:
 

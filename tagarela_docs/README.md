@@ -21,7 +21,7 @@ _(a preencher)_ — stack, módulos, fluxo de áudio → texto → injeção.
 _(a preencher)_ — spec por funcionalidade.
 
 ### 04 — Decisões (ADRs)
-_(a preencher)_ — decisões arquiteturais com contexto e alternativas consideradas.
+- [`ADR-0001-sistema-visual.md`](./04-decisoes/ADR-0001-sistema-visual.md) — sistema visual, identidade, indicador default da v1, mudanças de escopo aceitas/recusadas.
 
 ### 05 — [Sistema visual](./05-design/README.md)
 Identidade, tokens, tipografia, cores, copy pt-BR, catálogo de componentes e bundle do Claude Design (`05-design/bundle/`). Fonte da verdade visual.

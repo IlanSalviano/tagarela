@@ -150,13 +150,12 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Welcome.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of Welcome"
+              "title": "Outline"
             }
           }
         ]
@@ -177,8 +176,24 @@
       "bases:Create new base": false
     }
   },
-  "active": "1553c5de7017bd3b",
+  "active": "cc5a27361a843e0c",
   "lastOpenFiles": [
-    "Welcome.md"
+    "04-decisoes/ADR-0001-sistema-visual.md",
+    "04-decisoes",
+    "05-design/README.md",
+    "05-design/bundle/project/wordmark.jsx",
+    "05-design/bundle/project/tweaks-panel.jsx",
+    "05-design/bundle/project/tokens.css",
+    "05-design/bundle/project/tagarela design v1.html",
+    "05-design/bundle/project/prototype.jsx",
+    "05-design/bundle/project/prototype.html",
+    "05-design/bundle/project/preferences.jsx",
+    "05-design/bundle/project/onboarding.jsx",
+    "05-design/bundle/project/menubar.jsx",
+    "05-design/bundle/chats/chat1.md",
+    "05-design/bundle/README.md",
+    "specs/2026-04-26-tagarela-v1-design.md",
+    "Welcome.md",
+    "README.md"
   ]
 }
