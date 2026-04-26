@@ -23,8 +23,11 @@ _(a preencher)_ — spec por funcionalidade.
 ### 04 — Decisões (ADRs)
 _(a preencher)_ — decisões arquiteturais com contexto e alternativas consideradas.
 
+### 05 — [Sistema visual](./05-design/README.md)
+Identidade, tokens, tipografia, cores, copy pt-BR, catálogo de componentes e bundle do Claude Design (`05-design/bundle/`). Fonte da verdade visual.
+
 ### specs/
-_(a preencher)_ — specs de design saindo do fluxo de brainstorming, no formato `YYYY-MM-DD-<topico>-design.md`.
+- [`2026-04-26-tagarela-v1-design.md`](./specs/2026-04-26-tagarela-v1-design.md) — design consolidado da v1 (aguardando incorporação de decisões visuais antes do plano).
 
 ---
 

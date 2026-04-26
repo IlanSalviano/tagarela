@@ -1,0 +1,105 @@
+/* tagarela — design tokens
+ *
+ * System: utility app with strong voice. Mono primary (JetBrains Mono),
+ * serif accent for wordmark only (Instrument Serif). Warm paper background,
+ * carmine red primary (recording / brand), amber for warnings, ink black.
+ * Dark mode is a true dark — not a tinted light. Avoid systemy iOS blue.
+ */
+
+:root {
+  /* paper / ink — warm */
+  --paper: #f4ede0;          /* warm cream, base */
+  --paper-2: #ebe2d1;         /* slightly deeper */
+  --paper-3: #ddd1ba;         /* divider */
+  --ink: #1a1612;             /* ink black, warm */
+  --ink-2: #3a3128;           /* secondary text */
+  --ink-3: #6b5d4d;           /* tertiary */
+  --ink-4: #9e8d77;           /* muted */
+
+  /* brand */
+  --carmine: #c8311c;         /* recording, primary action */
+  --carmine-deep: #8f1d0d;    /* hover/pressed */
+  --amber: #c97a14;           /* warning, processing */
+  --amber-soft: #e8b86b;
+  --moss: #5a6b3a;            /* success, ok */
+
+  /* glass / chrome */
+  --chrome: rgba(244, 237, 224, 0.78);
+  --hairline: rgba(26, 22, 18, 0.10);
+  --hairline-strong: rgba(26, 22, 18, 0.18);
+  --shadow-sm: 0 1px 2px rgba(26, 22, 18, 0.08);
+  --shadow-md: 0 4px 12px rgba(26, 22, 18, 0.10), 0 1px 3px rgba(26, 22, 18, 0.06);
+  --shadow-lg: 0 16px 48px rgba(26, 22, 18, 0.18), 0 2px 8px rgba(26, 22, 18, 0.08);
+  --shadow-pop: 0 24px 64px rgba(26, 22, 18, 0.28), 0 4px 12px rgba(26, 22, 18, 0.12);
+
+  /* type */
+  --font-mono: "JetBrains Mono", "SF Mono", Menlo, monospace;
+  --font-display: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --font-ui: "Inter Tight", "SF Pro Text", -apple-system, system-ui, sans-serif;
+
+  /* radii — small, utility-feeling */
+  --r-1: 3px;
+  --r-2: 6px;
+  --r-3: 10px;
+  --r-pill: 999px;
+}
+
+/* dark theme — applied via [data-theme="dark"] or .theme-dark */
+[data-theme="dark"], .theme-dark {
+  --paper: #15110d;
+  --paper-2: #1f1a14;
+  --paper-3: #2c241c;
+  --ink: #f0e9da;
+  --ink-2: #c8bca6;
+  --ink-3: #8e8170;
+  --ink-4: #5a4f42;
+
+  --carmine: #e85a3f;
+  --carmine-deep: #c8311c;
+  --amber: #e8a040;
+  --amber-soft: #d49860;
+  --moss: #8ba455;
+
+  --chrome: rgba(31, 26, 20, 0.85);
+  --hairline: rgba(240, 233, 218, 0.10);
+  --hairline-strong: rgba(240, 233, 218, 0.18);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-pop: 0 24px 64px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* ─── primitives ─── */
+.t-mono { font-family: var(--font-mono); font-feature-settings: "ss01", "ss02"; }
+.t-display { font-family: var(--font-display); font-style: italic; }
+.t-ui { font-family: var(--font-ui); }
+
+.t-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* recording dot pulse */
+@keyframes tg-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.85); }
+}
+.tg-pulse { animation: tg-pulse 1.2s ease-in-out infinite; }
+
+@keyframes tg-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes tg-blink {
+  50% { opacity: 0; }
+}
+.tg-caret { animation: tg-blink 1s steps(2) infinite; }
+
+/* gradient sweep for siri-style hud */
+@keyframes tg-sweep {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}

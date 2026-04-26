@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <title>tagarela — design v1</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="tokens.css" />
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #f0eee9; }
+    body { font-family: var(--font-ui); }
+    * { box-sizing: border-box; }
+    button { font: inherit; }
+  </style>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" src="design-canvas.jsx"></script>
+  <script type="text/babel" src="wordmark.jsx"></script>
+  <script type="text/babel" src="indicators.jsx"></script>
+  <script type="text/babel" src="menubar.jsx"></script>
+  <script type="text/babel" src="onboarding.jsx"></script>
+  <script type="text/babel" src="preferences.jsx"></script>
+  <script type="text/babel" src="errors.jsx"></script>
+
+  <script type="text/babel" data-presets="env,react">
+    const { useState, useEffect } = React;
+
+    // tick for animated waveforms
+    function useTick(ms = 80) {
+      const [, setT] = useState(0);
+      useEffect(() => {
+        const id = setInterval(() => setT(x => x + 1), ms);
+        return () => clearInterval(id);
+      }, [ms]);
+    }
+
+    // ── Cover artboard ───────────────────────────────────
+    function Cover() {
+      return (
+        <div style={{ width: "100%", height: "100%", padding: 56, background: "var(--paper)", display: "flex", flexDirection: "column", justifyContent: "space-between", color: "var(--ink)" }}>
+          <div className="t-eyebrow">design v1 · 2026-04-26</div>
+          <div>
+            <Wordmark size={88} />
+            <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 42, lineHeight: 1.1, marginTop: 24, letterSpacing: "-0.01em", maxWidth: 540 }}>
+              ditado universal por voz, refinado por LLM, em qualquer lugar do macOS.
+            </div>
+            <div style={{ fontFamily: "var(--font-ui)", fontSize: 16, color: "var(--ink-2)", marginTop: 16, maxWidth: 520, lineHeight: 1.5 }}>
+              um app utilitário com voz visual própria. mono pra estrutura, serif italic pra alma. cor carmim pro estado vivo. tudo em paper warm, sem azul de sistema.
+            </div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--ink-3)" }}>
+            <div><div style={{ color: "var(--ink)", marginBottom: 4 }}>01</div>indicador<br/>4 variações</div>
+            <div><div style={{ color: "var(--ink)", marginBottom: 4 }}>02</div>menubar<br/>5 estados</div>
+            <div><div style={{ color: "var(--ink)", marginBottom: 4 }}>03</div>onboarding<br/>3 passos</div>
+            <div><div style={{ color: "var(--ink)", marginBottom: 4 }}>04</div>prefs<br/>7 abas</div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── System tokens artboard ───────────────────────────
+    function Tokens() {
+      const swatches = [
+        ["paper", "#f4ede0"], ["paper-2", "#ebe2d1"], ["paper-3", "#ddd1ba"],
+        ["ink", "#1a1612"], ["ink-2", "#3a3128"], ["ink-3", "#6b5d4d"],
+        ["carmine", "#c8311c"], ["carmine-deep", "#8f1d0d"],
+        ["amber", "#c97a14"], ["moss", "#5a6b3a"],
+      ];
+      return (
+        <div style={{ width: "100%", height: "100%", padding: 32, background: "var(--paper)", color: "var(--ink)", overflow: "auto" }}>
+          <div className="t-eyebrow" style={{ marginBottom: 8 }}>sistema visual</div>
+          <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 28, marginBottom: 24 }}>tokens.</div>
+
+          <div className="t-eyebrow" style={{ marginBottom: 8 }}>type</div>
+          <div style={{ marginBottom: 6 }}>
+            <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 32, lineHeight: 1.1 }}>Instrument Serif</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--ink-3)" }}>display · italic only · wordmark + onboarding heroes</div>
+          </div>
+          <div style={{ marginBottom: 6 }}>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 18 }}>JetBrains Mono</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--ink-3)" }}>structure · labels, kbd, status</div>
+          </div>
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ fontFamily: "var(--font-ui)", fontSize: 18 }}>Inter Tight</div>
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--ink-3)" }}>body · paragraphs, transcribed text</div>
+          </div>
+
+          <div className="t-eyebrow" style={{ marginBottom: 8 }}>color</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8, marginBottom: 24 }}>
+            {swatches.map(([n, hex]) => (
+              <div key={n}>
+                <div style={{ height: 60, background: hex, borderRadius: 4, border: "0.5px solid var(--hairline)" }} />
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 9, marginTop: 6 }}>--{n}</div>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--ink-3)" }}>{hex}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="t-eyebrow" style={{ marginBottom: 8 }}>wordmark</div>
+          <div style={{ display: "flex", gap: 32, alignItems: "baseline", flexWrap: "wrap" }}>
+            <Wordmark size={56} />
+            <Wordmark size={32} />
+            <Wordmark size={20} />
+            <Glyph size={32} />
+            <Glyph size={20} recording />
+          </div>
+        </div>
+      );
+    }
+
+    // ── Indicator showcases ──────────────────────────────
+    function IndicatorCard({ label, children, dark }) {
+      return (
+        <div style={{
+          width: "100%", height: "100%",
+          background: dark ? "linear-gradient(135deg, #2a2018, #15110d)" : "linear-gradient(135deg, #ebe2d1, #f4ede0)",
+          display: "flex", alignItems: "center", justifyContent: "center", padding: 24,
+          position: "relative",
+        }}>
+          <div style={{
+            position: "absolute", top: 12, left: 14,
+            fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.1em", textTransform: "uppercase",
+            color: dark ? "rgba(244,237,224,0.5)" : "var(--ink-3)",
+          }}>{label}</div>
+          {children}
+        </div>
+      );
+    }
+
+    function LiveIndicator({ kind, state }) {
+      useTick(80);
+      const C = { pill: IndicatorPill, orb: IndicatorOrb, vertical: IndicatorVertical, hud: IndicatorHUD }[kind];
+      return <C state={state} level={0.55 + Math.random() * 0.3} seconds={Math.floor(Date.now() / 1000) % 90} onCancel={() => {}} />;
+    }
+
+    // ── MenuBar artboard with chrome ─────────────────────
+    function MenuBarArtboard({ state, dropdown }) {
+      return (
+        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", background: "linear-gradient(135deg, #d4c5a9, #ebe2d1)" }}>
+          <div style={{
+            height: 26,
+            background: "rgba(244, 237, 224, 0.92)",
+            backdropFilter: "blur(20px)",
+            borderBottom: "0.5px solid var(--hairline)",
+            display: "flex", alignItems: "center", padding: "0 12px",
+            fontFamily: "var(--font-ui)", fontSize: 13, color: "var(--ink)",
+            gap: 14,
+          }}>
+            <span style={{ fontWeight: 600 }}></span>
+            <span style={{ fontWeight: 600 }}>VS Code</span>
+            <span style={{ opacity: 0.7 }}>File</span>
+            <span style={{ opacity: 0.7 }}>Edit</span>
+            <div style={{ flex: 1 }} />
+            <Glyph size={14} color="var(--ink)" recording={state === "recording"} />
+            <span style={{ fontSize: 11, opacity: 0.7 }}>14:23</span>
+          </div>
+          <div style={{ position: "relative", flex: 1 }}>
+            <div style={{ position: "absolute", top: 6, right: 16 }}>
+              {dropdown}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── Onboarding window wrapper ────────────────────────
+    function OnboardWindow({ children }) {
+      return (
+        <div style={{
+          width: "100%", height: "100%",
+          background: "var(--paper)",
+          display: "flex", flexDirection: "column",
+          fontFamily: "var(--font-ui)",
+        }}>
+          <div style={{
+            height: 36, padding: "0 12px", display: "flex", alignItems: "center",
+            borderBottom: "0.5px solid var(--hairline)",
+            background: "var(--paper-2)",
+          }}>
+            <div style={{ display: "flex", gap: 7 }}>
+              <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#ff6058", border: "0.5px solid rgba(0,0,0,0.1)" }} />
+              <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#ffbd2e", border: "0.5px solid rgba(0,0,0,0.1)" }} />
+              <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#27c93f", border: "0.5px solid rgba(0,0,0,0.1)" }} />
+            </div>
+          </div>
+          <div style={{ flex: 1, overflow: "auto" }}>{children}</div>
+        </div>
+      );
+    }
+
+    // ── App ──────────────────────────────────────────────
+    function App() {
+      return (
+        <DesignCanvas>
+          <DCSection id="cover" title="tagarela" subtitle="ditado universal · macOS · 2026-04-26">
+            <DCArtboard id="cover" label="capa" width={680} height={460}>
+              <Cover />
+            </DCArtboard>
+            <DCArtboard id="tokens" label="sistema visual" width={520} height={460}>
+              <Tokens />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection id="indicators" title="indicador flutuante" subtitle="aparece perto do cursor durante captura. 4 explorações.">
+            <DCArtboard id="pill" label="A · pílula horizontal" width={320} height={200}>
+              <IndicatorCard label="recording"><LiveIndicator kind="pill" state="recording" /></IndicatorCard>
+            </DCArtboard>
+            <DCArtboard id="orb" label="B · bolha radial" width={320} height={200}>
+              <IndicatorCard label="recording"><LiveIndicator kind="orb" state="recording" /></IndicatorCard>
+            </DCArtboard>
+            <DCArtboard id="vertical" label="C · barra vertical" width={320} height={200}>
+              <IndicatorCard label="recording"><LiveIndicator kind="vertical" state="recording" /></IndicatorCard>
+            </DCArtboard>
+            <DCArtboard id="hud" label="D · HUD siri" width={320} height={200}>
+              <IndicatorCard label="recording" dark><LiveIndicator kind="hud" state="recording" /></IndicatorCard>
+            </DCArtboard>
+            <DCArtboard id="processing" label="estado · transcrevendo" width={320} height={200}>
+              <IndicatorCard label="processing"><LiveIndicator kind="pill" state="processing" /></IndicatorCard>
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection id="menubar" title="menu da status bar" subtitle="MenuBarExtra com 5 últimos. estados ao longo do pipeline.">
+            <DCArtboard id="idle" label="01 · idle" width={380} height={520}>
+              <MenuBarArtboard state="idle" dropdown={<MenuBarExtra state="idle" />} />
+            </DCArtboard>
+            <DCArtboard id="recording" label="02 · recording" width={380} height={520}>
+              <MenuBarArtboard state="recording" dropdown={<MenuBarExtra state="recording" />} />
+            </DCArtboard>
+            <DCArtboard id="processing" label="03 · processing" width={380} height={520}>
+              <MenuBarArtboard state="processing" dropdown={<MenuBarExtra state="processing" />} />
+            </DCArtboard>
+            <DCArtboard id="refining" label="04 · refining (LLM)" width={380} height={520}>
+              <MenuBarArtboard state="refining" dropdown={<MenuBarExtra state="refining" />} />
+            </DCArtboard>
+            <DCArtboard id="error" label="05 · error · ollama offline" width={380} height={520}>
+              <MenuBarArtboard state="error" dropdown={<MenuBarExtra state="error" />} />
+            </DCArtboard>
+            <DCArtboard id="perm" label="06 · perm faltando" width={380} height={520}>
+              <MenuBarArtboard state="idle" dropdown={<PermDeniedDropdown />} />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection id="onboarding" title="onboarding" subtitle="primeira execução. boas-vindas, permissões, modelos.">
+            <DCArtboard id="welcome" label="01 · boas-vindas" width={560} height={400}>
+              <OnboardWindow><OnboardWelcome /></OnboardWindow>
+            </DCArtboard>
+            <DCArtboard id="perms-empty" label="02 · permissões — vazio" width={560} height={520}>
+              <OnboardWindow><OnboardPerms states={["needed", "needed", "needed"]} /></OnboardWindow>
+            </DCArtboard>
+            <DCArtboard id="perms-progress" label="02 · permissões — em progresso" width={560} height={520}>
+              <OnboardWindow><OnboardPerms states={["granted", "needed", "granted"]} /></OnboardWindow>
+            </DCArtboard>
+            <DCArtboard id="model-found" label="03 · modelos — ollama ok" width={560} height={560}>
+              <OnboardWindow><OnboardModel ollama="found" /></OnboardWindow>
+            </DCArtboard>
+            <DCArtboard id="model-missing" label="03 · modelos — sem ollama" width={560} height={560}>
+              <OnboardWindow><OnboardModel ollama="missing" /></OnboardWindow>
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection id="prefs" title="preferências" subtitle="janela com 7 abas. uma artboard por aba.">
+            <DCArtboard id="general" label="geral" width={620} height={500}><PrefGeneral /></DCArtboard>
+            <DCArtboard id="hotkey" label="atalho" width={620} height={500}><PrefHotkey /></DCArtboard>
+            <DCArtboard id="model" label="modelo" width={620} height={500}><PrefModel /></DCArtboard>
+            <DCArtboard id="llm" label="llm" width={620} height={580}><PrefLLM /></DCArtboard>
+            <DCArtboard id="styles" label="estilos" width={720} height={500}><PrefStyles /></DCArtboard>
+            <DCArtboard id="vocab" label="vocabulário" width={620} height={500}><PrefVocab /></DCArtboard>
+            <DCArtboard id="history" label="histórico" width={760} height={580}><PrefHistory /></DCArtboard>
+          </DCSection>
+
+          <DCSection id="errors" title="erros e fallbacks" subtitle="toasts e degradação. nenhum estado deixa o usuário sem texto.">
+            <DCArtboard id="toasts" label="stack de toasts" width={380} height={520}>
+              <div style={{ width: "100%", height: "100%", background: "linear-gradient(135deg, #d4c5a9, #ebe2d1)" }}>
+                <ToastStack />
+              </div>
+            </DCArtboard>
+            <DCArtboard id="prototype-link" label="protótipo interativo →" width={380} height={520}>
+              <div style={{ width: "100%", height: "100%", background: "var(--paper)", padding: 24, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                <div>
+                  <div className="t-eyebrow" style={{ marginBottom: 8 }}>protótipo</div>
+                  <div style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: 28, lineHeight: 1.15, marginBottom: 12, color: "var(--ink)" }}>
+                    veja o pipeline rodando.
+                  </div>
+                  <div style={{ fontFamily: "var(--font-ui)", fontSize: 13, color: "var(--ink-2)", lineHeight: 1.5 }}>
+                    aperte <kbd style={{ fontFamily: "var(--font-mono)", padding: "1px 5px", background: "var(--paper-2)", border: "0.5px solid var(--hairline-strong)", borderRadius: 3, fontSize: 11 }}>right ⌥</kbd> (ou clique pra simular). use os tweaks pra trocar tema, indicador e estilo de refino.
+                  </div>
+                </div>
+                <a href="prototype.html" style={{
+                  fontFamily: "var(--font-mono)", fontSize: 12,
+                  padding: "10px 14px",
+                  background: "var(--ink)", color: "var(--paper)",
+                  borderRadius: "var(--r-2)", textDecoration: "none",
+                  display: "inline-flex", alignItems: "center", justifyContent: "space-between",
+                }}>
+                  abrir protótipo <span>→</span>
+                </a>
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--ink-3)", letterSpacing: "0.05em" }}>
+                  prototype.html · interactive
+                </div>
+              </div>
+            </DCArtboard>
+          </DCSection>
+        </DesignCanvas>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
