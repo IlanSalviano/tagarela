@@ -34,10 +34,16 @@ private struct StatusBarIcon: View {
     @Environment(\.openWindow) private var openWindow
     @State private var didOpenOnboarding = false
 
+    private var iconName: String {
+        appState.pipeline == .idle ? "StatusBarTemplate" : "StatusBarRecording"
+    }
+
     var body: some View {
-        Glyph(size: 16,
-              color: .primary,
-              recording: appState.pipeline != .idle)
+        Image(iconName)
+            .resizable()
+            .renderingMode(appState.pipeline == .idle ? .template : .original)
+            .scaledToFit()
+            .frame(width: 18, height: 18)
             .task {
                 guard !didOpenOnboarding else { return }
                 didOpenOnboarding = true
