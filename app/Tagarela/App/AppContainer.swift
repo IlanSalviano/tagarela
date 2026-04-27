@@ -19,6 +19,7 @@ final class AppContainer: ObservableObject {
     let pipeline: PipelineCoordinator
     let onboarding: OnboardingCoordinator
     let indicatorPanel = FloatingIndicatorPanel()
+    let historyStore: HistoryStore
     private var cancellables: Set<AnyCancellable> = []
 
     @Published var showOnboarding: Bool
@@ -63,6 +64,8 @@ final class AppContainer: ObservableObject {
                     healthChecker: healthChecker)
             })
 
+        let historyStore: HistoryStore = (try? HistoryStoreLive()) ?? HistoryStoreNoop()
+
         self.permissions = permissions
         self.transcriber = transcriber
         self.audio = audio
@@ -72,16 +75,28 @@ final class AppContainer: ObservableObject {
         self.healthChecker = healthChecker
         self.refinerFactory = factory
         self.hotkeyService = hotkeyService
+        self.historyStore = historyStore
         self.pipeline = PipelineCoordinator(
             audio: audio,
             transcriber: transcriber,
             refinerProvider: { factory.current() },
             injector: injector,
+            historyStore: historyStore,
+            historyMaxItemsProvider: { [weak prefs] in prefs?.historyMaxItems ?? PreferencesDefaults.historyMaxItems },
+            historyMaxDaysProvider:  { [weak prefs] in prefs?.historyMaxDays  ?? PreferencesDefaults.historyMaxDays },
+            llmModelNameProvider: { [weak prefs] kind in
+                switch kind {
+                case .openai: return prefs?.openAIModel
+                case .ollama: return prefs?.ollamaModel
+                case .none:   return nil
+                }
+            },
+            whisperModelNameProvider: { [weak transcriber] in
+                transcriber?.loadedModelName ?? "<unknown>"
+            },
             initialPromptProvider: { [weak prefs] in
-                guard let prefs else { return nil }
-                let vocab = prefs.technicalVocabulary
-                guard !vocab.isEmpty else { return nil }
-                return InitialPromptBuilder.build(vocab: vocab)
+                guard let prefs, !prefs.technicalVocabulary.isEmpty else { return nil }
+                return InitialPromptBuilder.build(vocab: prefs.technicalVocabulary)
             }
         )
         self.onboarding = OnboardingCoordinator(

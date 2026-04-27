@@ -61,15 +61,42 @@ final class PipelineCoordinatorTests: XCTestCase {
                        "Identity should skip .refining; collected: \(collected)")
     }
 
+    func test_pipelineSuccess_savesHistory() async {
+        let history = FakeHistoryStore()
+        let p = makeCoordinator(refiner: IdentityRefiner(), history: history)
+        await p.handle(.toggle)
+        await p.handle(.toggle)
+        try? await Task.sleep(nanoseconds: 200_000_000)
+        XCTAssertEqual(history.saved.count, 1)
+        XCTAssertEqual(history.saved.first?.rawText, "olá mundo")
+        XCTAssertEqual(history.saved.first?.refinedText, "olá mundo")
+        XCTAssertEqual(history.saved.first?.refinerKind, "none")
+    }
+
+    func test_pipelineCancel_doesNotSaveHistory() async {
+        let history = FakeHistoryStore()
+        let p = makeCoordinator(refiner: IdentityRefiner(), history: history)
+        await p.handle(.toggle)
+        await p.handle(.cancel)
+        try? await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertEqual(history.saved.count, 0)
+    }
+
     // Helpers ----------------------------------------------------
 
     private func makeCoordinator(refiner: TextRefiner = IdentityRefiner(),
-                                 style: Style = BuiltInStyles.conversaInformal) -> PipelineCoordinator {
+                                 style: Style = BuiltInStyles.conversaInformal,
+                                 history: FakeHistoryStore = FakeHistoryStore()) -> PipelineCoordinator {
         PipelineCoordinator(
             audio: FakeAudio(),
             transcriber: FakeTranscriber(),
             refinerProvider: { @MainActor in (refiner, style) },
-            injector: FakeInjector()
+            injector: FakeInjector(),
+            historyStore: history,
+            historyMaxItemsProvider: { @MainActor in 100 },
+            historyMaxDaysProvider: { @MainActor in 30 },
+            llmModelNameProvider: { @MainActor _ in nil },
+            whisperModelNameProvider: { "fake" }
         )
     }
 
@@ -152,4 +179,12 @@ private final class FakeInjector: Injecting, @unchecked Sendable {
         injected = text
         return "com.example.app"
     }
+}
+
+private final class FakeHistoryStore: HistoryStore, @unchecked Sendable {
+    var saved: [TranscriptionInput] = []
+    func save(_ input: TranscriptionInput, maxItems: Int, maxDays: Int) async throws {
+        saved.append(input)
+    }
+    func recent(limit: Int) async throws -> [Transcription] { [] }
 }

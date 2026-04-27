@@ -2074,7 +2074,7 @@ git commit -m "feat(audio): audioBoostMaxGain configurável via prefs (cleanup #
 - Modify: `app/Tagarela/Pipeline/PipelineCoordinator.swift`
 - Modify: `app/Tagarela/App/AppContainer.swift`
 
-- [ ] **Step 10.1: Escrever `Transcription.swift`.**
+- [x] **Step 10.1: Escrever `Transcription.swift`.**
 
 ```swift
 import Foundation
@@ -2117,7 +2117,7 @@ final class Transcription {
 }
 ```
 
-- [ ] **Step 10.2: Escrever `HistoryStore.swift` (protocol).**
+- [x] **Step 10.2: Escrever `HistoryStore.swift` (protocol).**
 
 ```swift
 import Foundation
@@ -2139,7 +2139,7 @@ protocol HistoryStore: Sendable {
 }
 ```
 
-- [ ] **Step 10.3: Escrever `HistoryStoreLive.swift`.**
+- [x] **Step 10.3: Escrever `HistoryStoreLive.swift`.**
 
 ```swift
 import Foundation
@@ -2211,7 +2211,7 @@ final class HistoryStoreLive: HistoryStore {
 }
 ```
 
-- [ ] **Step 10.4: Escrever `HistoryStoreNoop.swift`.**
+- [x] **Step 10.4: Escrever `HistoryStoreNoop.swift`.**
 
 ```swift
 import OSLog
@@ -2228,7 +2228,7 @@ final class HistoryStoreNoop: HistoryStore {
 }
 ```
 
-- [ ] **Step 10.5: Escrever `HistoryStoreTests.swift`.**
+- [x] **Step 10.5: Escrever `HistoryStoreTests.swift`.**
 
 ```swift
 import XCTest
@@ -2315,7 +2315,7 @@ final class HistoryStoreTests: XCTestCase {
 }
 ```
 
-- [ ] **Step 10.6: Atualizar `PipelineCoordinator.swift`.**
+- [x] **Step 10.6: Atualizar `PipelineCoordinator.swift`.**
 
 (a) Adicionar `historyStore: HistoryStore` ao init.
 (b) Adicionar property `prefs: PreferencesStore` (pra ler `historyMaxItems`/`historyMaxDays`).
@@ -2360,7 +2360,7 @@ do {
 
 > `refinerKindLLMModel` é uma helper local: para `"openai"` retorna `prefs.openAIModel`, para `"ollama"` retorna `prefs.ollamaModel`, para `"none"` retorna `nil`. Esse mapeamento é melhor passado via closure `llmModelNameProvider: @Sendable (String) -> String?` no init pra manter o coordinator desacoplado.
 
-- [ ] **Step 10.7: Atualizar `AppContainer.swift`.**
+- [x] **Step 10.7: Atualizar `AppContainer.swift`.**
 
 ```swift
 let historyStore: HistoryStore = (try? HistoryStoreLive()) ?? HistoryStoreNoop()
@@ -2378,7 +2378,7 @@ let pipeline = PipelineCoordinator(
     })
 ```
 
-- [ ] **Step 10.8: Build + tests.**
+- [x] **Step 10.8: Build + tests.**
 
 ```bash
 cd /Users/tars/Dev/tagarela/app
@@ -2392,7 +2392,7 @@ Esperado: 64 testes verdes (58 + 6).
 
 Fazer 3 capturas seguidas. Verificar que `~/Library/Application Support/com.tagarela.Tagarela/History.store` foi criado e tem entries (inspect via `sqlite3` se quiser, ou esperar Tarefa 16 quando expor `recent` no menu).
 
-- [ ] **Step 10.10: Commit.**
+- [x] **Step 10.10: Commit.**
 
 ```bash
 cd /Users/tars/Dev/tagarela

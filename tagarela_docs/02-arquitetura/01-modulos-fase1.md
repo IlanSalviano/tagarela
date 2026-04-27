@@ -45,14 +45,24 @@ Anotadas em commits e [`cleanup-fase1.md`](../04-decisoes/cleanup-fase1.md):
 
 ## Cobertura de testes (XCTest)
 
-16 testes verdes (último run: 2026-04-27):
+81 testes verdes (último run: 2026-04-27, após Fase 2a Tarefa 10):
 
 - **HotkeyTests** — default, codable, virtualKeyCode, displayLabel (4)
 - **PermissionServiceTests** — allGranted true/false, status codable (3)
 - **InitialPromptBuilderTests** — empty vocab, with vocab, truncation (3)
 - **IdentityRefinerTests** — passthrough, kind (2)
 - **InjectorTests** — error equatable (1)
-- **PipelineCoordinatorTests** — idle→toggle→recording, recording→toggle→idle, recording→cancel→idle (3 — usando fakes Sendable)
+- **PipelineCoordinatorTests** — idle→toggle→recording, recording→toggle→idle, recording→cancel→idle, refiner fails→identity fallback, cancel error→no finished, identity→skip refining, success saves history, cancel não salva history (8 — usando fakes Sendable)
+- **PreferencesStoreTests** — (Fase 2a Tarefa 1)
+- **KeychainServiceTests** — (Fase 2a Tarefa 2)
+- **StyleTests** — (Fase 2a Tarefa 3)
+- **RefinerErrorMapperTests** — (Fase 2a Tarefa 4)
+- **TokenCounterTests** — (Fase 2a Tarefa 4)
+- **OpenAIRefinerTests** — (Fase 2a Tarefa 5)
+- **OllamaRefinerTests** — (Fase 2a Tarefa 6)
+- **RefinerFactoryTests** — (Fase 2a Tarefa 8)
+- **RemoteRefinerConfigTests** — (Fase 2a Tarefa 4)
+- **HistoryStoreTests** — save persiste, recent newest-first, retention by count, retention by days (escopo do store), retention ambos limites, retention imediato (6 — Fase 2a Tarefa 10)
 
 UI/visual fica no [`fase1-manual.md`](../03-funcionalidades/checklists/fase1-manual.md).
 
@@ -75,17 +85,45 @@ Pipeline completo confirmado funcionando em Mac mini M4 + Logitech C920:
 
 Qualidade de transcrição depende de input volume + ambiente — peak normalize ajuda mas não substitui condições adequadas.
 
-## Não implementados (vão pra Fase 2)
+## Implementado na Fase 2a (até Tarefa 10)
 
-- TextRefiner: Ollama, OpenAI
-- Keychain (API key OpenAI)
-- PreferencesStore + tela de Preferências
-- HistoryStore (SwiftData)
+| Módulo | Arquivo principal | Responsabilidade |
+|---|---|---|
+| PreferencesStore | `Preferences/PreferencesStore.swift` | UserDefaults wrapper com @Published pra Combine |
+| Preferences+Defaults | `Preferences/Preferences+Defaults.swift` | Defaults centralizados (historyMaxItems=200, historyMaxDays=30, etc.) |
+| KeychainService | `Preferences/KeychainService.swift` + `KeychainServiceLive.swift` | Protocol + Security.framework wrapper pra API key |
+| Style + BuiltInStyles | `Refiner/Style.swift` + `BuiltInStyles.swift` | 4 estilos built-in (cru, conversa informal, texto formal, notas técnicas) |
+| RefinerError | `Refiner/RefinerError.swift` | Enum semântico de erros de refiner |
+| RefinerErrorMapper | `Refiner/RefinerErrorMapper.swift` | URLError + HTTP status → RefinerError |
+| TokenCounter | `Refiner/TokenCounter.swift` | Estimativa chars/4 |
+| RemoteRefinerConfig | `Refiner/RemoteRefinerConfig.swift` | Tabela de context window por modelo |
+| BaseRemoteRefiner | `Refiner/BaseRemoteRefiner.swift` | Truncamento com marcador + retry |
+| OpenAIRefiner | `Refiner/OpenAIRefiner.swift` | HTTP refiner via OpenAI API |
+| OllamaRefiner | `Refiner/OllamaRefiner.swift` | HTTP refiner via Ollama local |
+| OllamaHealthChecker | `Refiner/OllamaHealthChecker.swift` | GET /api/tags + cache 30s |
+| RefinerFactory | `Refiner/RefinerFactory.swift` | Lê prefs e devolve impl correto |
+| HistoryStore | `History/HistoryStore.swift` | Protocol + TranscriptionInput struct |
+| HistoryStoreLive | `History/HistoryStoreLive.swift` | SwiftData impl (~/Library/Application Support/com.tagarela.Tagarela/History.store) |
+| HistoryStoreNoop | `History/HistoryStoreNoop.swift` | Fallback quando ModelContainer falha ao abrir |
+| Transcription | `History/Transcription.swift` | @Model SwiftData (10 campos: id, createdAt, duração, rawText, refinedText, refinerKind, llmModelName, whisperModelName, styleName, frontmostAppBundleID) |
+
+### HistoryStore — comportamento de retenção
+
+Aplicado a cada `save()`:
+1. Deleta entradas com `createdAt < now - maxDays * 86400`
+2. Mantém os top `maxItems` mais recentes (por `createdAt` desc)
+
+Falha de save é logada sem bloquear pipeline. Container indisponível → HistoryStoreNoop.
+
+## Não implementados (vão pra Fase 2b ou posterior)
+
 - Menu da status bar com "últimos 5"
+- Tela de Preferências
 - Indicador variações B / C / D
 - Toasts de erro
 - Estados visuais de "permissão faltando" no menu
 - Localizable.strings completo (strings hardcoded por enquanto)
+- Retenção por dias com clock injetável (TODO para cobertura de teste completa do retention-by-days)
 
 ## Não implementados (vão pra Fase 3)
 
