@@ -8,8 +8,8 @@ protocol TextRefiner: AnyObject, Sendable {
     var kind: RefinerKind { get }
 }
 
-enum RefinerKind: String, Codable, Equatable {
-    case identity
+enum RefinerKind: String, Codable, Equatable, CaseIterable, Sendable {
+    case none
     case ollama
     case openai
 }
