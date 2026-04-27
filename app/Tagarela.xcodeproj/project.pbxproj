@@ -16,6 +16,7 @@
 		3D3BA1DE80B62401CDA1813B /* PipelineCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A0F0B03EE5F5FB89DE08B9 /* PipelineCoordinatorTests.swift */; };
 		48E8B9B735C1CC22695F3F2F /* PermissionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86440E3E743253F4C26F8451 /* PermissionService.swift */; };
 		50C6384D0A9534712D2DF346 /* PermissionServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38D1EC0BE929E9255E6D405 /* PermissionServiceTests.swift */; };
+		56622911FD63010B500D90B0 /* FloatingIndicatorPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 265CDA7DE0CCADB7E45F98EA /* FloatingIndicatorPanel.swift */; };
 		58A935E47E4EADFB2381E629 /* PermissionStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62EFB96895497806042A4427 /* PermissionStatus.swift */; };
 		5F893074B312F218A17C07D7 /* TextRefiner.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7EBB86EF951B5C4D72D2C4A /* TextRefiner.swift */; };
 		758D7A361EA11C3E32E36E8A /* AudioCapturing.swift in Sources */ = {isa = PBXBuildFile; fileRef = D935115B6E9C71348D73E53F /* AudioCapturing.swift */; };
@@ -54,6 +55,7 @@
 /* Begin PBXFileReference section */
 		0B2194D608A5F68AEE4F7C69 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1E3AF30F1AE5DEAA3522590D /* InjectorLive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InjectorLive.swift; sourceTree = "<group>"; };
+		265CDA7DE0CCADB7E45F98EA /* FloatingIndicatorPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingIndicatorPanel.swift; sourceTree = "<group>"; };
 		48A38EEE3C74B26A58569FDF /* HotkeyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyService.swift; sourceTree = "<group>"; };
 		546B9E9134BAAF0569059D02 /* HotkeyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyTests.swift; sourceTree = "<group>"; };
 		5ECDA19A878F5C9B2C87A95C /* Injecting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Injecting.swift; sourceTree = "<group>"; };
@@ -188,6 +190,7 @@
 		512B008C32E02EC63AA3F750 /* Indicator */ = {
 			isa = PBXGroup;
 			children = (
+				265CDA7DE0CCADB7E45F98EA /* FloatingIndicatorPanel.swift */,
 			);
 			path = Indicator;
 			sourceTree = "<group>";
@@ -382,6 +385,7 @@
 				0779F6BEB11DF02D3334B344 /* AudioCaptureLive.swift in Sources */,
 				758D7A361EA11C3E32E36E8A /* AudioCapturing.swift in Sources */,
 				0625471C404A22DE5A3040A3 /* DesignSystem.swift in Sources */,
+				56622911FD63010B500D90B0 /* FloatingIndicatorPanel.swift in Sources */,
 				F8FBCE0B00B117991617F4EB /* Glyph.swift in Sources */,
 				325F4003CED9799250EB2986 /* Hotkey.swift in Sources */,
 				7906156A7FDCB39A8CD1EEF2 /* HotkeyService.swift in Sources */,
