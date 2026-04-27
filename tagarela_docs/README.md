@@ -32,6 +32,7 @@ Identidade, tokens, tipografia, cores, copy pt-BR, catálogo de componentes e bu
 ### specs/
 - [`2026-04-26-tagarela-v1-design.md`](./specs/2026-04-26-tagarela-v1-design.md) — design consolidado da v1 (incorporando decisões visuais).
 - [`2026-04-26-tagarela-v1-fase1-plan.md`](./specs/2026-04-26-tagarela-v1-fase1-plan.md) — plano de implementação da Fase 1 (esqueleto end-to-end "ditado puro"; 30 tarefas).
+- [`2026-04-27-tagarela-v1-fase2a-design.md`](./specs/2026-04-27-tagarela-v1-fase2a-design.md) — design da Fase 2a (Persistência + LLM funcionando: refiners OpenAI/Ollama/Identity, PreferencesStore, HistoryStore, Keychain, submenus na status bar, modal de API key, cleanups #2 e #4). Plan vem em seguida.
 
 ---
 
