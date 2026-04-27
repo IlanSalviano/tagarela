@@ -26,6 +26,7 @@
 		A723F99CF516D9C1904D9B08 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E67AC40A1677F04D206698D8 /* AppState.swift */; };
 		B6AC8D77746DD364C1D83E4A /* Wordmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA671BF3E800969A73A8EF5 /* Wordmark.swift */; };
 		B921AB0B66E9A5FBEC9EBFD1 /* AppContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1A68A34868B4B17F0CD95D4 /* AppContainer.swift */; };
+		C089BEDAD880AE8AE873E943 /* WhisperKitTranscriber.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4BE45043CF12FBE67AE1DBD /* WhisperKitTranscriber.swift */; };
 		C92FA6C50DD3D346C24C940A /* PermissionServiceLive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 827CCE37EBEA134265121AF8 /* PermissionServiceLive.swift */; };
 		D44AC44AFA2D08CC9A8111F5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0B2194D608A5F68AEE4F7C69 /* Assets.xcassets */; };
 		F8FBCE0B00B117991617F4EB /* Glyph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64EB8767875513C5CBD96EB7 /* Glyph.swift */; };
@@ -60,6 +61,7 @@
 		B38D1EC0BE929E9255E6D405 /* PermissionServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionServiceTests.swift; sourceTree = "<group>"; };
 		CDA671BF3E800969A73A8EF5 /* Wordmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Wordmark.swift; sourceTree = "<group>"; };
 		D935115B6E9C71348D73E53F /* AudioCapturing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioCapturing.swift; sourceTree = "<group>"; };
+		E4BE45043CF12FBE67AE1DBD /* WhisperKitTranscriber.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperKitTranscriber.swift; sourceTree = "<group>"; };
 		E67AC40A1677F04D206698D8 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		F12ABBA517752A7E8B23895F /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Fonts; path = Tagarela/Resources/Fonts; sourceTree = SOURCE_ROOT; };
 		F19CDE90411D6A59F7C2922E /* InitialPromptBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitialPromptBuilderTests.swift; sourceTree = "<group>"; };
@@ -117,6 +119,7 @@
 			children = (
 				9C606257E45AEAEF6FBA17FF /* InitialPromptBuilder.swift */,
 				82624846B13D44387F031C84 /* Transcribing.swift */,
+				E4BE45043CF12FBE67AE1DBD /* WhisperKitTranscriber.swift */,
 			);
 			path = Transcription;
 			sourceTree = "<group>";
@@ -362,6 +365,7 @@
 				58A935E47E4EADFB2381E629 /* PermissionStatus.swift in Sources */,
 				8DB6F64CD8DA02B106FCAB21 /* TagarelaApp.swift in Sources */,
 				7CFB0DDDA053BAAF6A2A90F6 /* Transcribing.swift in Sources */,
+				C089BEDAD880AE8AE873E943 /* WhisperKitTranscriber.swift in Sources */,
 				B6AC8D77746DD364C1D83E4A /* Wordmark.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
