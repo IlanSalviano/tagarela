@@ -1,6 +1,6 @@
 import Foundation
 
-protocol Transcribing: AnyObject {
+protocol Transcribing: AnyObject, Sendable {
     func loadModel(_ name: String, onProgress: @escaping (Double) -> Void) async throws
     func transcribe(buffer: AudioBuffer,
                     language: String,

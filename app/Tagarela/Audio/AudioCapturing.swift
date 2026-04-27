@@ -1,6 +1,6 @@
 import Foundation
 
-protocol AudioCapturing: AnyObject {
+protocol AudioCapturing: AnyObject, Sendable {
     /// Inicia captura. Erros: mic não autorizado, device indisponível.
     func start() throws
 

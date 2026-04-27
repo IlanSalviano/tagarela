@@ -1,6 +1,6 @@
 import Foundation
 
-protocol Injecting: AnyObject {
+protocol Injecting: AnyObject, Sendable {
     /// Injeta texto no app em foco via clipboard + ⌘V.
     /// Retorna o bundle ID do app que estava em foco no momento da injeção.
     @discardableResult
