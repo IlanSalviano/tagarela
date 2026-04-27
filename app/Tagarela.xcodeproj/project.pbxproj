@@ -15,10 +15,12 @@
 		48E8B9B735C1CC22695F3F2F /* PermissionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86440E3E743253F4C26F8451 /* PermissionService.swift */; };
 		50C6384D0A9534712D2DF346 /* PermissionServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38D1EC0BE929E9255E6D405 /* PermissionServiceTests.swift */; };
 		58A935E47E4EADFB2381E629 /* PermissionStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62EFB96895497806042A4427 /* PermissionStatus.swift */; };
+		5F893074B312F218A17C07D7 /* TextRefiner.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7EBB86EF951B5C4D72D2C4A /* TextRefiner.swift */; };
 		758D7A361EA11C3E32E36E8A /* AudioCapturing.swift in Sources */ = {isa = PBXBuildFile; fileRef = D935115B6E9C71348D73E53F /* AudioCapturing.swift */; };
 		7906156A7FDCB39A8CD1EEF2 /* HotkeyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48A38EEE3C74B26A58569FDF /* HotkeyService.swift */; };
 		7CFB0DDDA053BAAF6A2A90F6 /* Transcribing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82624846B13D44387F031C84 /* Transcribing.swift */; };
 		8361DB813F9EC5BBB72B5B8D /* InitialPromptBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C606257E45AEAEF6FBA17FF /* InitialPromptBuilder.swift */; };
+		89A04ABA6F671B1B26204D1E /* IdentityRefinerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C746B068BBCF245665858B64 /* IdentityRefinerTests.swift */; };
 		8DB6F64CD8DA02B106FCAB21 /* TagarelaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AA232DBB32229FCAA0AC660 /* TagarelaApp.swift */; };
 		924C7046FF921B54AFD98EC4 /* HotkeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546B9E9134BAAF0569059D02 /* HotkeyTests.swift */; };
 		9A2E1526631AFFE17EE3BDE4 /* Fonts in Resources */ = {isa = PBXBuildFile; fileRef = F12ABBA517752A7E8B23895F /* Fonts */; };
@@ -29,6 +31,7 @@
 		C089BEDAD880AE8AE873E943 /* WhisperKitTranscriber.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4BE45043CF12FBE67AE1DBD /* WhisperKitTranscriber.swift */; };
 		C92FA6C50DD3D346C24C940A /* PermissionServiceLive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 827CCE37EBEA134265121AF8 /* PermissionServiceLive.swift */; };
 		D44AC44AFA2D08CC9A8111F5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0B2194D608A5F68AEE4F7C69 /* Assets.xcassets */; };
+		E132445401CE971C386D1610 /* IdentityRefiner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89E2D30E8BD941C39FE3D792 /* IdentityRefiner.swift */; };
 		F8FBCE0B00B117991617F4EB /* Glyph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64EB8767875513C5CBD96EB7 /* Glyph.swift */; };
 /* End PBXBuildFile section */
 
@@ -55,10 +58,13 @@
 		827CCE37EBEA134265121AF8 /* PermissionServiceLive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionServiceLive.swift; sourceTree = "<group>"; };
 		86440E3E743253F4C26F8451 /* PermissionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionService.swift; sourceTree = "<group>"; };
 		885C3426FB83B9F0218878A7 /* Tagarela.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tagarela.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		89E2D30E8BD941C39FE3D792 /* IdentityRefiner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityRefiner.swift; sourceTree = "<group>"; };
 		92947106E01306287DDA490B /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
 		9C606257E45AEAEF6FBA17FF /* InitialPromptBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitialPromptBuilder.swift; sourceTree = "<group>"; };
 		A1A68A34868B4B17F0CD95D4 /* AppContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppContainer.swift; sourceTree = "<group>"; };
 		B38D1EC0BE929E9255E6D405 /* PermissionServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionServiceTests.swift; sourceTree = "<group>"; };
+		C746B068BBCF245665858B64 /* IdentityRefinerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityRefinerTests.swift; sourceTree = "<group>"; };
+		C7EBB86EF951B5C4D72D2C4A /* TextRefiner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextRefiner.swift; sourceTree = "<group>"; };
 		CDA671BF3E800969A73A8EF5 /* Wordmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Wordmark.swift; sourceTree = "<group>"; };
 		D935115B6E9C71348D73E53F /* AudioCapturing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioCapturing.swift; sourceTree = "<group>"; };
 		E4BE45043CF12FBE67AE1DBD /* WhisperKitTranscriber.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperKitTranscriber.swift; sourceTree = "<group>"; };
@@ -156,6 +162,7 @@
 			isa = PBXGroup;
 			children = (
 				546B9E9134BAAF0569059D02 /* HotkeyTests.swift */,
+				C746B068BBCF245665858B64 /* IdentityRefinerTests.swift */,
 				F19CDE90411D6A59F7C2922E /* InitialPromptBuilderTests.swift */,
 				B38D1EC0BE929E9255E6D405 /* PermissionServiceTests.swift */,
 			);
@@ -234,6 +241,8 @@
 		C4E4C198F3C8CE21386EDC8D /* Refiner */ = {
 			isa = PBXGroup;
 			children = (
+				89E2D30E8BD941C39FE3D792 /* IdentityRefiner.swift */,
+				C7EBB86EF951B5C4D72D2C4A /* TextRefiner.swift */,
 			);
 			path = Refiner;
 			sourceTree = "<group>";
@@ -359,11 +368,13 @@
 				325F4003CED9799250EB2986 /* Hotkey.swift in Sources */,
 				7906156A7FDCB39A8CD1EEF2 /* HotkeyService.swift in Sources */,
 				053FC805D48C1A035DA6C789 /* HotkeyServiceLive.swift in Sources */,
+				E132445401CE971C386D1610 /* IdentityRefiner.swift in Sources */,
 				8361DB813F9EC5BBB72B5B8D /* InitialPromptBuilder.swift in Sources */,
 				48E8B9B735C1CC22695F3F2F /* PermissionService.swift in Sources */,
 				C92FA6C50DD3D346C24C940A /* PermissionServiceLive.swift in Sources */,
 				58A935E47E4EADFB2381E629 /* PermissionStatus.swift in Sources */,
 				8DB6F64CD8DA02B106FCAB21 /* TagarelaApp.swift in Sources */,
+				5F893074B312F218A17C07D7 /* TextRefiner.swift in Sources */,
 				7CFB0DDDA053BAAF6A2A90F6 /* Transcribing.swift in Sources */,
 				C089BEDAD880AE8AE873E943 /* WhisperKitTranscriber.swift in Sources */,
 				B6AC8D77746DD364C1D83E4A /* Wordmark.swift in Sources */,
@@ -375,6 +386,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				924C7046FF921B54AFD98EC4 /* HotkeyTests.swift in Sources */,
+				89A04ABA6F671B1B26204D1E /* IdentityRefinerTests.swift in Sources */,
 				9C7A7C970C0AB62B1B07040E /* InitialPromptBuilderTests.swift in Sources */,
 				50C6384D0A9534712D2DF346 /* PermissionServiceTests.swift in Sources */,
 			);
