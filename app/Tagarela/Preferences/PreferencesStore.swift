@@ -36,12 +36,6 @@ final class PreferencesStore: ObservableObject {
     }
     @Published var audioBoostMaxGain: Float {
         didSet {
-            let clamped = min(max(audioBoostMaxGain, PreferencesDefaults.audioBoostMaxGainRange.lowerBound),
-                              PreferencesDefaults.audioBoostMaxGainRange.upperBound)
-            if clamped != audioBoostMaxGain {
-                audioBoostMaxGain = clamped // dispara didSet de novo, persiste
-                return
-            }
             defaults.set(audioBoostMaxGain, forKey: PreferencesKey.audioBoostMaxGain)
         }
     }
@@ -70,7 +64,23 @@ final class PreferencesStore: ObservableObject {
             ?? PreferencesDefaults.historyMaxItems
         self.historyMaxDays = defaults.object(forKey: PreferencesKey.historyMaxDays) as? Int
             ?? PreferencesDefaults.historyMaxDays
-        self.audioBoostMaxGain = defaults.object(forKey: PreferencesKey.audioBoostMaxGain) as? Float
-            ?? PreferencesDefaults.audioBoostMaxGain
+
+        // audioBoostMaxGain: usar defaults.float(forKey:) com check de existência
+        // para evitar falha na conversão NSNumber -> Float
+        if defaults.object(forKey: PreferencesKey.audioBoostMaxGain) != nil {
+            let stored = defaults.float(forKey: PreferencesKey.audioBoostMaxGain)
+            self.audioBoostMaxGain = min(max(stored, PreferencesDefaults.audioBoostMaxGainRange.lowerBound),
+                                          PreferencesDefaults.audioBoostMaxGainRange.upperBound)
+        } else {
+            self.audioBoostMaxGain = PreferencesDefaults.audioBoostMaxGain
+        }
+    }
+
+    /// Setter que clampa pro range válido [1, 50] antes de publicar.
+    /// Use isto em vez de atribuir audioBoostMaxGain direto quando vier
+    /// de input externo (slider, defaults write etc.).
+    func setAudioBoostMaxGain(_ value: Float) {
+        audioBoostMaxGain = min(max(value, PreferencesDefaults.audioBoostMaxGainRange.lowerBound),
+                                PreferencesDefaults.audioBoostMaxGainRange.upperBound)
     }
 }

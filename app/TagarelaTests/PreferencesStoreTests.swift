@@ -1,3 +1,4 @@
+import Combine
 import XCTest
 @testable import Tagarela
 
@@ -46,9 +47,33 @@ final class PreferencesStoreTests: XCTestCase {
 
     func test_audioBoostMaxGain_clampedToRange() {
         let s = PreferencesStore(defaults: defaults, defaultStyleID: dummyStyleID)
-        s.audioBoostMaxGain = 100   // > 50
+        s.setAudioBoostMaxGain(100)   // > 50
         XCTAssertEqual(s.audioBoostMaxGain, 50)
-        s.audioBoostMaxGain = 0.1   // < 1
+        s.setAudioBoostMaxGain(0.1)   // < 1
         XCTAssertEqual(s.audioBoostMaxGain, 1)
+    }
+
+    func test_audioBoostMaxGain_persistsAcrossInit() {
+        let s1 = PreferencesStore(defaults: defaults, defaultStyleID: dummyStyleID)
+        s1.setAudioBoostMaxGain(7.5)
+        let s2 = PreferencesStore(defaults: defaults, defaultStyleID: dummyStyleID)
+        XCTAssertEqual(s2.audioBoostMaxGain, 7.5, accuracy: 0.001)
+    }
+
+    func test_setRefinerKind_publishesToCombineSubscribers() {
+        let s = PreferencesStore(defaults: defaults, defaultStyleID: dummyStyleID)
+        var received: [RefinerKind] = []
+        let exp = expectation(description: "publishes")
+        exp.expectedFulfillmentCount = 2  // initial value + change
+
+        let cancellable = s.$refinerKind.sink { kind in
+            received.append(kind)
+            exp.fulfill()
+        }
+        s.refinerKind = .openai
+        wait(for: [exp], timeout: 1.0)
+        cancellable.cancel()
+
+        XCTAssertEqual(received, [.none, .openai])
     }
 }
