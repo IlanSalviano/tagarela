@@ -18,19 +18,28 @@ final class AudioCaptureLive: AudioCapturing, @unchecked Sendable {
     }
 
     func start() throws {
-        guard AVCaptureDevice.authorizationStatus(for: .audio) == .authorized else {
+        let mic = AVCaptureDevice.authorizationStatus(for: .audio)
+        FileHandle.standardError.write(Data("[audio] start: mic auth=\(mic.rawValue)\n".utf8))
+        if mic == .denied {
             throw AudioCaptureError.microphoneDenied
         }
         collected.removeAll()
         let input = engine.inputNode
         let inFormat = input.outputFormat(forBus: 0)
+        FileHandle.standardError.write(Data("[audio] inFormat sampleRate=\(inFormat.sampleRate) channels=\(inFormat.channelCount)\n".utf8))
+        if inFormat.sampleRate == 0 || inFormat.channelCount == 0 {
+            FileHandle.standardError.write(Data("[audio] inputNode sem formato — provavelmente sem permissão de mic\n".utf8))
+            throw AudioCaptureError.microphoneDenied
+        }
         guard let outFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32,
                                              sampleRate: 16_000,
                                              channels: 1,
                                              interleaved: false) else {
+            FileHandle.standardError.write(Data("[audio] outFormat creation failed\n".utf8))
             throw AudioCaptureError.engineFailedToStart
         }
         guard let conv = AVAudioConverter(from: inFormat, to: outFormat) else {
+            FileHandle.standardError.write(Data("[audio] converter creation failed\n".utf8))
             throw AudioCaptureError.engineFailedToStart
         }
         self.converter = conv
@@ -41,10 +50,14 @@ final class AudioCaptureLive: AudioCapturing, @unchecked Sendable {
         }
 
         engine.prepare()
-        do { try engine.start() } catch {
+        do {
+            try engine.start()
+        } catch {
+            FileHandle.standardError.write(Data("[audio] engine.start() falhou: \(error)\n".utf8))
             throw AudioCaptureError.engineFailedToStart
         }
         isRecording = true
+        FileHandle.standardError.write(Data("[audio] engine started successfully\n".utf8))
         logger.info("AudioCapture started")
     }
 

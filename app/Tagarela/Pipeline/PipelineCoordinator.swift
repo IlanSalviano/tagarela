@@ -14,6 +14,10 @@ actor PipelineCoordinator {
     private var continuation: AsyncStream<PipelineEvent>.Continuation?
     nonisolated let events: AsyncStream<PipelineEvent>
 
+    private var startTime: Date?
+    private var currentLevel: Double = 0
+    private var recordingTasks: [Task<Void, Never>] = []
+
     init(audio: AudioCapturing,
          transcriber: Transcribing,
          refiner: TextRefiner,
@@ -46,16 +50,25 @@ actor PipelineCoordinator {
     }
 
     private func handleToggle() async {
+        FileHandle.standardError.write(Data("[pipeline] toggle in state=\(state)\n".utf8))
+        // Recovery: se estamos em .error, o toggle limpa o estado e tenta de novo.
+        if case .error = state {
+            setState(.idle)
+        }
         switch state {
         case .idle:
             do {
                 try audio.start()
+                startTime = Date()
+                currentLevel = 0
                 setState(.recording(elapsedSeconds: 0, audioLevel: 0))
+                spawnRecordingTasks()
             } catch {
                 setState(.error(message: "mic indisponível"))
                 continuation?.yield(.errorOccurred("mic: \(error)"))
             }
         case .recording:
+            cancelRecordingTasks()
             await runTranscribeAndInject()
         case .processing, .refining, .error:
             // Ignorado — apenas .cancel é aceito durante esses estados
@@ -66,6 +79,7 @@ actor PipelineCoordinator {
     private func handleCancel() async {
         switch state {
         case .recording:
+            cancelRecordingTasks()
             _ = try? await audio.stop()
             setState(.idle)
         case .processing, .refining:
@@ -76,26 +90,67 @@ actor PipelineCoordinator {
         }
     }
 
+    private func spawnRecordingTasks() {
+        let levels = audio.levels
+        recordingTasks.append(Task { [weak self] in
+            for await lv in levels {
+                await self?.setLevel(lv)
+            }
+        })
+        recordingTasks.append(Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 80_000_000)
+                await self?.tickElapsed()
+            }
+        })
+    }
+
+    private func cancelRecordingTasks() {
+        for t in recordingTasks { t.cancel() }
+        recordingTasks.removeAll()
+    }
+
+    private func setLevel(_ v: Double) {
+        currentLevel = v
+        if case .recording(let elapsed, _) = state {
+            setState(.recording(elapsedSeconds: elapsed, audioLevel: v))
+        }
+    }
+
+    private func tickElapsed() {
+        guard case .recording = state, let st = startTime else { return }
+        let elapsed = Date().timeIntervalSince(st)
+        setState(.recording(elapsedSeconds: elapsed, audioLevel: currentLevel))
+    }
+
     private func runTranscribeAndInject() async {
         do {
+            FileHandle.standardError.write(Data("[pipeline] stopping audio\n".utf8))
             let buffer = try await audio.stop()
+            FileHandle.standardError.write(Data("[pipeline] buffer duration=\(buffer.durationSeconds)s samples=\(buffer.samples.count)\n".utf8))
             guard buffer.durationSeconds >= 0.5 else {
+                FileHandle.standardError.write(Data("[pipeline] buffer too short, descartando\n".utf8))
                 setState(.idle); return
             }
             setState(.processing)
+            FileHandle.standardError.write(Data("[pipeline] transcribing (model loaded? \(transcriber.loadedModelName ?? "NIL"))\n".utf8))
             let raw = try await transcriber.transcribe(
                 buffer: buffer,
                 language: language,
                 initialPrompt: initialPromptProvider()
             )
+            FileHandle.standardError.write(Data("[pipeline] transcribed: '\(raw)'\n".utf8))
             setState(.refining)
             let refined = try await refiner.refine(raw, style: "cru — sem reescrita")
+            FileHandle.standardError.write(Data("[pipeline] injecting\n".utf8))
             let frontApp = try await injector.inject(text: refined)
+            FileHandle.standardError.write(Data("[pipeline] injected to \(frontApp ?? "?")\n".utf8))
             continuation?.yield(.finished(rawText: raw,
                                           refinedText: refined,
                                           frontmostApp: frontApp))
             setState(.idle)
         } catch {
+            FileHandle.standardError.write(Data("[pipeline] FALHOU: \(String(describing: error))\n".utf8))
             setState(.error(message: "erro no pipeline"))
             continuation?.yield(.errorOccurred(String(describing: error)))
             // Auto-recover pra idle após 2s

@@ -72,6 +72,10 @@ targets:
         INFOPLIST_FILE: TagarelaTests/Info.plist
         BUNDLE_LOADER: "$(TEST_HOST)"
         TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Tagarela.app/Contents/MacOS/Tagarela"
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "78C7C6375957D553AD632832D0821B446F53D0F3"
+        DEVELOPMENT_TEAM: BCM26K6YNA
+        PROVISIONING_PROFILE_SPECIFIER: ""
     dependencies:
       - target: Tagarela
 

@@ -26,6 +26,8 @@
     <string>tagarela</string>
     <key>NSMicrophoneUsageDescription</key>
     <string>tagarela usa o microfone pra transcrever sua fala em texto. áudio nunca é salvo, só processado em memória.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>tagarela só usa o áudio da sua webcam (não captura imagem); macOS exige essa permissão pra dispositivos que combinam câmera e microfone.</string>
     <key>ATSApplicationFontsPath</key>
     <string>Fonts</string>
 </dict>

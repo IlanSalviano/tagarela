@@ -362,6 +362,10 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1540;
 				TargetAttributes = {
+					4811A863A532FBCD0DA04120 = {
+						DevelopmentTeam = BCM26K6YNA;
+						ProvisioningStyle = Manual;
+					};
 					715677D834111BC04FF17146 = {
 						DevelopmentTeam = BCM26K6YNA;
 						ProvisioningStyle = Manual;
@@ -472,7 +476,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = 78C7C6375957D553AD632832D0821B446F53D0F3;
+				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = BCM26K6YNA;
 				INFOPLIST_FILE = TagarelaTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -480,6 +487,7 @@
 					"@loader_path/../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.tagarela.TagarelaTests;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Tagarela.app/Contents/MacOS/Tagarela";
 			};
@@ -638,7 +646,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = 78C7C6375957D553AD632832D0821B446F53D0F3;
+				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = BCM26K6YNA;
 				INFOPLIST_FILE = TagarelaTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -646,6 +657,7 @@
 					"@loader_path/../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.tagarela.TagarelaTests;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Tagarela.app/Contents/MacOS/Tagarela";
 			};

@@ -94,8 +94,8 @@ final class HotkeyServiceLive: HotkeyService, @unchecked Sendable {
 
         if type == .flagsChanged {
             let keyCode = UInt16(event.getIntegerValueField(.keyboardEventKeycode))
-            FileHandle.standardError.write(Data("[hotkey] flagsChanged keyCode=\(keyCode) wanted=\(me.hotkey.virtualKeyCode)\n".utf8))
             if keyCode == me.hotkey.virtualKeyCode {
+                FileHandle.standardError.write(Data("[hotkey] flagsChanged keyCode=\(keyCode) (Right Option)\n".utf8))
                 let flags = event.flags
                 // TODO Fase 2: distinguir L/R do Option olhando bits específicos do flag.
                 // Por enquanto, o filtro pelo keyCode (0x3D = Right Option) já restringe
