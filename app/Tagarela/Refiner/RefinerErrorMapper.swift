@@ -8,6 +8,8 @@ enum RefinerErrorMapper {
                 return .networkOffline
             case .timedOut:
                 return .timedOut
+            case .cancelled:
+                return .cancelled
             default:
                 return .networkOffline
             }
@@ -38,11 +40,22 @@ enum RefinerErrorMapper {
     }
 
     private static func extractModelName(_ body: String) -> String? {
-        // best-effort: procura primeira string com aspas após "model"
-        guard let range = body.range(of: "model") else { return nil }
-        let tail = body[range.upperBound...]
-        let parts = tail.split(separator: "\"")
-        for p in parts where !p.isEmpty && p.count < 64 { return String(p) }
+        // Matches: model followed by quoted token (handles both escaped and unescaped quotes).
+        // Pattern: 'model' + optional space + optional backslash + quote + name + optional backslash + quote
+        let patterns = [
+            // Escaped quotes: model \"name\"
+            try? NSRegularExpression(pattern: "model\\s+\\\\\"([A-Za-z0-9._:\\-]{1,63})\\\\\"", options: []),
+            // Unescaped quotes: model "name"
+            try? NSRegularExpression(pattern: "model\\s+\"([A-Za-z0-9._:\\-]{1,63})\"", options: [])
+        ]
+
+        let nsBody = body as NSString
+        for pattern in patterns.compactMap({ $0 }) {
+            if let match = pattern.firstMatch(in: body, options: [], range: NSRange(location: 0, length: nsBody.length)),
+               let range = Range(match.range(at: 1), in: body) {
+                return String(body[range])
+            }
+        }
         return nil
     }
 }

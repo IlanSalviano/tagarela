@@ -8,6 +8,7 @@ enum RemoteRefinerConfig {
     static func contextWindow(for modelName: String) -> Int {
         let lower = modelName.lowercased()
         if lower.hasPrefix("gpt-5.4") { return 200_000 }
+        // Cobre qwen3.5:*, qwen3.0:* etc — todas as variantes Qwen3 tem janela ~32k.
         if lower.hasPrefix("qwen3")   { return 32_768 }
         if lower.hasPrefix("llama3.2"){ return 128_000 }
         return conservativeFallback

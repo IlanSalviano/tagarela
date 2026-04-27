@@ -32,6 +32,7 @@
 		762BF631DAB5A7E717F0401E /* PipelineEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA2A3341042C032C2AD90B62 /* PipelineEvent.swift */; };
 		7906156A7FDCB39A8CD1EEF2 /* HotkeyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48A38EEE3C74B26A58569FDF /* HotkeyService.swift */; };
 		7CFB0DDDA053BAAF6A2A90F6 /* Transcribing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82624846B13D44387F031C84 /* Transcribing.swift */; };
+		81323C2BE4C6733126B398E0 /* RemoteRefinerConfigTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E68546BC2AA01D348444B929 /* RemoteRefinerConfigTests.swift */; };
 		8361DB813F9EC5BBB72B5B8D /* InitialPromptBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C606257E45AEAEF6FBA17FF /* InitialPromptBuilder.swift */; };
 		83CFA88301F2CAAEDD3F881C /* OnboardWelcome.swift in Sources */ = {isa = PBXBuildFile; fileRef = AED216601F513596143B776B /* OnboardWelcome.swift */; };
 		84F54E14BCFD60F0E854ECB3 /* RefinerError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BEFD414690FBE88FE9E33AF /* RefinerError.swift */; };
@@ -122,6 +123,7 @@
 		E0623A21CF9D908E558777F2 /* OnboardPerms.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardPerms.swift; sourceTree = "<group>"; };
 		E4BE45043CF12FBE67AE1DBD /* WhisperKitTranscriber.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperKitTranscriber.swift; sourceTree = "<group>"; };
 		E67AC40A1677F04D206698D8 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		E68546BC2AA01D348444B929 /* RemoteRefinerConfigTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteRefinerConfigTests.swift; sourceTree = "<group>"; };
 		EA2A3341042C032C2AD90B62 /* PipelineEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PipelineEvent.swift; sourceTree = "<group>"; };
 		EA50651B0097577FB6353079 /* RefinerErrorMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefinerErrorMapperTests.swift; sourceTree = "<group>"; };
 		F12ABBA517752A7E8B23895F /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Fonts; path = Tagarela/Resources/Fonts; sourceTree = SOURCE_ROOT; };
@@ -234,6 +236,7 @@
 				F3A0F0B03EE5F5FB89DE08B9 /* PipelineCoordinatorTests.swift */,
 				09A9046134AA822B8003E250 /* PreferencesStoreTests.swift */,
 				EA50651B0097577FB6353079 /* RefinerErrorMapperTests.swift */,
+				E68546BC2AA01D348444B929 /* RemoteRefinerConfigTests.swift */,
 				3ED9DDFE385D1F49BF9DC9B6 /* TokenCounterTests.swift */,
 			);
 			path = TagarelaTests;
@@ -513,6 +516,7 @@
 				3D3BA1DE80B62401CDA1813B /* PipelineCoordinatorTests.swift in Sources */,
 				2A3C2873638E4A39E896CD0C /* PreferencesStoreTests.swift in Sources */,
 				D184234EF281996B98B43E86 /* RefinerErrorMapperTests.swift in Sources */,
+				81323C2BE4C6733126B398E0 /* RemoteRefinerConfigTests.swift in Sources */,
 				9D3DBD5FA1E5D9A56E91B893 /* TokenCounterTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -9,4 +9,5 @@ enum RefinerError: Error, Equatable, Sendable {
     case contextExceeded
     case modelNotFound(String)
     case malformedResponse
+    case cancelled
 }

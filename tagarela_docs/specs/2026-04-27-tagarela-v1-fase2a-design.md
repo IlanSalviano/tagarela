@@ -313,6 +313,7 @@ Atalho mental: **o usuário nunca fica sem texto colado**. Erros pós-transcriç
 | OpenAI key vazia | Keychain devolve `nil` antes de sair | `.unauthorized` | mesmo caminho |
 | OpenAI/Ollama context window | HTTP 400 com body indicando context_length, OU detecção proativa via `TokenCounter` | `.contextExceeded` | retry 1× com texto truncado; falha persistente → fallback Identity |
 | OpenAI/Ollama payload malformado | JSON decode failed ou faltando `choices`/`message`/`response` | `.malformedResponse` | log + fallback Identity |
+| Cancelamento via Task.cancel() | `URLError.cancelled` | `.cancelled` | aborta sem fallback (handled in Tarefa 7) |
 | Ollama offline | health check timeout/erro | `.networkOffline` | fallback Identity **sem chamar /api/chat** |
 | Ollama modelo não baixado | HTTP 404 ou body com `model not found` | `.modelNotFound(name)` | log + fallback Identity |
 
@@ -340,8 +341,9 @@ Implementado em `BaseRemoteRefiner`. Algoritmo:
 ### 5.3 Cancelamento durante `.refining`
 
 - O `Task` que segura a chamada do refiner é registrado em `recordingTasks`.
-- `cancelRecordingTasks()` propaga `Task.cancel()` → `URLSessionTask.cancel()` aborta HTTP imediatamente.
-- Histórico **não** é salvo. State volta `.idle`.
+- `cancelRecordingTasks()` propaga `Task.cancel()` → `URLSessionTask.cancel()` aborta HTTP imediatamente, gerando `URLError.cancelled`.
+- Erro semântico: `.cancelled` (não é fallback para Identity, é aborto limpo — Tarefa 7 vai tratar sem salvar histórico).
+- State volta `.idle` sem salvar histórico.
 
 ### 5.4 Erros de `HistoryStore`
 

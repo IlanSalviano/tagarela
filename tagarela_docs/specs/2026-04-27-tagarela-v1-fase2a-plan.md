@@ -523,6 +523,7 @@ enum RefinerError: Error, Equatable, Sendable {
     case contextExceeded
     case modelNotFound(String)
     case malformedResponse
+    case cancelled
 }
 ```
 
@@ -539,6 +540,8 @@ enum RefinerErrorMapper {
                 return .networkOffline
             case .timedOut:
                 return .timedOut
+            case .cancelled:
+                return .cancelled
             default:
                 return .networkOffline
             }
@@ -569,11 +572,22 @@ enum RefinerErrorMapper {
     }
 
     private static func extractModelName(_ body: String) -> String? {
-        // best-effort: procura primeira string com aspas após "model"
-        guard let range = body.range(of: "model") else { return nil }
-        let tail = body[range.upperBound...]
-        let parts = tail.split(separator: "\"")
-        for p in parts where !p.isEmpty && p.count < 64 { return String(p) }
+        // Matches: model followed by quoted token (handles both escaped and unescaped quotes).
+        // Pattern: 'model' + optional space + optional backslash + quote + name + optional backslash + quote
+        let patterns = [
+            // Escaped quotes: model \"name\"
+            try? NSRegularExpression(pattern: "model\\s+\\\\\"([A-Za-z0-9._:\\-]{1,63})\\\\\"", options: []),
+            // Unescaped quotes: model "name"
+            try? NSRegularExpression(pattern: "model\\s+\"([A-Za-z0-9._:\\-]{1,63})\"", options: [])
+        ]
+
+        let nsBody = body as NSString
+        for pattern in patterns.compactMap({ $0 }) {
+            if let match = pattern.firstMatch(in: body, options: [], range: NSRange(location: 0, length: nsBody.length)),
+               let range = Range(match.range(at: 1), in: body) {
+                return String(body[range])
+            }
+        }
         return nil
     }
 }
@@ -606,6 +620,7 @@ enum RemoteRefinerConfig {
     static func contextWindow(for modelName: String) -> Int {
         let lower = modelName.lowercased()
         if lower.hasPrefix("gpt-5.4") { return 200_000 }
+        // Cobre qwen3.5:*, qwen3.0:* etc — todas as variantes Qwen3 tem janela ~32k.
         if lower.hasPrefix("qwen3")   { return 32_768 }
         if lower.hasPrefix("llama3.2"){ return 128_000 }
         return conservativeFallback
@@ -660,11 +675,25 @@ final class RefinerErrorMapperTests: XCTestCase {
 
     func test_http404_withModelMessage_mapsToModelNotFound() {
         let body = Data(#"{"error":"model \"qwen3.5\" not found"}"#.utf8)
-        if case .modelNotFound = RefinerErrorMapper.from(httpStatus: 404, body: body) {
-            // ok
+        if case let .modelNotFound(name) = RefinerErrorMapper.from(httpStatus: 404, body: body) {
+            XCTAssertEqual(name, "qwen3.5")
         } else {
             XCTFail("expected .modelNotFound")
         }
+    }
+
+    func test_http404_withUnquotedModelMessage_returnsQuestionMark() {
+        let body = Data(#"{"error":"model qwen3.5 not found"}"#.utf8)
+        if case let .modelNotFound(name) = RefinerErrorMapper.from(httpStatus: 404, body: body) {
+            XCTAssertEqual(name, "?")
+        } else {
+            XCTFail("expected .modelNotFound")
+        }
+    }
+
+    func test_urlError_cancelled_mapsToCancelled() {
+        let e = URLError(.cancelled)
+        XCTAssertEqual(RefinerErrorMapper.from(e), .cancelled)
     }
 }
 ```
@@ -693,6 +722,38 @@ final class TokenCounterTests: XCTestCase {
 }
 ```
 
+- [ ] **Step 3.6: Escrever `RemoteRefinerConfigTests.swift` (adição).**
+
+```swift
+import XCTest
+@testable import Tagarela
+
+final class RemoteRefinerConfigTests: XCTestCase {
+    func test_gpt54_returns200k() {
+        XCTAssertEqual(RemoteRefinerConfig.contextWindow(for: "gpt-5.4-mini"), 200_000)
+        XCTAssertEqual(RemoteRefinerConfig.contextWindow(for: "GPT-5.4"), 200_000) // case insensitive
+    }
+
+    func test_qwen3DefaultModel_returns32k() {
+        XCTAssertEqual(RemoteRefinerConfig.contextWindow(for: "qwen3.5:9b-nvfp4"), 32_768)
+    }
+
+    func test_llama32_returns128k() {
+        XCTAssertEqual(RemoteRefinerConfig.contextWindow(for: "llama3.2:3b"), 128_000)
+    }
+
+    func test_unknownModel_returnsConservativeFallback() {
+        XCTAssertEqual(
+            RemoteRefinerConfig.contextWindow(for: "gemma:2b"),
+            RemoteRefinerConfig.conservativeFallback)
+    }
+
+    func test_usableFraction_isPointEight() {
+        XCTAssertEqual(RemoteRefinerConfig.usableFraction, 0.8, accuracy: 0.001)
+    }
+}
+```
+
 - [ ] **Step 3.7: Regenerar + rodar.**
 
 ```bash
@@ -701,17 +762,25 @@ xcodegen generate
 xcodebuild -project Tagarela.xcodeproj -scheme Tagarela -destination 'platform=macOS' test 2>&1 | tail -10
 ```
 
-Esperado: 34 testes verdes (24 + 10).
+Esperado: 43 testes verdes (36 + 7 novos: 3 RefinerErrorMapper + 1 cancelled + 5 RemoteRefinerConfig).
 
 - [ ] **Step 3.8: Commit.**
 
 ```bash
 cd /Users/tars/Dev/tagarela
-git add app/Tagarela/Refiner/RefinerError.swift app/Tagarela/Refiner/RefinerErrorMapper.swift app/Tagarela/Refiner/TokenCounter.swift app/Tagarela/Refiner/RemoteRefinerConfig.swift app/TagarelaTests/RefinerErrorMapperTests.swift app/TagarelaTests/TokenCounterTests.swift app/Tagarela.xcodeproj
-git commit -m "feat(refiner): RefinerError + Mapper + TokenCounter + RemoteRefinerConfig"
+git add app/Tagarela/Refiner/RefinerError.swift app/Tagarela/Refiner/RefinerErrorMapper.swift app/Tagarela/Refiner/TokenCounter.swift app/Tagarela/Refiner/RemoteRefinerConfig.swift app/TagarelaTests/RefinerErrorMapperTests.swift app/TagarelaTests/TokenCounterTests.swift app/TagarelaTests/RemoteRefinerConfigTests.swift app/Tagarela.xcodeproj tagarela_docs/specs/2026-04-27-tagarela-v1-fase2a-plan.md
+git commit -m "fix(refiner): extractModelName via regex + .cancelled + cobertura RemoteRefinerConfig
+
+Resolve Critical/Important do code review da Tarefa 3:
+- extractModelName usa regex pra capturar token quotado após \"model\"; agora retorna o nome do modelo correto.
+- Adicionado RefinerError.cancelled + mapping de URLError.cancelled.
+- Comentário inline em RemoteRefinerConfig sobre qwen3.
+- Novo RemoteRefinerConfigTests cobre 4 caminhos da tabela.
+- Teste de modelo sem aspas valida fallback gracioso.
+- Plan atualizado."
 ```
 
-**Critério de aceite:** mapper traduz `URLError` e HTTP status corretamente; TokenCounter retorna estimativa estável; tabela de context window cobre os 4 modelos do design; 10 testes verdes.
+**Critério de aceite:** extractModelName captura corretamente o nome (qwen3.5) do body com escaped quotes; URLError.cancelled mapeia para .cancelled; tabela contextWindow cobre 4 modelos; 43 testes verdes.
 
 ---
 

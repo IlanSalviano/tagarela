@@ -38,11 +38,25 @@ final class RefinerErrorMapperTests: XCTestCase {
     }
 
     func test_http404_withModelMessage_mapsToModelNotFound() {
-        let body = Data(#"{"error":"model \"qwen\" not found"}"#.utf8)
-        if case .modelNotFound = RefinerErrorMapper.from(httpStatus: 404, body: body) {
-            // ok
+        let body = Data(#"{"error":"model \"qwen3.5\" not found"}"#.utf8)
+        if case let .modelNotFound(name) = RefinerErrorMapper.from(httpStatus: 404, body: body) {
+            XCTAssertEqual(name, "qwen3.5")
         } else {
             XCTFail("expected .modelNotFound")
         }
+    }
+
+    func test_http404_withUnquotedModelMessage_returnsQuestionMark() {
+        let body = Data(#"{"error":"model qwen3.5 not found"}"#.utf8)
+        if case let .modelNotFound(name) = RefinerErrorMapper.from(httpStatus: 404, body: body) {
+            XCTAssertEqual(name, "?")
+        } else {
+            XCTFail("expected .modelNotFound")
+        }
+    }
+
+    func test_urlError_cancelled_mapsToCancelled() {
+        let e = URLError(.cancelled)
+        XCTAssertEqual(RefinerErrorMapper.from(e), .cancelled)
     }
 }
