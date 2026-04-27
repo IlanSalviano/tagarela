@@ -9,7 +9,14 @@
 /* Begin PBXBuildFile section */
 		0964F026A977BF3A0908601E /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = 8D6A99642A3EA77F647F3C1E /* WhisperKit */; };
 		1266E876E10A7032C3644712 /* PlaceholderTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 145543436E1B5A55B6517D3A /* PlaceholderTest.swift */; };
+		19721FDFBC32B292680ADDDD /* InterTight-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB4D4B05CA17D142B9D1B41C /* InterTight-Medium.ttf */; };
+		40EC2EEF1A8C4E3E7A7FE49B /* JetBrainsMono-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA5F2E0878FE52248A1D6620 /* JetBrainsMono-SemiBold.ttf */; };
+		4D0A37B0C67F18C8236C6AAC /* JetBrainsMono-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1B61A447374B82B8B58224C6 /* JetBrainsMono-Medium.ttf */; };
+		7B582F7780E6A7B1B512FCDC /* JetBrainsMono-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5AD9D3ACA4955C722E7F8963 /* JetBrainsMono-Regular.ttf */; };
 		8DB6F64CD8DA02B106FCAB21 /* TagarelaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AA232DBB32229FCAA0AC660 /* TagarelaApp.swift */; };
+		8DD6C35EA08FE198101AA932 /* InterTight-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4F0115B38FDFD85101BAE219 /* InterTight-SemiBold.ttf */; };
+		BCB225735DFBEC1134C71F0C /* InstrumentSerif-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EEE4F0AB792EE7143DA6AE7F /* InstrumentSerif-Italic.ttf */; };
+		C00F9C6F0209159410F49616 /* InterTight-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 76083F7AF222D9E32009AB08 /* InterTight-Regular.ttf */; };
 		D44AC44AFA2D08CC9A8111F5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0B2194D608A5F68AEE4F7C69 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
@@ -26,9 +33,16 @@
 /* Begin PBXFileReference section */
 		0B2194D608A5F68AEE4F7C69 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		145543436E1B5A55B6517D3A /* PlaceholderTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderTest.swift; sourceTree = "<group>"; };
+		1B61A447374B82B8B58224C6 /* JetBrainsMono-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "JetBrainsMono-Medium.ttf"; sourceTree = "<group>"; };
+		4F0115B38FDFD85101BAE219 /* InterTight-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "InterTight-SemiBold.ttf"; sourceTree = "<group>"; };
+		5AD9D3ACA4955C722E7F8963 /* JetBrainsMono-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "JetBrainsMono-Regular.ttf"; sourceTree = "<group>"; };
 		6AA232DBB32229FCAA0AC660 /* TagarelaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagarelaApp.swift; sourceTree = "<group>"; };
 		727AD7A472BE6C196EAA6002 /* TagarelaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TagarelaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		76083F7AF222D9E32009AB08 /* InterTight-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "InterTight-Regular.ttf"; sourceTree = "<group>"; };
 		885C3426FB83B9F0218878A7 /* Tagarela.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tagarela.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA5F2E0878FE52248A1D6620 /* JetBrainsMono-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "JetBrainsMono-SemiBold.ttf"; sourceTree = "<group>"; };
+		AB4D4B05CA17D142B9D1B41C /* InterTight-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "InterTight-Medium.ttf"; sourceTree = "<group>"; };
+		EEE4F0AB792EE7143DA6AE7F /* InstrumentSerif-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "InstrumentSerif-Italic.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -202,6 +216,13 @@
 		F81DBF44342E0F2EE73A28EA /* Fonts */ = {
 			isa = PBXGroup;
 			children = (
+				EEE4F0AB792EE7143DA6AE7F /* InstrumentSerif-Italic.ttf */,
+				AB4D4B05CA17D142B9D1B41C /* InterTight-Medium.ttf */,
+				76083F7AF222D9E32009AB08 /* InterTight-Regular.ttf */,
+				4F0115B38FDFD85101BAE219 /* InterTight-SemiBold.ttf */,
+				1B61A447374B82B8B58224C6 /* JetBrainsMono-Medium.ttf */,
+				5AD9D3ACA4955C722E7F8963 /* JetBrainsMono-Regular.ttf */,
+				AA5F2E0878FE52248A1D6620 /* JetBrainsMono-SemiBold.ttf */,
 			);
 			path = Fonts;
 			sourceTree = "<group>";
@@ -290,6 +311,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				D44AC44AFA2D08CC9A8111F5 /* Assets.xcassets in Resources */,
+				BCB225735DFBEC1134C71F0C /* InstrumentSerif-Italic.ttf in Resources */,
+				19721FDFBC32B292680ADDDD /* InterTight-Medium.ttf in Resources */,
+				C00F9C6F0209159410F49616 /* InterTight-Regular.ttf in Resources */,
+				8DD6C35EA08FE198101AA932 /* InterTight-SemiBold.ttf in Resources */,
+				4D0A37B0C67F18C8236C6AAC /* JetBrainsMono-Medium.ttf in Resources */,
+				7B582F7780E6A7B1B512FCDC /* JetBrainsMono-Regular.ttf in Resources */,
+				40EC2EEF1A8C4E3E7A7FE49B /* JetBrainsMono-SemiBold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
