@@ -73,7 +73,13 @@ final class AppContainer: ObservableObject {
             audio: audio,
             transcriber: transcriber,
             refinerProvider: { factory.current() },
-            injector: injector
+            injector: injector,
+            initialPromptProvider: { [weak prefs] in
+                guard let prefs else { return nil }
+                let vocab = prefs.technicalVocabulary
+                guard !vocab.isEmpty else { return nil }
+                return InitialPromptBuilder.build(vocab: vocab)
+            }
         )
         self.onboarding = OnboardingCoordinator(
             permissionService: permissions, transcriber: transcriber

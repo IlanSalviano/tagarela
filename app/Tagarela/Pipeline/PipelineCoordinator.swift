@@ -8,7 +8,7 @@ actor PipelineCoordinator {
     private let refinerProvider: @MainActor @Sendable () -> (refiner: TextRefiner, style: Style)
     private let injector: Injecting
     private let language: String
-    private let initialPromptProvider: @Sendable () -> String?
+    private let initialPromptProvider: @MainActor @Sendable () -> String?
 
     private(set) var state: PipelineState = .idle
     private var continuation: AsyncStream<PipelineEvent>.Continuation?
@@ -23,7 +23,7 @@ actor PipelineCoordinator {
          refinerProvider: @escaping @MainActor @Sendable () -> (refiner: TextRefiner, style: Style),
          injector: Injecting,
          language: String = "pt",
-         initialPromptProvider: @escaping @Sendable () -> String? = { nil }) {
+         initialPromptProvider: @escaping @MainActor @Sendable () -> String? = { nil }) {
         self.audio = audio
         self.transcriber = transcriber
         self.refinerProvider = refinerProvider
@@ -137,7 +137,7 @@ actor PipelineCoordinator {
             let raw = try await transcriber.transcribe(
                 buffer: buffer,
                 language: language,
-                initialPrompt: initialPromptProvider()
+                initialPrompt: await initialPromptProvider()
             )
             FileHandle.standardError.write(Data("[pipeline] transcribed: '\(raw)'\n".utf8))
             let (refiner, style) = await refinerProvider()
