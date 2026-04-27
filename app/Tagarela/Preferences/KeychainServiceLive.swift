@@ -2,13 +2,19 @@ import Foundation
 import Security
 
 /// Wrapper around Security.framework for `account: "openai-api-key"` in service "com.tagarela".
+/// Defaults to production coordinates; init parameters allow tests to use distinct service/account.
 final class KeychainServiceLive: KeychainService, @unchecked Sendable {
-    private let service = "com.tagarela"
-    private let account = "openai-api-key"
+    private let service: String
+    private let account: String
     private let access = kSecAttrAccessibleAfterFirstUnlock
 
+    init(service: String = "com.tagarela", account: String = "openai-api-key") {
+        self.service = service
+        self.account = account
+    }
+
     func openAIKey() throws -> String? {
-        var query: [String: Any] = [
+        let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecAttrAccount as String: account,

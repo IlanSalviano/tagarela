@@ -19,9 +19,12 @@ final class KeychainServiceTests: XCTestCase {
         XCTAssertNil(try svc.openAIKey())
     }
 
-    /// Smoke test on real Keychain. Cleans up in defer.
+    /// Smoke test on real Keychain, isolated in distinct service/account.
+    /// Uses com.tagarela.tests/openai-api-key-smoke to avoid touching production key.
     func test_live_setAndGet_smoke() throws {
-        let live = KeychainServiceLive()
+        let live = KeychainServiceLive(
+            service: "com.tagarela.tests",
+            account: "openai-api-key-smoke")
         try live.setOpenAIKey("sk-tagarela-test")
         defer { _ = try? live.setOpenAIKey(nil) }
         XCTAssertEqual(try live.openAIKey(), "sk-tagarela-test")

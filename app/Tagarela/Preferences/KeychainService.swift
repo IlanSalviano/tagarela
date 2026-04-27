@@ -10,7 +10,9 @@ enum KeychainError: Error, Equatable {
     case invalidEncoding
 }
 
+#if DEBUG
 /// Fake in-memory for tests. Never touches real Keychain.
+/// Compiled only in DEBUG — not included in release binary.
 final class FakeKeychainService: KeychainService, @unchecked Sendable {
     private let lock = NSLock()
     private var stored: String?
@@ -29,3 +31,4 @@ final class FakeKeychainService: KeychainService, @unchecked Sendable {
         stored = key
     }
 }
+#endif
