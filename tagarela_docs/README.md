@@ -15,12 +15,11 @@ _(a preencher)_ — objetivos, escopo, não-objetivos, persona alvo.
 _(a preencher)_ — análise do Wispr Flow, alternativas, decisões de paridade.
 
 ### 02 — Arquitetura
+- [`01-modulos-fase1.md`](./02-arquitetura/01-modulos-fase1.md) — snapshot dos módulos implementados na Fase 1, divergências do plano, cobertura de testes, escopo das próximas fases.
 - [`02-stack-tecnica.md`](./02-arquitetura/02-stack-tecnica.md) — versões reais (Xcode/Swift/macOS), uso de xcodegen como fonte da verdade do projeto, dependências SPM (WhisperKit), fontes empacotadas, capabilities.
 
-_(a preencher)_ — módulos, fluxo de áudio → texto → injeção.
-
 ### 03 — Funcionalidades
-_(a preencher)_ — spec por funcionalidade.
+- [`checklists/fase1-manual.md`](./03-funcionalidades/checklists/fase1-manual.md) — checklist manual de aceite da Fase 1 (onboarding, status bar, pipeline, apps de injeção, edge cases, performance).
 
 ### 04 — Decisões (ADRs)
 - [`ADR-0001-sistema-visual.md`](./04-decisoes/ADR-0001-sistema-visual.md) — sistema visual, identidade, indicador default da v1, mudanças de escopo aceitas/recusadas.
