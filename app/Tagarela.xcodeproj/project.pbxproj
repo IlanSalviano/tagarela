@@ -22,6 +22,7 @@
 		2D97B18192853DDAD3D9B1BA /* BaseRemoteRefiner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A59F19659834D5E938C47A07 /* BaseRemoteRefiner.swift */; };
 		325F4003CED9799250EB2986 /* Hotkey.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF97A9FF6E8F2B8D5CF07039 /* Hotkey.swift */; };
 		327A5BAAF5D214FF4EE829B2 /* OnboardPerms.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0623A21CF9D908E558777F2 /* OnboardPerms.swift */; };
+		3299D0D234F2D399EF5F990F /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = D38647B7FE551CF75D0C0D04 /* Localizable.strings */; };
 		32C9E0DC25051DCB371D8041 /* DefaultVocabulary.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDC8ADE91AFA6BD9D11E690E /* DefaultVocabulary.swift */; };
 		33A946A20B32ADDDD2037F0E /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DB6FB551445042E1DC287A5 /* KeychainService.swift */; };
 		3A8FDD7D2A62358C77D79CD5 /* TokenCounter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D403F8BAFCB53E3F2460AF6 /* TokenCounter.swift */; };
@@ -103,6 +104,7 @@
 		1E3AF30F1AE5DEAA3522590D /* InjectorLive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InjectorLive.swift; sourceTree = "<group>"; };
 		1E6F51C94A5B358ED2DB0CBD /* IndicatorPill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndicatorPill.swift; sourceTree = "<group>"; };
 		265CDA7DE0CCADB7E45F98EA /* FloatingIndicatorPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingIndicatorPanel.swift; sourceTree = "<group>"; };
+		2FC6EF683588FB78503E090B /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		33F19FE89DB89426AFE260B8 /* WaveBars.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveBars.swift; sourceTree = "<group>"; };
 		34D03471F0F19E467A741ED6 /* HistoryStoreLive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryStoreLive.swift; sourceTree = "<group>"; };
 		3ED9DDFE385D1F49BF9DC9B6 /* TokenCounterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenCounterTests.swift; sourceTree = "<group>"; };
@@ -424,6 +426,7 @@
 		EC02A19E2C196B33EA8A224B /* Localization */ = {
 			isa = PBXGroup;
 			children = (
+				D38647B7FE551CF75D0C0D04 /* Localizable.strings */,
 			);
 			path = Localization;
 			sourceTree = "<group>";
@@ -528,6 +531,7 @@
 			files = (
 				D44AC44AFA2D08CC9A8111F5 /* Assets.xcassets in Resources */,
 				9A2E1526631AFFE17EE3BDE4 /* Fonts in Resources */,
+				3299D0D234F2D399EF5F990F /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -630,6 +634,17 @@
 			targetProxy = ED17C0C9293BCA0629C33DA6 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		D38647B7FE551CF75D0C0D04 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				2FC6EF683588FB78503E090B /* pt-BR */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		119899E53EABE37EE3B92225 /* Release */ = {
