@@ -17,5 +17,14 @@ struct TagarelaApp: App {
             }
         }
         .menuBarExtraStyle(.window)
+
+        WindowGroup("tagarela — bem-vindo", id: "onboarding") {
+            if container.showOnboarding {
+                OnboardingWindow(onFinish: { container.finishOnboarding() })
+                    .environmentObject(container.onboarding)
+            }
+        }
+        .windowStyle(.hiddenTitleBar)
+        .defaultSize(width: 560, height: 560)
     }
 }
