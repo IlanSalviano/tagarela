@@ -10,6 +10,7 @@
 		0625471C404A22DE5A3040A3 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92947106E01306287DDA490B /* DesignSystem.swift */; };
 		0964F026A977BF3A0908601E /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = 8D6A99642A3EA77F647F3C1E /* WhisperKit */; };
 		325F4003CED9799250EB2986 /* Hotkey.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF97A9FF6E8F2B8D5CF07039 /* Hotkey.swift */; };
+		7906156A7FDCB39A8CD1EEF2 /* HotkeyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48A38EEE3C74B26A58569FDF /* HotkeyService.swift */; };
 		8DB6F64CD8DA02B106FCAB21 /* TagarelaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AA232DBB32229FCAA0AC660 /* TagarelaApp.swift */; };
 		924C7046FF921B54AFD98EC4 /* HotkeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546B9E9134BAAF0569059D02 /* HotkeyTests.swift */; };
 		9A2E1526631AFFE17EE3BDE4 /* Fonts in Resources */ = {isa = PBXBuildFile; fileRef = F12ABBA517752A7E8B23895F /* Fonts */; };
@@ -32,6 +33,7 @@
 
 /* Begin PBXFileReference section */
 		0B2194D608A5F68AEE4F7C69 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		48A38EEE3C74B26A58569FDF /* HotkeyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyService.swift; sourceTree = "<group>"; };
 		546B9E9134BAAF0569059D02 /* HotkeyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyTests.swift; sourceTree = "<group>"; };
 		64EB8767875513C5CBD96EB7 /* Glyph.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Glyph.swift; sourceTree = "<group>"; };
 		6AA232DBB32229FCAA0AC660 /* TagarelaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagarelaApp.swift; sourceTree = "<group>"; };
@@ -149,6 +151,7 @@
 			isa = PBXGroup;
 			children = (
 				FF97A9FF6E8F2B8D5CF07039 /* Hotkey.swift */,
+				48A38EEE3C74B26A58569FDF /* HotkeyService.swift */,
 			);
 			path = Hotkey;
 			sourceTree = "<group>";
@@ -319,6 +322,7 @@
 				0625471C404A22DE5A3040A3 /* DesignSystem.swift in Sources */,
 				F8FBCE0B00B117991617F4EB /* Glyph.swift in Sources */,
 				325F4003CED9799250EB2986 /* Hotkey.swift in Sources */,
+				7906156A7FDCB39A8CD1EEF2 /* HotkeyService.swift in Sources */,
 				8DB6F64CD8DA02B106FCAB21 /* TagarelaApp.swift in Sources */,
 				B6AC8D77746DD364C1D83E4A /* Wordmark.swift in Sources */,
 			);
