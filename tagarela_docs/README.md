@@ -20,6 +20,7 @@ _(a preencher)_ — análise do Wispr Flow, alternativas, decisões de paridade.
 
 ### 03 — Funcionalidades
 - [`checklists/fase1-manual.md`](./03-funcionalidades/checklists/fase1-manual.md) — checklist manual de aceite da Fase 1 (onboarding, status bar, pipeline, apps de injeção, edge cases, performance).
+- [`checklists/fase2-diagnostico-asr.md`](./03-funcionalidades/checklists/fase2-diagnostico-asr.md) — diagnóstico ASR pré-Fase 2: dump WAV+TXT por captura, 5 frases-teste pra isolar inversão de sentido (sinal vs modelo vs prompt).
 
 ### 04 — Decisões (ADRs)
 - [`ADR-0001-sistema-visual.md`](./04-decisoes/ADR-0001-sistema-visual.md) — sistema visual, identidade, indicador default da v1, mudanças de escopo aceitas/recusadas.

@@ -5,7 +5,9 @@ final class AudioCaptureLive: AudioCapturing, @unchecked Sendable {
     private let logger = Logger(subsystem: "com.tagarela", category: "Audio")
     private let engine = AVAudioEngine()
     private var captureFormat: AVAudioFormat?
-    private var collected: [Float] = []
+    /// Um array por canal — cada callback do tap concatena seus N samples
+    /// no array do canal correspondente. Mantém a ordem temporal por canal.
+    private var channelBuffers: [[Float]] = []
     private(set) var isRecording: Bool = false
 
     nonisolated(unsafe) private var levelContinuation: AsyncStream<Double>.Continuation?
@@ -23,9 +25,10 @@ final class AudioCaptureLive: AudioCapturing, @unchecked Sendable {
         if mic == .denied {
             throw AudioCaptureError.microphoneDenied
         }
-        collected.removeAll()
+        channelBuffers.removeAll()
         let input = engine.inputNode
         let inFormat = input.outputFormat(forBus: 0)
+        channelBuffers = Array(repeating: [], count: Int(inFormat.channelCount))
         FileHandle.standardError.write(Data("[audio] inFormat sampleRate=\(inFormat.sampleRate) channels=\(inFormat.channelCount)\n".utf8))
         if inFormat.sampleRate == 0 || inFormat.channelCount == 0 {
             FileHandle.standardError.write(Data("[audio] inputNode sem formato — provavelmente sem permissão de mic\n".utf8))
@@ -58,19 +61,20 @@ final class AudioCaptureLive: AudioCapturing, @unchecked Sendable {
         engine.inputNode.removeTap(onBus: 0)
         engine.stop()
         isRecording = false
-        let raw = collected
-        collected.removeAll()
+        let perChannel = channelBuffers
+        channelBuffers.removeAll()
         guard let inFormat = captureFormat else {
             FileHandle.standardError.write(Data("[audio] stop sem captureFormat\n".utf8))
             return AudioBuffer(samples: [], sampleRate: 16_000)
         }
-        let resampled = downmixAndResample(raw, from: inFormat)
+        let resampled = downmixAndResample(perChannel: perChannel, from: inFormat)
         let boosted = boostPeakNormalize(resampled)
         var rawPeak: Float = 0
         for s in resampled { let a = abs(s); if a > rawPeak { rawPeak = a } }
         var newPeak: Float = 0
         for s in boosted { let a = abs(s); if a > newPeak { newPeak = a } }
-        FileHandle.standardError.write(Data("[audio] stop: raw=\(raw.count) samples (\(inFormat.sampleRate)Hz, \(inFormat.channelCount)ch) → resampled=\(resampled.count) (16kHz mono) peak before=\(rawPeak) after=\(newPeak)\n".utf8))
+        let totalRaw = perChannel.reduce(0) { $0 + $1.count }
+        FileHandle.standardError.write(Data("[audio] stop: raw=\(totalRaw) samples (\(inFormat.sampleRate)Hz, \(inFormat.channelCount)ch) → resampled=\(resampled.count) (16kHz mono) peak before=\(rawPeak) after=\(newPeak)\n".utf8))
         return AudioBuffer(samples: boosted, sampleRate: 16_000)
     }
 
@@ -94,17 +98,16 @@ final class AudioCaptureLive: AudioCapturing, @unchecked Sendable {
 
     /// Mixa múltiplos canais (mean) e resampla via interpolação linear pra 16kHz.
     /// Suficiente pra Whisper; alternativa séria seria AVAudioConverter offline.
-    private func downmixAndResample(_ raw: [Float], from format: AVAudioFormat) -> [Float] {
-        let channels = Int(format.channelCount)
-        guard channels > 0, !raw.isEmpty else { return [] }
-        // raw está em ordem deinterleaved (canal 0 todo, depois canal 1, etc) por causa
-        // do append(buffer:) que copia floatChannelData[i]. Vide append().
-        let samplesPerChannel = raw.count / channels
+    private func downmixAndResample(perChannel: [[Float]], from format: AVAudioFormat) -> [Float] {
+        let channels = perChannel.count
+        guard channels > 0 else { return [] }
+        let samplesPerChannel = perChannel.map(\.count).min() ?? 0
+        guard samplesPerChannel > 0 else { return [] }
         var mono = [Float](repeating: 0, count: samplesPerChannel)
         for c in 0..<channels {
-            let base = c * samplesPerChannel
+            let buf = perChannel[c]
             for i in 0..<samplesPerChannel {
-                mono[i] += raw[base + i]
+                mono[i] += buf[i]
             }
         }
         let inv = 1.0 / Float(channels)
@@ -129,17 +132,20 @@ final class AudioCaptureLive: AudioCapturing, @unchecked Sendable {
         return resampled
     }
 
-    /// Append raw samples no formato nativo do device. Stereo deinterleaved,
+    /// Append raw samples no formato nativo do device. Cada canal acumula
+    /// seus samples num array próprio, preservando ordem temporal —
     /// downmix + resample acontecem no stop().
     private func append(buffer: AVAudioPCMBuffer) {
         guard let channelData = buffer.floatChannelData else { return }
         let n = Int(buffer.frameLength)
         let channels = Int(buffer.format.channelCount)
-        // Coletamos por canal: bloco de canal 0, depois canal 1, etc.
-        // (Não interleavar — assim o downmix no stop() é simples.)
+        if channelBuffers.count < channels {
+            channelBuffers.append(contentsOf:
+                Array(repeating: [Float](), count: channels - channelBuffers.count))
+        }
         for c in 0..<channels {
             let ptr = channelData[c]
-            collected.append(contentsOf: UnsafeBufferPointer(start: ptr, count: n))
+            channelBuffers[c].append(contentsOf: UnsafeBufferPointer(start: ptr, count: n))
         }
 
         // Calcula nível (RMS) só do canal 0 (mais barato)

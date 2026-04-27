@@ -66,9 +66,11 @@ Isso resolve o problema imediato de "Whisper transcreve só `...` porque áudio 
 
 O design original (e o snippet do plano) usava `AVAudioConverter` em modo streaming dentro de `installTap` callback — converter de 48kHz stereo pra 16kHz mono frame-a-frame conforme buffers chegavam. **No macOS 26 com Apple Development sign + Logitech C920**, esse converter só processava o primeiro buffer; os demais caíam em `endOfStream` silenciosamente. Resultado: 6+ segundos de fala produziam 0.1s de áudio.
 
-Workaround atual: tap agora copia raw samples por canal (deinterleaved), e `stop()` faz downmix manual (mean dos canais) + resampling (interpolação linear) em batch. Funciona mas não é a abordagem canônica.
+Workaround atual: tap acumula um array de samples por canal (`channelBuffers: [[Float]]`), e `stop()` faz downmix manual (mean dos canais) + resampling (interpolação linear) em batch. Funciona mas não é a abordagem canônica.
 
-**Critério de aceite:** investigar se o problema é específico do C920 ou geral. Testar com mic interno em outro Mac. Se for específico do device, manter o workaround com nota inline. Se geral, abrir issue/relatório no WhisperKit ou achar a forma correta de usar `AVAudioConverter` streaming.
+**Bug histórico do workaround (resolvido em 2026-04-27, pré-Fase 2):** a versão inicial usava um único `[Float]` linear (`collected`) e o `append` empilhava `c0_n + c1_n + c0_n + c1_n + ...` por callback, mas o downmix dividia `raw.count / channels` e tratava a primeira metade como canal 0 inteiro. Resultado: o sinal era somado consigo mesmo deslocado por metade da gravação — frases > 1 buffer saíam do Whisper com palavras certas em ordem embaralhada e repetições ("vai para a produção, eles deploy, não vai" para "esse deploy não vai pra produção"). Detectado via dump WAV+TXT do checklist [`fase2-diagnostico-asr.md`](../03-funcionalidades/checklists/fase2-diagnostico-asr.md). Fix: trocar para `channelBuffers: [[Float]]` e fazer downmix por canal preservando ordem temporal. Validado pós-fix com 5/5 frases-teste fiéis.
+
+**Critério de aceite:** investigar se o problema do `AVAudioConverter` streaming é específico do C920 ou geral. Testar com mic interno em outro Mac. Se for específico do device, manter o workaround com nota inline. Se geral, abrir issue/relatório no WhisperKit ou achar a forma correta de usar `AVAudioConverter` streaming.
 
 ## 6. Permissões TCC injetadas manualmente via SQLite
 
