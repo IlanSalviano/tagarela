@@ -3,7 +3,8 @@ import SwiftUI
 struct MenuBarContent: View {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var prefs: PreferencesStore
-    var onConfigureOpenAIKey: () -> Void = {}
+    var onSelectOpenAINeedsKey: () -> Void = {}
+    var onExplicitConfigureKey: () -> Void = {}
 
     var body: some View {
         VStack(spacing: 0) {
@@ -23,7 +24,9 @@ struct MenuBarContent: View {
 
             Divider().background(DS.Color.hairline)
 
-            BackendSubmenu(prefs: prefs, onConfigureKey: onConfigureOpenAIKey)
+            BackendSubmenu(prefs: prefs,
+                           onSelectOpenAINeedsKey: onSelectOpenAINeedsKey,
+                           onExplicitConfigureKey: onExplicitConfigureKey)
 
             Divider().background(DS.Color.hairline)
             Button(action: { NSApp.terminate(nil) }) {

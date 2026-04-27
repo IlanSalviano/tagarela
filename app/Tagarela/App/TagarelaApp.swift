@@ -6,10 +6,31 @@ struct TagarelaApp: App {
 
     var body: some Scene {
         MenuBarExtra {
-            MenuBarContent(onConfigureOpenAIKey: {
-                // Tarefa 12 vai conectar a modal real. Por ora apenas log.
-                NSLog("[tagarela] onConfigureOpenAIKey stub (Tarefa 11) — modal vem na Tarefa 12")
-            })
+            MenuBarContent(
+                onSelectOpenAINeedsKey: { [container] in
+                    Task { @MainActor in
+                        let hasKey: Bool
+                        do {
+                            hasKey = (try container.keychain.openAIKey()).map { !$0.isEmpty } ?? false
+                        } catch {
+                            hasKey = false
+                        }
+                        guard !hasKey else { return }
+                        // Captura valor anterior pra rollback em cancel.
+                        // Aqui, o user JÁ trocou pra .openai (decisão do BackendSubmenu);
+                        // se cancelar, revert pra .none.
+                        container.keyPromptWindow.onCancel = {
+                            container.prefs.refinerKind = .none
+                        }
+                        container.keyPromptWindow.onSaved = {}
+                        container.keyPromptWindow.show()
+                    }
+                },
+                onExplicitConfigureKey: { [container] in
+                    container.keyPromptWindow.onCancel = {}  // sem rollback no caminho explícito
+                    container.keyPromptWindow.onSaved = {}
+                    container.keyPromptWindow.show()
+                })
             .environmentObject(container.appState)
             .environmentObject(container.prefs)
         } label: {

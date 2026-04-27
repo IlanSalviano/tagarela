@@ -20,6 +20,7 @@ final class AppContainer: ObservableObject {
     let onboarding: OnboardingCoordinator
     let indicatorPanel = FloatingIndicatorPanel()
     let historyStore: HistoryStore
+    let keyPromptWindow: OpenAIKeyPromptWindow
     private var cancellables: Set<AnyCancellable> = []
 
     @Published var showOnboarding: Bool
@@ -66,6 +67,8 @@ final class AppContainer: ObservableObject {
 
         let historyStore: HistoryStore = (try? HistoryStoreLive()) ?? HistoryStoreNoop()
 
+        let keyPromptWindow = OpenAIKeyPromptWindow(keychain: keychain)
+
         self.permissions = permissions
         self.transcriber = transcriber
         self.audio = audio
@@ -76,6 +79,7 @@ final class AppContainer: ObservableObject {
         self.refinerFactory = factory
         self.hotkeyService = hotkeyService
         self.historyStore = historyStore
+        self.keyPromptWindow = keyPromptWindow
         self.pipeline = PipelineCoordinator(
             audio: audio,
             transcriber: transcriber,

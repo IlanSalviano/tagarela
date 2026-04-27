@@ -2,16 +2,23 @@ import SwiftUI
 
 struct BackendSubmenu: View {
     @ObservedObject var prefs: PreferencesStore
-    /// Triggar abertura do modal de API key (vem do AppContainer via TagarelaApp).
-    /// Na Tarefa 11 stub apenas loga; Tarefa 12 implementa a modal real.
-    var onConfigureKey: () -> Void
+    /// Disparado quando user seleciona OpenAI no submenu E a key ainda não está cadastrada.
+    /// O caller decide se abre modal e/ou reverte refinerKind se cancelar.
+    var onSelectOpenAINeedsKey: () -> Void
+    /// Disparado pelo item explícito "Configurar API key da OpenAI…" — sempre abre modal.
+    var onExplicitConfigureKey: () -> Void
 
     var body: some View {
         Menu {
             ForEach(RefinerKind.allCases, id: \.self) { kind in
                 Button {
+                    let previous = prefs.refinerKind
                     prefs.refinerKind = kind
-                    if kind == .openai { onConfigureKey() }
+                    if kind == .openai {
+                        // O caller checa Keychain. Se vazio → onSelectOpenAINeedsKey + revert se cancelar.
+                        onSelectOpenAINeedsKey()
+                        _ = previous // captured pra eventual rollback no caller
+                    }
                 } label: {
                     HStack {
                         Text(label(for: kind))
@@ -24,7 +31,7 @@ struct BackendSubmenu: View {
             Button(NSLocalizedString("menubar.configure.openaikey",
                                      value: "Configurar API key da OpenAI…",
                                      comment: "")) {
-                onConfigureKey()
+                onExplicitConfigureKey()
             }
         } label: {
             HStack {

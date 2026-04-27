@@ -2520,7 +2520,7 @@ git commit -m "feat(ui): BackendSubmenu radio na status bar"
 - Create: `app/Tagarela/UI/Onboarding/OpenAIKeyPromptWindow.swift`
 - Modify: `app/Tagarela/App/AppContainer.swift`
 
-- [ ] **Step 12.1: Escrever `OpenAIKeyPromptWindow.swift`.**
+- [x] **Step 12.1: Escrever `OpenAIKeyPromptWindow.swift`.**
 
 ```swift
 import AppKit
@@ -2616,7 +2616,7 @@ private struct OpenAIKeyPromptView: View {
 }
 ```
 
-- [ ] **Step 12.2: Wire-up no `AppContainer`.**
+- [x] **Step 12.2: Wire-up no `AppContainer`.**
 
 ```swift
 let keyPromptWindow = OpenAIKeyPromptWindow(keychain: keychain)
@@ -2658,7 +2658,7 @@ let bridgedConfigure: () -> Void = {
 > }
 > ```
 
-- [ ] **Step 12.3: Build + manual.**
+- [x] **Step 12.3: Build + manual.**
 
 Manual:
 1. Apagar key atual: `security delete-generic-password -s com.tagarela -a openai-api-key 2>/dev/null || true`.
@@ -2668,7 +2668,7 @@ Manual:
 5. Verificar key gravada: `security find-generic-password -s com.tagarela -a openai-api-key -w`.
 6. Próxima captura usa OpenAI.
 
-- [ ] **Step 12.4: Commit.**
+- [x] **Step 12.4: Commit.**
 
 ```bash
 cd /Users/tars/Dev/tagarela
