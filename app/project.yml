@@ -48,7 +48,10 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.tagarela.Tagarela
         INFOPLIST_FILE: Tagarela/Resources/Info.plist
         CODE_SIGN_ENTITLEMENTS: Tagarela/Resources/Tagarela.entitlements
-        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "78C7C6375957D553AD632832D0821B446F53D0F3"
+        DEVELOPMENT_TEAM: BCM26K6YNA
+        PROVISIONING_PROFILE_SPECIFIER: ""
         COMBINE_HIDPI_IMAGES: YES
         ENABLE_PREVIEWS: YES
         LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/../Frameworks"

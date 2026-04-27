@@ -44,7 +44,7 @@ final class AppContainer: ObservableObject {
         wirePermissionsToAppState()
 
         if !showOnboarding {
-            try? hotkeyService.start()
+            startHotkeyServiceLogging()
             Task { try? await transcriber.loadModel("large-v3") { _ in } }
         }
     }
@@ -52,7 +52,18 @@ final class AppContainer: ObservableObject {
     func finishOnboarding() {
         UserDefaults.standard.set(true, forKey: "onboardingCompleted")
         showOnboarding = false
-        try? hotkeyService.start()
+        startHotkeyServiceLogging()
+    }
+
+    private func startHotkeyServiceLogging() {
+        do {
+            try hotkeyService.start()
+            FileHandle.standardError.write(Data("[app] hotkey service started OK\n".utf8))
+            Logger.tagarela.info("hotkey service started")
+        } catch {
+            FileHandle.standardError.write(Data("[app] hotkey service FALHOU: \(String(describing: error))\n".utf8))
+            Logger.tagarela.error("hotkey service falhou ao iniciar: \(String(describing: error), privacy: .public)")
+        }
     }
 
     private func wireHotkeyToPipeline() {
@@ -60,6 +71,8 @@ final class AppContainer: ObservableObject {
         let pipeline = self.pipeline
         Task {
             for await event in stream {
+                FileHandle.standardError.write(Data("[app] hotkey event consumido: \(event)\n".utf8))
+                Logger.tagarela.info("hotkey event recebido: \(String(describing: event), privacy: .public)")
                 let pipelineEvent: PipelineEvent = (event == .toggle) ? .toggle : .cancel
                 await pipeline.handle(pipelineEvent)
             }
