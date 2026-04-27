@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0964F026A977BF3A0908601E /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = 8D6A99642A3EA77F647F3C1E /* WhisperKit */; };
 		1266E876E10A7032C3644712 /* PlaceholderTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 145543436E1B5A55B6517D3A /* PlaceholderTest.swift */; };
 		8DB6F64CD8DA02B106FCAB21 /* TagarelaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AA232DBB32229FCAA0AC660 /* TagarelaApp.swift */; };
 		D44AC44AFA2D08CC9A8111F5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0B2194D608A5F68AEE4F7C69 /* Assets.xcassets */; };
@@ -29,6 +30,17 @@
 		727AD7A472BE6C196EAA6002 /* TagarelaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TagarelaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		885C3426FB83B9F0218878A7 /* Tagarela.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tagarela.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		46BEB3788E30904B0DBB3C2F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0964F026A977BF3A0908601E /* WhisperKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		090FB7B260CCDD4877771BF4 /* Audio */ = {
@@ -221,6 +233,7 @@
 			buildPhases = (
 				76EAAA64F7260B6E48E6B46F /* Sources */,
 				F551D526B7AB8965C69D84ED /* Resources */,
+				46BEB3788E30904B0DBB3C2F /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -228,6 +241,7 @@
 			);
 			name = Tagarela;
 			packageProductDependencies = (
+				8D6A99642A3EA77F647F3C1E /* WhisperKit */,
 			);
 			productName = Tagarela;
 			productReference = 885C3426FB83B9F0218878A7 /* Tagarela.app */;
@@ -256,6 +270,9 @@
 			);
 			mainGroup = 74B774DA6C4E46BF70A58CD2;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				9C120ED6D13C558C16BCAE12 /* XCRemoteSwiftPackageReference "WhisperKit" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 42E6ED781F6A168E03C6BEEF /* Products */;
 			projectDirPath = "";
@@ -532,6 +549,25 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		9C120ED6D13C558C16BCAE12 /* XCRemoteSwiftPackageReference "WhisperKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/argmaxinc/WhisperKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		8D6A99642A3EA77F647F3C1E /* WhisperKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9C120ED6D13C558C16BCAE12 /* XCRemoteSwiftPackageReference "WhisperKit" */;
+			productName = WhisperKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 121CAA2F3752A009A7BEB1F6 /* Project object */;
 }
