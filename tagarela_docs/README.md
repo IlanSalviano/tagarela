@@ -15,7 +15,9 @@ _(a preencher)_ — objetivos, escopo, não-objetivos, persona alvo.
 _(a preencher)_ — análise do Wispr Flow, alternativas, decisões de paridade.
 
 ### 02 — Arquitetura
-_(a preencher)_ — stack, módulos, fluxo de áudio → texto → injeção.
+- [`02-stack-tecnica.md`](./02-arquitetura/02-stack-tecnica.md) — versões reais (Xcode/Swift/macOS), uso de xcodegen como fonte da verdade do projeto, dependências SPM (WhisperKit), fontes empacotadas, capabilities.
+
+_(a preencher)_ — módulos, fluxo de áudio → texto → injeção.
 
 ### 03 — Funcionalidades
 _(a preencher)_ — spec por funcionalidade.
