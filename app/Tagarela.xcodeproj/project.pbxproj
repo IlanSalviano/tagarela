@@ -20,6 +20,7 @@
 		BCB225735DFBEC1134C71F0C /* InstrumentSerif-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EEE4F0AB792EE7143DA6AE7F /* InstrumentSerif-Italic.ttf */; };
 		C00F9C6F0209159410F49616 /* InterTight-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 76083F7AF222D9E32009AB08 /* InterTight-Regular.ttf */; };
 		D44AC44AFA2D08CC9A8111F5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0B2194D608A5F68AEE4F7C69 /* Assets.xcassets */; };
+		F8FBCE0B00B117991617F4EB /* Glyph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64EB8767875513C5CBD96EB7 /* Glyph.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,6 +39,7 @@
 		1B61A447374B82B8B58224C6 /* JetBrainsMono-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "JetBrainsMono-Medium.ttf"; sourceTree = "<group>"; };
 		4F0115B38FDFD85101BAE219 /* InterTight-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "InterTight-SemiBold.ttf"; sourceTree = "<group>"; };
 		5AD9D3ACA4955C722E7F8963 /* JetBrainsMono-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "JetBrainsMono-Regular.ttf"; sourceTree = "<group>"; };
+		64EB8767875513C5CBD96EB7 /* Glyph.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Glyph.swift; sourceTree = "<group>"; };
 		6AA232DBB32229FCAA0AC660 /* TagarelaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagarelaApp.swift; sourceTree = "<group>"; };
 		727AD7A472BE6C196EAA6002 /* TagarelaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TagarelaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		76083F7AF222D9E32009AB08 /* InterTight-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "InterTight-Regular.ttf"; sourceTree = "<group>"; };
@@ -183,6 +185,7 @@
 			isa = PBXGroup;
 			children = (
 				92947106E01306287DDA490B /* DesignSystem.swift */,
+				64EB8767875513C5CBD96EB7 /* Glyph.swift */,
 				CDA671BF3E800969A73A8EF5 /* Wordmark.swift */,
 			);
 			path = Design;
@@ -335,6 +338,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0625471C404A22DE5A3040A3 /* DesignSystem.swift in Sources */,
+				F8FBCE0B00B117991617F4EB /* Glyph.swift in Sources */,
 				8DB6F64CD8DA02B106FCAB21 /* TagarelaApp.swift in Sources */,
 				B6AC8D77746DD364C1D83E4A /* Wordmark.swift in Sources */,
 			);
