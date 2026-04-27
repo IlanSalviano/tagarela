@@ -106,6 +106,10 @@ Qualidade de transcrição depende de input volume + ambiente — peak normalize
 | HistoryStoreLive | `History/HistoryStoreLive.swift` | SwiftData impl (~/Library/Application Support/com.tagarela.Tagarela/History.store) |
 | HistoryStoreNoop | `History/HistoryStoreNoop.swift` | Fallback quando ModelContainer falha ao abrir |
 | Transcription | `History/Transcription.swift` | @Model SwiftData (10 campos: id, createdAt, duração, rawText, refinedText, refinerKind, llmModelName, whisperModelName, styleName, frontmostAppBundleID) |
+| BackendSubmenu | `UI/MenuBar/BackendSubmenu.swift` | Submenu "Backend ▸" na status bar (Sem LLM / Ollama / OpenAI) com trigger de modal de key |
+| StyleSubmenu | `UI/MenuBar/StyleSubmenu.swift` | Submenu "Estilo ▸" na status bar com os 4 estilos built-in |
+| OpenAIKeyPromptWindow | `UI/OpenAIKeyPromptWindow.swift` | NSPanel modal pra cadastro/troca da API key da OpenAI |
+| DefaultVocabulary | `Transcription/DefaultVocabulary.swift` | ~50 termos hardcoded (nomes técnicos, regionalismos) passados como initialPrompt pra Whisper |
 
 ### HistoryStore — comportamento de retenção
 
