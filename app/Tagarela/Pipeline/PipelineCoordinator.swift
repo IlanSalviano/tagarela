@@ -5,7 +5,7 @@ actor PipelineCoordinator {
     private let logger = Logger(subsystem: "com.tagarela", category: "Pipeline")
     private let audio: AudioCapturing
     private let transcriber: Transcribing
-    private let refiner: TextRefiner
+    private let refinerProvider: @MainActor @Sendable () -> (refiner: TextRefiner, style: Style)
     private let injector: Injecting
     private let language: String
     private let initialPromptProvider: @Sendable () -> String?
@@ -20,13 +20,13 @@ actor PipelineCoordinator {
 
     init(audio: AudioCapturing,
          transcriber: Transcribing,
-         refiner: TextRefiner,
+         refinerProvider: @escaping @MainActor @Sendable () -> (refiner: TextRefiner, style: Style),
          injector: Injecting,
          language: String = "pt",
          initialPromptProvider: @escaping @Sendable () -> String? = { nil }) {
         self.audio = audio
         self.transcriber = transcriber
-        self.refiner = refiner
+        self.refinerProvider = refinerProvider
         self.injector = injector
         self.language = language
         self.initialPromptProvider = initialPromptProvider
@@ -141,8 +141,23 @@ actor PipelineCoordinator {
             )
             FileHandle.standardError.write(Data("[pipeline] transcribed: '\(raw)'\n".utf8))
             setState(.refining)
-            let refined = try await refiner.refine(raw, style: BuiltInStyles.conversaInformal)
-            FileHandle.standardError.write(Data("[pipeline] injecting\n".utf8))
+            let (refiner, style) = await refinerProvider()
+            let actualRefinerKind: RefinerKind
+            let refined: String
+            do {
+                refined = try await refiner.refine(raw, style: style)
+                actualRefinerKind = refiner.kind
+            } catch RefinerError.cancelled {
+                // Cancelamento real: aborta sem fallback nem inject
+                FileHandle.standardError.write(Data("[pipeline] refiner cancelled\n".utf8))
+                setState(.idle); return
+            } catch {
+                logger.error("refiner failed (\(refiner.kind.rawValue)): \(String(describing: error))")
+                let identityFallback = IdentityRefiner()
+                refined = (try? await identityFallback.refine(raw, style: style)) ?? raw
+                actualRefinerKind = identityFallback.kind
+            }
+            FileHandle.standardError.write(Data("[pipeline] injecting (kind=\(actualRefinerKind.rawValue))\n".utf8))
             let frontApp = try await injector.inject(text: refined)
             FileHandle.standardError.write(Data("[pipeline] injected to \(frontApp ?? "?")\n".utf8))
             continuation?.yield(.finished(rawText: raw,

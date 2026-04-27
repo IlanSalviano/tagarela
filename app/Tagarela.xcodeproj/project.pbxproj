@@ -43,6 +43,7 @@
 		83CFA88301F2CAAEDD3F881C /* OnboardWelcome.swift in Sources */ = {isa = PBXBuildFile; fileRef = AED216601F513596143B776B /* OnboardWelcome.swift */; };
 		84F54E14BCFD60F0E854ECB3 /* RefinerError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BEFD414690FBE88FE9E33AF /* RefinerError.swift */; };
 		89A04ABA6F671B1B26204D1E /* IdentityRefinerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C746B068BBCF245665858B64 /* IdentityRefinerTests.swift */; };
+		8BFAF3788331C033B5F8EC16 /* RefinerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8642522EEA745BE571EDCCC5 /* RefinerFactory.swift */; };
 		8DB6F64CD8DA02B106FCAB21 /* TagarelaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AA232DBB32229FCAA0AC660 /* TagarelaApp.swift */; };
 		8FECD110F77CE391093D0C4E /* StyleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E9B177C502566925C655290 /* StyleTests.swift */; };
 		907E2E4EBC4A1C27D3448DB5 /* InjectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8CECA9E4C80A61C089E6870 /* InjectorTests.swift */; };
@@ -59,6 +60,7 @@
 		A723F99CF516D9C1904D9B08 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E67AC40A1677F04D206698D8 /* AppState.swift */; };
 		B6AC8D77746DD364C1D83E4A /* Wordmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA671BF3E800969A73A8EF5 /* Wordmark.swift */; };
 		B921AB0B66E9A5FBEC9EBFD1 /* AppContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1A68A34868B4B17F0CD95D4 /* AppContainer.swift */; };
+		BD64F87722132F46B9A177A1 /* RefinerFactoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08409FB81EE882100E04E4CF /* RefinerFactoryTests.swift */; };
 		C089BEDAD880AE8AE873E943 /* WhisperKitTranscriber.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4BE45043CF12FBE67AE1DBD /* WhisperKitTranscriber.swift */; };
 		C92FA6C50DD3D346C24C940A /* PermissionServiceLive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 827CCE37EBEA134265121AF8 /* PermissionServiceLive.swift */; };
 		D184234EF281996B98B43E86 /* RefinerErrorMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA50651B0097577FB6353079 /* RefinerErrorMapperTests.swift */; };
@@ -86,6 +88,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		08409FB81EE882100E04E4CF /* RefinerFactoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefinerFactoryTests.swift; sourceTree = "<group>"; };
 		09A9046134AA822B8003E250 /* PreferencesStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesStoreTests.swift; sourceTree = "<group>"; };
 		0B2194D608A5F68AEE4F7C69 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1E3AF30F1AE5DEAA3522590D /* InjectorLive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InjectorLive.swift; sourceTree = "<group>"; };
@@ -113,6 +116,7 @@
 		7F54A24A7539461F01EA2BC7 /* OpenAIRefiner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIRefiner.swift; sourceTree = "<group>"; };
 		82624846B13D44387F031C84 /* Transcribing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transcribing.swift; sourceTree = "<group>"; };
 		827CCE37EBEA134265121AF8 /* PermissionServiceLive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionServiceLive.swift; sourceTree = "<group>"; };
+		8642522EEA745BE571EDCCC5 /* RefinerFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefinerFactory.swift; sourceTree = "<group>"; };
 		86440E3E743253F4C26F8451 /* PermissionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionService.swift; sourceTree = "<group>"; };
 		885C3426FB83B9F0218878A7 /* Tagarela.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tagarela.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		89E2D30E8BD941C39FE3D792 /* IdentityRefiner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityRefiner.swift; sourceTree = "<group>"; };
@@ -261,6 +265,7 @@
 				F3A0F0B03EE5F5FB89DE08B9 /* PipelineCoordinatorTests.swift */,
 				09A9046134AA822B8003E250 /* PreferencesStoreTests.swift */,
 				EA50651B0097577FB6353079 /* RefinerErrorMapperTests.swift */,
+				08409FB81EE882100E04E4CF /* RefinerFactoryTests.swift */,
 				E68546BC2AA01D348444B929 /* RemoteRefinerConfigTests.swift */,
 				8E9B177C502566925C655290 /* StyleTests.swift */,
 				3ED9DDFE385D1F49BF9DC9B6 /* TokenCounterTests.swift */,
@@ -375,6 +380,7 @@
 				7F54A24A7539461F01EA2BC7 /* OpenAIRefiner.swift */,
 				4BEFD414690FBE88FE9E33AF /* RefinerError.swift */,
 				A4B465BEE19AB4757FF27B58 /* RefinerErrorMapper.swift */,
+				8642522EEA745BE571EDCCC5 /* RefinerFactory.swift */,
 				C658A1FA765D0031A186BB22 /* RemoteRefinerConfig.swift */,
 				A539AA5E429530984A675838 /* Style.swift */,
 				C7EBB86EF951B5C4D72D2C4A /* TextRefiner.swift */,
@@ -538,6 +544,7 @@
 				E80BA1C6085B483D0F6E92DA /* PreferencesStore.swift in Sources */,
 				84F54E14BCFD60F0E854ECB3 /* RefinerError.swift in Sources */,
 				D6011D4EA9B97BB8CD07EFE1 /* RefinerErrorMapper.swift in Sources */,
+				8BFAF3788331C033B5F8EC16 /* RefinerFactory.swift in Sources */,
 				F11CF8F05C71CAC179EAEA5D /* RemoteRefinerConfig.swift in Sources */,
 				9B791DDD20F7F9797B8BCF92 /* StateRow.swift in Sources */,
 				D3B91FA9784977324C183175 /* Style.swift in Sources */,
@@ -567,6 +574,7 @@
 				3D3BA1DE80B62401CDA1813B /* PipelineCoordinatorTests.swift in Sources */,
 				2A3C2873638E4A39E896CD0C /* PreferencesStoreTests.swift in Sources */,
 				D184234EF281996B98B43E86 /* RefinerErrorMapperTests.swift in Sources */,
+				BD64F87722132F46B9A177A1 /* RefinerFactoryTests.swift in Sources */,
 				81323C2BE4C6733126B398E0 /* RemoteRefinerConfigTests.swift in Sources */,
 				8FECD110F77CE391093D0C4E /* StyleTests.swift in Sources */,
 				9D3DBD5FA1E5D9A56E91B893 /* TokenCounterTests.swift in Sources */,
