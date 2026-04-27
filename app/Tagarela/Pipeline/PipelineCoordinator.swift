@@ -141,7 +141,7 @@ actor PipelineCoordinator {
             )
             FileHandle.standardError.write(Data("[pipeline] transcribed: '\(raw)'\n".utf8))
             setState(.refining)
-            let refined = try await refiner.refine(raw, style: "cru — sem reescrita")
+            let refined = try await refiner.refine(raw, style: BuiltInStyles.conversaInformal)
             FileHandle.standardError.write(Data("[pipeline] injecting\n".utf8))
             let frontApp = try await injector.inject(text: refined)
             FileHandle.standardError.write(Data("[pipeline] injected to \(frontApp ?? "?")\n".utf8))
