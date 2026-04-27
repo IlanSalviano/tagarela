@@ -19,7 +19,8 @@ final class OpenAIRefiner: TextRefiner, @unchecked Sendable {
     var kind: RefinerKind { .openai }
 
     func refine(_ rawText: String, style: Style) async throws -> String {
-        guard let key = try keychain.openAIKey(), !key.isEmpty else {
+        let storedKey = (try? keychain.openAIKey()) ?? nil
+        guard let key = storedKey, !key.isEmpty else {
             throw RefinerError.unauthorized
         }
         let systemTokens = TokenCounter.estimate(style.systemPrompt)

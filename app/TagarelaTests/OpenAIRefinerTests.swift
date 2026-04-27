@@ -143,4 +143,33 @@ final class OpenAIRefinerTests: XCTestCase {
             XCTAssertEqual(e, .unauthorized)
         } catch { XCTFail("wrong error: \(error)") }
     }
+
+    func test_keychainThrows_mapsToUnauthorized_withoutHTTP() async {
+        let throwingKeychain = ThrowingFakeKeychainService(error: .osStatus(-25300))
+        let r = OpenAIRefiner(session: MockURLProtocol.session(),
+                              keychain: throwingKeychain,
+                              model: "gpt-5.4-mini",
+                              timeoutSec: 30)
+        do {
+            _ = try await r.refine("oi", style: BuiltInStyles.conversaInformal)
+            XCTFail("expected throw")
+        } catch let e as RefinerError {
+            XCTAssertEqual(e, .unauthorized)
+        } catch {
+            XCTFail("wrong error: \(error)")
+        }
+    }
+
+    func test_emptyStringApiKey_throwsUnauthorized_withoutHTTP() async {
+        keychain = FakeKeychainService(initial: "")
+        let r = makeRefiner()
+        do {
+            _ = try await r.refine("oi", style: BuiltInStyles.conversaInformal)
+            XCTFail("expected throw")
+        } catch let e as RefinerError {
+            XCTAssertEqual(e, .unauthorized)
+        } catch {
+            XCTFail("wrong error: \(error)")
+        }
+    }
 }

@@ -31,4 +31,21 @@ final class FakeKeychainService: KeychainService, @unchecked Sendable {
         stored = key
     }
 }
+
+/// Fake that simulates Keychain errors. For testing error handling.
+final class ThrowingFakeKeychainService: KeychainService, @unchecked Sendable {
+    private let error: KeychainError
+
+    init(error: KeychainError = .osStatus(-1)) {
+        self.error = error
+    }
+
+    func openAIKey() throws -> String? {
+        throw error
+    }
+
+    func setOpenAIKey(_ key: String?) throws {
+        throw error
+    }
+}
 #endif
