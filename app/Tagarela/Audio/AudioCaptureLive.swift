@@ -65,8 +65,31 @@ final class AudioCaptureLive: AudioCapturing, @unchecked Sendable {
             return AudioBuffer(samples: [], sampleRate: 16_000)
         }
         let resampled = downmixAndResample(raw, from: inFormat)
-        FileHandle.standardError.write(Data("[audio] stop: raw=\(raw.count) samples (\(inFormat.sampleRate)Hz, \(inFormat.channelCount)ch) → resampled=\(resampled.count) (16kHz mono)\n".utf8))
-        return AudioBuffer(samples: resampled, sampleRate: 16_000)
+        let boosted = boostPeakNormalize(resampled)
+        var rawPeak: Float = 0
+        for s in resampled { let a = abs(s); if a > rawPeak { rawPeak = a } }
+        var newPeak: Float = 0
+        for s in boosted { let a = abs(s); if a > newPeak { newPeak = a } }
+        FileHandle.standardError.write(Data("[audio] stop: raw=\(raw.count) samples (\(inFormat.sampleRate)Hz, \(inFormat.channelCount)ch) → resampled=\(resampled.count) (16kHz mono) peak before=\(rawPeak) after=\(newPeak)\n".utf8))
+        return AudioBuffer(samples: boosted, sampleRate: 16_000)
+    }
+
+    /// Boost peak-normalize: pegar peak e escalar pra targetPeak (com clipping suave).
+    /// Compensa input gain baixo do device sem distorcer fala normal.
+    private func boostPeakNormalize(_ samples: [Float], targetPeak: Float = 0.6) -> [Float] {
+        guard !samples.isEmpty else { return samples }
+        var peak: Float = 0
+        for s in samples {
+            let a = abs(s)
+            if a > peak { peak = a }
+        }
+        guard peak > 0.0001 else { return samples } // silêncio: não tenta boostar
+        // Limita gain a 20x pra não amplificar ruído muito alto
+        let gain = min(targetPeak / peak, 20)
+        return samples.map { s in
+            let g = s * gain
+            return max(-1, min(1, g))
+        }
     }
 
     /// Mixa múltiplos canais (mean) e resampla via interpolação linear pra 16kHz.
