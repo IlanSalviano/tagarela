@@ -53,7 +53,8 @@ final class AppContainer: ObservableObject {
 
     private func ensureMicPermission() {
         let status = AVCaptureDevice.authorizationStatus(for: .audio)
-        FileHandle.standardError.write(Data("[app] mic status=\(status.rawValue) (0=notDetermined, 1=restricted, 2=denied, 3=authorized)\n".utf8))
+        let videoStatus = AVCaptureDevice.authorizationStatus(for: .video)
+        FileHandle.standardError.write(Data("[app] mic status=\(status.rawValue) video status=\(videoStatus.rawValue) (0=notDetermined, 1=restricted, 2=denied, 3=authorized)\n".utf8))
         guard status != .authorized else { return }
 
         NSApp.setActivationPolicy(.regular)
@@ -61,7 +62,12 @@ final class AppContainer: ObservableObject {
         FileHandle.standardError.write(Data("[app] activationPolicy promoted to .regular pra prompt\n".utf8))
 
         Task {
-            // Tentativa 1: requestAccess
+            // Tentativa 0: video. C920 é camera+mic combinado; em macOS 26
+            // o device pode exigir Camera grant pra liberar o audio também.
+            let okVideo = await AVCaptureDevice.requestAccess(for: .video)
+            FileHandle.standardError.write(Data("[app] video requestAccess -> \(okVideo)\n".utf8))
+
+            // Tentativa 1: audio
             let ok1 = await AVCaptureDevice.requestAccess(for: .audio)
             FileHandle.standardError.write(Data("[app] mic requestAccess -> \(ok1)\n".utf8))
 
