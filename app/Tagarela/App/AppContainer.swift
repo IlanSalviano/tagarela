@@ -26,11 +26,14 @@ final class AppContainer: ObservableObject {
     init() {
         let permissions = PermissionServiceLive()
         let transcriber = WhisperKitTranscriber()
-        let audio = AudioCaptureLive()
         let injector = InjectorLive()
         let hotkeyService = HotkeyServiceLive()
 
         let prefs = PreferencesStore(defaults: .standard, defaultStyleID: BuiltInStyles.defaultStyleID)
+        let audio = AudioCaptureLive(
+            maxGainProvider: { @MainActor [weak prefs] in
+                prefs?.audioBoostMaxGain ?? PreferencesDefaults.audioBoostMaxGain
+            } as @Sendable () -> Float)
         if prefs.technicalVocabulary.isEmpty {
             prefs.technicalVocabulary = DefaultVocabulary.terms
         }

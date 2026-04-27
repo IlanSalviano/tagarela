@@ -62,6 +62,8 @@ Isso resolve o problema imediato de "Whisper transcreve só `...` porque áudio 
 
 **Critério de aceite:** ou (a) substituir por AGC simples (RMS-based, com attack/release) ou (b) expor como preferência (Fase 2 quando tiver tela de Preferências) com slider 0-20×, default 8×.
 
+**Status (2026-04-27, Tarefa 9 da Fase 2a):** ✅ Concluído — critério (b) atendido. `audioBoostMaxGain` agora é Float em `PreferencesStore` (default 20, range clamped [1,50]) injetado em `AudioCaptureLive` via `maxGainProvider` closure (`@MainActor @escaping @Sendable () -> Float`). `boostPeakNormalize` lê do provider em vez do hardcoded 20×. Slider UI vai entrar na Fase 2b junto da tela de Preferências; configuração via `defaults write com.tagarela.preferences audioBoostMaxGain -float <N>` funciona desde já. 73 testes verdes inalterados.
+
 ## 5. `AVAudioConverter` streaming não funcionou — workaround documentado
 
 **Arquivo:** [`app/Tagarela/Audio/AudioCaptureLive.swift`](../../app/Tagarela/Audio/AudioCaptureLive.swift)
