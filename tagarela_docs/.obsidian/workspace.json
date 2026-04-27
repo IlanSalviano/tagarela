@@ -178,6 +178,9 @@
   },
   "active": "cc5a27361a843e0c",
   "lastOpenFiles": [
+    "04-decisoes/cleanup-fase1.md",
+    "02-arquitetura/02-stack-tecnica.md",
+    "02-arquitetura",
     "specs/2026-04-26-tagarela-v1-fase1-plan.md",
     "04-decisoes/ADR-0001-sistema-visual.md",
     "04-decisoes",
@@ -190,7 +193,6 @@
     "05-design/bundle/project/prototype.html",
     "05-design/bundle/project/preferences.jsx",
     "05-design/bundle/project/onboarding.jsx",
-    "05-design/bundle/project/menubar.jsx",
     "05-design/bundle/chats/chat1.md",
     "05-design/bundle/README.md",
     "specs/2026-04-26-tagarela-v1-design.md",
