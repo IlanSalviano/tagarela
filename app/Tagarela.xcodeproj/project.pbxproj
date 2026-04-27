@@ -16,6 +16,7 @@
 		7B582F7780E6A7B1B512FCDC /* JetBrainsMono-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5AD9D3ACA4955C722E7F8963 /* JetBrainsMono-Regular.ttf */; };
 		8DB6F64CD8DA02B106FCAB21 /* TagarelaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AA232DBB32229FCAA0AC660 /* TagarelaApp.swift */; };
 		8DD6C35EA08FE198101AA932 /* InterTight-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4F0115B38FDFD85101BAE219 /* InterTight-SemiBold.ttf */; };
+		A723F99CF516D9C1904D9B08 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E67AC40A1677F04D206698D8 /* AppState.swift */; };
 		B6AC8D77746DD364C1D83E4A /* Wordmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA671BF3E800969A73A8EF5 /* Wordmark.swift */; };
 		BCB225735DFBEC1134C71F0C /* InstrumentSerif-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EEE4F0AB792EE7143DA6AE7F /* InstrumentSerif-Italic.ttf */; };
 		C00F9C6F0209159410F49616 /* InterTight-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 76083F7AF222D9E32009AB08 /* InterTight-Regular.ttf */; };
@@ -48,6 +49,7 @@
 		AA5F2E0878FE52248A1D6620 /* JetBrainsMono-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "JetBrainsMono-SemiBold.ttf"; sourceTree = "<group>"; };
 		AB4D4B05CA17D142B9D1B41C /* InterTight-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "InterTight-Medium.ttf"; sourceTree = "<group>"; };
 		CDA671BF3E800969A73A8EF5 /* Wordmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Wordmark.swift; sourceTree = "<group>"; };
+		E67AC40A1677F04D206698D8 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		EEE4F0AB792EE7143DA6AE7F /* InstrumentSerif-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "InstrumentSerif-Italic.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -144,6 +146,7 @@
 		5B3C1B19F65831AB444357F0 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				E67AC40A1677F04D206698D8 /* AppState.swift */,
 				6AA232DBB32229FCAA0AC660 /* TagarelaApp.swift */,
 			);
 			path = App;
@@ -337,6 +340,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A723F99CF516D9C1904D9B08 /* AppState.swift in Sources */,
 				0625471C404A22DE5A3040A3 /* DesignSystem.swift in Sources */,
 				F8FBCE0B00B117991617F4EB /* Glyph.swift in Sources */,
 				8DB6F64CD8DA02B106FCAB21 /* TagarelaApp.swift in Sources */,
