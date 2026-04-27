@@ -28,6 +28,8 @@ struct MenuBarContent: View {
                            onSelectOpenAINeedsKey: onSelectOpenAINeedsKey,
                            onExplicitConfigureKey: onExplicitConfigureKey)
 
+            StyleSubmenu(prefs: prefs)
+
             Divider().background(DS.Color.hairline)
             Button(action: { NSApp.terminate(nil) }) {
                 HStack {
