@@ -39,6 +39,8 @@
 		D44AC44AFA2D08CC9A8111F5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0B2194D608A5F68AEE4F7C69 /* Assets.xcassets */; };
 		E132445401CE971C386D1610 /* IdentityRefiner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89E2D30E8BD941C39FE3D792 /* IdentityRefiner.swift */; };
 		E8924FEF4C5A1C399E37858D /* PipelineCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC56152B24C02BAFC8827300 /* PipelineCoordinator.swift */; };
+		E9170EE724922DBBB50D166D /* WaveBars.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33F19FE89DB89426AFE260B8 /* WaveBars.swift */; };
+		EFAA73358DCF48C1C1037FD8 /* IndicatorPill.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E6F51C94A5B358ED2DB0CBD /* IndicatorPill.swift */; };
 		F8FBCE0B00B117991617F4EB /* Glyph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64EB8767875513C5CBD96EB7 /* Glyph.swift */; };
 /* End PBXBuildFile section */
 
@@ -55,7 +57,9 @@
 /* Begin PBXFileReference section */
 		0B2194D608A5F68AEE4F7C69 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1E3AF30F1AE5DEAA3522590D /* InjectorLive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InjectorLive.swift; sourceTree = "<group>"; };
+		1E6F51C94A5B358ED2DB0CBD /* IndicatorPill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndicatorPill.swift; sourceTree = "<group>"; };
 		265CDA7DE0CCADB7E45F98EA /* FloatingIndicatorPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingIndicatorPanel.swift; sourceTree = "<group>"; };
+		33F19FE89DB89426AFE260B8 /* WaveBars.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveBars.swift; sourceTree = "<group>"; };
 		48A38EEE3C74B26A58569FDF /* HotkeyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyService.swift; sourceTree = "<group>"; };
 		546B9E9134BAAF0569059D02 /* HotkeyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyTests.swift; sourceTree = "<group>"; };
 		5ECDA19A878F5C9B2C87A95C /* Injecting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Injecting.swift; sourceTree = "<group>"; };
@@ -191,6 +195,8 @@
 			isa = PBXGroup;
 			children = (
 				265CDA7DE0CCADB7E45F98EA /* FloatingIndicatorPanel.swift */,
+				1E6F51C94A5B358ED2DB0CBD /* IndicatorPill.swift */,
+				33F19FE89DB89426AFE260B8 /* WaveBars.swift */,
 			);
 			path = Indicator;
 			sourceTree = "<group>";
@@ -391,6 +397,7 @@
 				7906156A7FDCB39A8CD1EEF2 /* HotkeyService.swift in Sources */,
 				053FC805D48C1A035DA6C789 /* HotkeyServiceLive.swift in Sources */,
 				E132445401CE971C386D1610 /* IdentityRefiner.swift in Sources */,
+				EFAA73358DCF48C1C1037FD8 /* IndicatorPill.swift in Sources */,
 				8361DB813F9EC5BBB72B5B8D /* InitialPromptBuilder.swift in Sources */,
 				933E4CECF756C21D0060CEF9 /* Injecting.swift in Sources */,
 				2B919407065D87FB44E9485B /* InjectorLive.swift in Sources */,
@@ -402,6 +409,7 @@
 				8DB6F64CD8DA02B106FCAB21 /* TagarelaApp.swift in Sources */,
 				5F893074B312F218A17C07D7 /* TextRefiner.swift in Sources */,
 				7CFB0DDDA053BAAF6A2A90F6 /* Transcribing.swift in Sources */,
+				E9170EE724922DBBB50D166D /* WaveBars.swift in Sources */,
 				C089BEDAD880AE8AE873E943 /* WhisperKitTranscriber.swift in Sources */,
 				B6AC8D77746DD364C1D83E4A /* Wordmark.swift in Sources */,
 			);
