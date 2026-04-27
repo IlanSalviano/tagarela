@@ -2,6 +2,7 @@ import SwiftUI
 
 struct OnboardingWindow: View {
     @EnvironmentObject var coordinator: OnboardingCoordinator
+    @Environment(\.dismissWindow) private var dismissWindow
     var onFinish: () -> Void
 
     var body: some View {
@@ -24,7 +25,10 @@ struct OnboardingWindow: View {
                 OnboardModel(
                     downloadProgress: coordinator.modelDownloadProgress,
                     loaded: coordinator.modelLoaded,
-                    onStart: { onFinish() }
+                    onStart: {
+                        onFinish()
+                        dismissWindow(id: "onboarding")
+                    }
                 )
                 .onAppear { coordinator.loadModel("large-v3") }
             }
