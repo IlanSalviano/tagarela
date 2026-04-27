@@ -16,6 +16,7 @@
 		7B582F7780E6A7B1B512FCDC /* JetBrainsMono-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5AD9D3ACA4955C722E7F8963 /* JetBrainsMono-Regular.ttf */; };
 		8DB6F64CD8DA02B106FCAB21 /* TagarelaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AA232DBB32229FCAA0AC660 /* TagarelaApp.swift */; };
 		8DD6C35EA08FE198101AA932 /* InterTight-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4F0115B38FDFD85101BAE219 /* InterTight-SemiBold.ttf */; };
+		B6AC8D77746DD364C1D83E4A /* Wordmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA671BF3E800969A73A8EF5 /* Wordmark.swift */; };
 		BCB225735DFBEC1134C71F0C /* InstrumentSerif-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EEE4F0AB792EE7143DA6AE7F /* InstrumentSerif-Italic.ttf */; };
 		C00F9C6F0209159410F49616 /* InterTight-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 76083F7AF222D9E32009AB08 /* InterTight-Regular.ttf */; };
 		D44AC44AFA2D08CC9A8111F5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0B2194D608A5F68AEE4F7C69 /* Assets.xcassets */; };
@@ -44,6 +45,7 @@
 		92947106E01306287DDA490B /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
 		AA5F2E0878FE52248A1D6620 /* JetBrainsMono-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "JetBrainsMono-SemiBold.ttf"; sourceTree = "<group>"; };
 		AB4D4B05CA17D142B9D1B41C /* InterTight-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "InterTight-Medium.ttf"; sourceTree = "<group>"; };
+		CDA671BF3E800969A73A8EF5 /* Wordmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Wordmark.swift; sourceTree = "<group>"; };
 		EEE4F0AB792EE7143DA6AE7F /* InstrumentSerif-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "InstrumentSerif-Italic.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -181,6 +183,7 @@
 			isa = PBXGroup;
 			children = (
 				92947106E01306287DDA490B /* DesignSystem.swift */,
+				CDA671BF3E800969A73A8EF5 /* Wordmark.swift */,
 			);
 			path = Design;
 			sourceTree = "<group>";
@@ -333,6 +336,7 @@
 			files = (
 				0625471C404A22DE5A3040A3 /* DesignSystem.swift in Sources */,
 				8DB6F64CD8DA02B106FCAB21 /* TagarelaApp.swift in Sources */,
+				B6AC8D77746DD364C1D83E4A /* Wordmark.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
