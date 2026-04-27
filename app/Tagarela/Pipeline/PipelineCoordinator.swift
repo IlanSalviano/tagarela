@@ -140,22 +140,30 @@ actor PipelineCoordinator {
                 initialPrompt: initialPromptProvider()
             )
             FileHandle.standardError.write(Data("[pipeline] transcribed: '\(raw)'\n".utf8))
-            setState(.refining)
             let (refiner, style) = await refinerProvider()
             let actualRefinerKind: RefinerKind
             let refined: String
-            do {
-                refined = try await refiner.refine(raw, style: style)
-                actualRefinerKind = refiner.kind
-            } catch RefinerError.cancelled {
-                // Cancelamento real: aborta sem fallback nem inject
-                FileHandle.standardError.write(Data("[pipeline] refiner cancelled\n".utf8))
-                setState(.idle); return
-            } catch {
-                logger.error("refiner failed (\(refiner.kind.rawValue)): \(String(describing: error))")
-                let identityFallback = IdentityRefiner()
-                refined = (try? await identityFallback.refine(raw, style: style)) ?? raw
-                actualRefinerKind = identityFallback.kind
+
+            if refiner.kind == .none {
+                // Identity (cru style ou refinerKind=.none): skip .refining, pass-through instantâneo.
+                // Coerente com spec §3 ("style cru pula .refining").
+                refined = (try? await refiner.refine(raw, style: style)) ?? raw
+                actualRefinerKind = .none
+            } else {
+                setState(.refining)
+                do {
+                    refined = try await refiner.refine(raw, style: style)
+                    actualRefinerKind = refiner.kind
+                } catch RefinerError.cancelled {
+                    // Cancelamento real: aborta sem fallback nem inject
+                    FileHandle.standardError.write(Data("[pipeline] refiner cancelled\n".utf8))
+                    setState(.idle); return
+                } catch {
+                    logger.error("refiner failed (\(refiner.kind.rawValue)): \(String(describing: error))")
+                    let identityFallback = IdentityRefiner()
+                    refined = (try? await identityFallback.refine(raw, style: style)) ?? raw
+                    actualRefinerKind = identityFallback.kind
+                }
             }
             FileHandle.standardError.write(Data("[pipeline] injecting (kind=\(actualRefinerKind.rawValue))\n".utf8))
             let frontApp = try await injector.inject(text: refined)

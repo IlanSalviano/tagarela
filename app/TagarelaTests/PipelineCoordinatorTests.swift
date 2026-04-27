@@ -49,6 +49,18 @@ final class PipelineCoordinatorTests: XCTestCase {
         XCTAssertEqual(s, .idle)
     }
 
+    func test_identityRefiner_skipsRefiningState() async {
+        let p = makeCoordinator(refiner: IdentityRefiner())
+        let states = collectStates(from: p)
+        await p.handle(.toggle)
+        await p.handle(.toggle)
+        try? await Task.sleep(nanoseconds: 200_000_000)
+        let collected = await states.value
+        // Esperado: idle, recording, processing, idle (sem .refining)
+        XCTAssertFalse(collected.contains { if case .refining = $0 { return true } else { return false } },
+                       "Identity should skip .refining; collected: \(collected)")
+    }
+
     // Helpers ----------------------------------------------------
 
     private func makeCoordinator(refiner: TextRefiner = IdentityRefiner(),
@@ -73,6 +85,19 @@ final class PipelineCoordinatorTests: XCTestCase {
                 }
             }
             return nil
+        }
+    }
+
+    private func collectStates(from p: PipelineCoordinator) -> Task<[PipelineState], Never> {
+        Task {
+            var collected: [PipelineState] = []
+            for await ev in p.events {
+                if case .stateChanged(let s) = ev {
+                    collected.append(s)
+                    if case .idle = s, collected.count > 1 { break }
+                }
+            }
+            return collected
         }
     }
 }

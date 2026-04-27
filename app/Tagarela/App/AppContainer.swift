@@ -39,6 +39,8 @@ final class AppContainer: ObservableObject {
         let healthChecker = OllamaHealthChecker(
             session: session,
             baseURL: URL(string: prefs.ollamaBaseURL) ?? URL(string: "http://localhost:11434")!)
+        // weak prefs: defesa contra deallocação prematura. Na prática, AppContainer
+        // vive durante toda a vida do app, então fatalError aqui é inalcançável.
         let factory = RefinerFactory(
             prefs: prefs,
             openAI: { [weak prefs, keychain] in
