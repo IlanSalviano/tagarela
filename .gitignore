@@ -1,0 +1,29 @@
+# macOS
+.DS_Store
+
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+*.xcuserdatad/
+xcuserdata/
+*.xccheckout
+*.moved-aside
+*.hmap
+*.ipa
+
+# SPM
+.build/
+.swiftpm/
+Packages/
+Package.pins
+# Note: Package.resolved is committed (locked versions)
+
+# Obsidian
+tagarela_docs/.obsidian/workspace*
+tagarela_docs/.obsidian/cache
+
+# Sensitive
+*.p12
+*.cer
+*.mobileprovision

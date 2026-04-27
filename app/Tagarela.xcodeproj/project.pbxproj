@@ -1,0 +1,535 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1266E876E10A7032C3644712 /* PlaceholderTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 145543436E1B5A55B6517D3A /* PlaceholderTest.swift */; };
+		8DB6F64CD8DA02B106FCAB21 /* TagarelaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AA232DBB32229FCAA0AC660 /* TagarelaApp.swift */; };
+		D44AC44AFA2D08CC9A8111F5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0B2194D608A5F68AEE4F7C69 /* Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		ED17C0C9293BCA0629C33DA6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 121CAA2F3752A009A7BEB1F6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 715677D834111BC04FF17146;
+			remoteInfo = Tagarela;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0B2194D608A5F68AEE4F7C69 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		145543436E1B5A55B6517D3A /* PlaceholderTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderTest.swift; sourceTree = "<group>"; };
+		6AA232DBB32229FCAA0AC660 /* TagarelaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagarelaApp.swift; sourceTree = "<group>"; };
+		727AD7A472BE6C196EAA6002 /* TagarelaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TagarelaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		885C3426FB83B9F0218878A7 /* Tagarela.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tagarela.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		090FB7B260CCDD4877771BF4 /* Audio */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Audio;
+			sourceTree = "<group>";
+		};
+		1FE15FB7BCC5FEC92587317D /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		30C55688B7DE3A7E034C4BC5 /* Pipeline */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Pipeline;
+			sourceTree = "<group>";
+		};
+		31E22EF9247B7A4DB7C7A45E /* Permissions */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Permissions;
+			sourceTree = "<group>";
+		};
+		354D97B585EB0B7653529704 /* Transcription */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Transcription;
+			sourceTree = "<group>";
+		};
+		3648103099697E1F0F557931 /* Tagarela */ = {
+			isa = PBXGroup;
+			children = (
+				5B3C1B19F65831AB444357F0 /* App */,
+				090FB7B260CCDD4877771BF4 /* Audio */,
+				AC88C4F80E1C6AB5EF50A76D /* Design */,
+				5EA866A18A5D59259B0C9DC4 /* Hotkey */,
+				C2105236DFB1B2988688B3F4 /* Injection */,
+				EC02A19E2C196B33EA8A224B /* Localization */,
+				31E22EF9247B7A4DB7C7A45E /* Permissions */,
+				30C55688B7DE3A7E034C4BC5 /* Pipeline */,
+				C4E4C198F3C8CE21386EDC8D /* Refiner */,
+				7D9C65CCF71A21580CA854AC /* Resources */,
+				354D97B585EB0B7653529704 /* Transcription */,
+				F5F338E02072629502C9D805 /* UI */,
+			);
+			path = Tagarela;
+			sourceTree = "<group>";
+		};
+		42E6ED781F6A168E03C6BEEF /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				885C3426FB83B9F0218878A7 /* Tagarela.app */,
+				727AD7A472BE6C196EAA6002 /* TagarelaTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		439BA567F6723A14212A2217 /* TagarelaTests */ = {
+			isa = PBXGroup;
+			children = (
+				145543436E1B5A55B6517D3A /* PlaceholderTest.swift */,
+			);
+			path = TagarelaTests;
+			sourceTree = "<group>";
+		};
+		512B008C32E02EC63AA3F750 /* Indicator */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Indicator;
+			sourceTree = "<group>";
+		};
+		5B3C1B19F65831AB444357F0 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				6AA232DBB32229FCAA0AC660 /* TagarelaApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		5EA866A18A5D59259B0C9DC4 /* Hotkey */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Hotkey;
+			sourceTree = "<group>";
+		};
+		74B774DA6C4E46BF70A58CD2 = {
+			isa = PBXGroup;
+			children = (
+				3648103099697E1F0F557931 /* Tagarela */,
+				439BA567F6723A14212A2217 /* TagarelaTests */,
+				42E6ED781F6A168E03C6BEEF /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		7D9C65CCF71A21580CA854AC /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				F81DBF44342E0F2EE73A28EA /* Fonts */,
+				0B2194D608A5F68AEE4F7C69 /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		9F7079F25CFE3ADBA0D4B73A /* MenuBar */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = MenuBar;
+			sourceTree = "<group>";
+		};
+		AC88C4F80E1C6AB5EF50A76D /* Design */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Design;
+			sourceTree = "<group>";
+		};
+		C2105236DFB1B2988688B3F4 /* Injection */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Injection;
+			sourceTree = "<group>";
+		};
+		C4E4C198F3C8CE21386EDC8D /* Refiner */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Refiner;
+			sourceTree = "<group>";
+		};
+		EC02A19E2C196B33EA8A224B /* Localization */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Localization;
+			sourceTree = "<group>";
+		};
+		F5F338E02072629502C9D805 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				512B008C32E02EC63AA3F750 /* Indicator */,
+				9F7079F25CFE3ADBA0D4B73A /* MenuBar */,
+				1FE15FB7BCC5FEC92587317D /* Onboarding */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		F81DBF44342E0F2EE73A28EA /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Fonts;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		4811A863A532FBCD0DA04120 /* TagarelaTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DA4BB78DF1A6BA2DA40A27ED /* Build configuration list for PBXNativeTarget "TagarelaTests" */;
+			buildPhases = (
+				BC78BC25B4CBC08CD0D17756 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4131E8E88624023EAAA73EE7 /* PBXTargetDependency */,
+			);
+			name = TagarelaTests;
+			packageProductDependencies = (
+			);
+			productName = TagarelaTests;
+			productReference = 727AD7A472BE6C196EAA6002 /* TagarelaTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		715677D834111BC04FF17146 /* Tagarela */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7E799A4303B8B51AC2BF7CF2 /* Build configuration list for PBXNativeTarget "Tagarela" */;
+			buildPhases = (
+				76EAAA64F7260B6E48E6B46F /* Sources */,
+				F551D526B7AB8965C69D84ED /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Tagarela;
+			packageProductDependencies = (
+			);
+			productName = Tagarela;
+			productReference = 885C3426FB83B9F0218878A7 /* Tagarela.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		121CAA2F3752A009A7BEB1F6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1540;
+				TargetAttributes = {
+					715677D834111BC04FF17146 = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 3EA350756AC41A0A392CF2BC /* Build configuration list for PBXProject "Tagarela" */;
+			developmentRegion = "pt-BR";
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				"pt-BR",
+			);
+			mainGroup = 74B774DA6C4E46BF70A58CD2;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 42E6ED781F6A168E03C6BEEF /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				715677D834111BC04FF17146 /* Tagarela */,
+				4811A863A532FBCD0DA04120 /* TagarelaTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F551D526B7AB8965C69D84ED /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D44AC44AFA2D08CC9A8111F5 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		76EAAA64F7260B6E48E6B46F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8DB6F64CD8DA02B106FCAB21 /* TagarelaApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BC78BC25B4CBC08CD0D17756 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1266E876E10A7032C3644712 /* PlaceholderTest.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		4131E8E88624023EAAA73EE7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 715677D834111BC04FF17146 /* Tagarela */;
+			targetProxy = ED17C0C9293BCA0629C33DA6 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		119899E53EABE37EE3B92225 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = TagarelaTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.tagarela.TagarelaTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Tagarela.app/Contents/MacOS/Tagarela";
+			};
+			name = Release;
+		};
+		1E584B7406F5252E5A777F1C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 5.10;
+			};
+			name = Release;
+		};
+		55C9DEB719C66765CC3779A2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = Tagarela/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.tagarela.Tagarela;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		5B99150D5C402C578DC22430 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 5.10;
+			};
+			name = Debug;
+		};
+		BE9DE71E0D244E744C50333F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = TagarelaTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.tagarela.TagarelaTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Tagarela.app/Contents/MacOS/Tagarela";
+			};
+			name = Debug;
+		};
+		D0A0A1CE495C77AFBE1090B1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = Tagarela/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.tagarela.Tagarela;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3EA350756AC41A0A392CF2BC /* Build configuration list for PBXProject "Tagarela" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5B99150D5C402C578DC22430 /* Debug */,
+				1E584B7406F5252E5A777F1C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		7E799A4303B8B51AC2BF7CF2 /* Build configuration list for PBXNativeTarget "Tagarela" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D0A0A1CE495C77AFBE1090B1 /* Debug */,
+				55C9DEB719C66765CC3779A2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		DA4BB78DF1A6BA2DA40A27ED /* Build configuration list for PBXNativeTarget "TagarelaTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BE9DE71E0D244E744C50333F /* Debug */,
+				119899E53EABE37EE3B92225 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 121CAA2F3752A009A7BEB1F6 /* Project object */;
+}
