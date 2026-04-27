@@ -37,9 +37,11 @@ targets:
         excludes:
           - "Resources/Info.plist"
           - "Resources/Tagarela.entitlements"
+          - "Resources/Fonts/**"
+      - path: Tagarela/Resources/Fonts
+        type: folder
     resources:
       - path: Tagarela/Resources/Assets.xcassets
-      - path: Tagarela/Resources/Fonts
       - path: Tagarela/Localization
     settings:
       base:
