@@ -2,13 +2,15 @@ import SwiftUI
 
 struct MenuBarContent: View {
     @EnvironmentObject var appState: AppState
+    @EnvironmentObject var prefs: PreferencesStore
+    var onConfigureOpenAIKey: () -> Void = {}
 
     var body: some View {
         VStack(spacing: 0) {
             HStack(alignment: .firstTextBaseline) {
                 Wordmark(size: 18)
                 Spacer()
-                Text("v1.0.0-fase1")
+                Text("v1.0.0-fase2a")
                     .font(DS.Font.mono(9))
                     .tracking(0.5)
                     .foregroundStyle(DS.Color.ink3)
@@ -20,9 +22,13 @@ struct MenuBarContent: View {
             StateRow(state: appState.pipeline)
 
             Divider().background(DS.Color.hairline)
+
+            BackendSubmenu(prefs: prefs, onConfigureKey: onConfigureOpenAIKey)
+
+            Divider().background(DS.Color.hairline)
             Button(action: { NSApp.terminate(nil) }) {
                 HStack {
-                    Text("sair")
+                    Text(NSLocalizedString("menubar.quit", value: "sair", comment: ""))
                         .font(DS.Font.mono(11))
                         .foregroundStyle(DS.Color.ink3)
                     Spacer()

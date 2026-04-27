@@ -6,8 +6,12 @@ struct TagarelaApp: App {
 
     var body: some Scene {
         MenuBarExtra {
-            MenuBarContent()
-                .environmentObject(container.appState)
+            MenuBarContent(onConfigureOpenAIKey: {
+                // Tarefa 12 vai conectar a modal real. Por ora apenas log.
+                NSLog("[tagarela] onConfigureOpenAIKey stub (Tarefa 11) — modal vem na Tarefa 12")
+            })
+            .environmentObject(container.appState)
+            .environmentObject(container.prefs)
         } label: {
             StatusBarIcon(appState: container.appState,
                           shouldOpenOnboarding: container.showOnboarding)

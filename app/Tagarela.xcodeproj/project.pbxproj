@@ -74,6 +74,7 @@
 		D4777567135F37A0CAF1FA00 /* HistoryStoreNoop.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5AAD7252267D4B8F9699DFF /* HistoryStoreNoop.swift */; };
 		D6011D4EA9B97BB8CD07EFE1 /* RefinerErrorMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4B465BEE19AB4757FF27B58 /* RefinerErrorMapper.swift */; };
 		E132445401CE971C386D1610 /* IdentityRefiner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89E2D30E8BD941C39FE3D792 /* IdentityRefiner.swift */; };
+		E681CDA890AA16DEDECB9DD7 /* BackendSubmenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4084B44A2E36CF14BE64862A /* BackendSubmenu.swift */; };
 		E80BA1C6085B483D0F6E92DA /* PreferencesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4E1ACFB5000E98F5B03733 /* PreferencesStore.swift */; };
 		E8924FEF4C5A1C399E37858D /* PipelineCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC56152B24C02BAFC8827300 /* PipelineCoordinator.swift */; };
 		E9170EE724922DBBB50D166D /* WaveBars.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33F19FE89DB89426AFE260B8 /* WaveBars.swift */; };
@@ -102,6 +103,7 @@
 		33F19FE89DB89426AFE260B8 /* WaveBars.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveBars.swift; sourceTree = "<group>"; };
 		34D03471F0F19E467A741ED6 /* HistoryStoreLive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryStoreLive.swift; sourceTree = "<group>"; };
 		3ED9DDFE385D1F49BF9DC9B6 /* TokenCounterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenCounterTests.swift; sourceTree = "<group>"; };
+		4084B44A2E36CF14BE64862A /* BackendSubmenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendSubmenu.swift; sourceTree = "<group>"; };
 		48A38EEE3C74B26A58569FDF /* HotkeyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyService.swift; sourceTree = "<group>"; };
 		4957C5587E1637BDC0A791B8 /* BuiltInStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuiltInStyles.swift; sourceTree = "<group>"; };
 		4BEFD414690FBE88FE9E33AF /* RefinerError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefinerError.swift; sourceTree = "<group>"; };
@@ -356,6 +358,7 @@
 		9F7079F25CFE3ADBA0D4B73A /* MenuBar */ = {
 			isa = PBXGroup;
 			children = (
+				4084B44A2E36CF14BE64862A /* BackendSubmenu.swift */,
 				BE5CBBDE375CD9B287356A58 /* MenuBarController.swift */,
 				6FD5358613FA8CC6BD09D9F5 /* StateRow.swift */,
 			);
@@ -533,6 +536,7 @@
 				A723F99CF516D9C1904D9B08 /* AppState.swift in Sources */,
 				0779F6BEB11DF02D3334B344 /* AudioCaptureLive.swift in Sources */,
 				758D7A361EA11C3E32E36E8A /* AudioCapturing.swift in Sources */,
+				E681CDA890AA16DEDECB9DD7 /* BackendSubmenu.swift in Sources */,
 				2D97B18192853DDAD3D9B1BA /* BaseRemoteRefiner.swift in Sources */,
 				839B15FF698B8066B9A10B85 /* BuiltInStyles.swift in Sources */,
 				32C9E0DC25051DCB371D8041 /* DefaultVocabulary.swift in Sources */,
