@@ -40,6 +40,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.tagarela.Tagarela
         INFOPLIST_FILE: Tagarela/Resources/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Tagarela/Resources/Tagarela.entitlements
         CODE_SIGN_STYLE: Automatic
         COMBINE_HIDPI_IMAGES: YES
         ENABLE_PREVIEWS: YES

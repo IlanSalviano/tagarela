@@ -20,7 +20,13 @@
     <string>1</string>
     <key>LSMinimumSystemVersion</key>
     <string>$(MACOSX_DEPLOYMENT_TARGET)</string>
+    <key>LSUIElement</key>
+    <true/>
     <key>NSHumanReadableCopyright</key>
     <string>tagarela</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>tagarela usa o microfone pra transcrever sua fala em texto. áudio nunca é salvo, só processado em memória.</string>
+    <key>ATSApplicationFontsPath</key>
+    <string>Fonts</string>
 </dict>
 </plist>
