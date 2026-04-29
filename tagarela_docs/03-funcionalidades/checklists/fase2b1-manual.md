@@ -1,9 +1,17 @@
 ---
 data: 2026-04-29
-status: aberto
+status: ok-com-achados
 fase: 2b-1
-ambiente: macOS 26 (build de Debug); Ollama rodando local com gemma4:e4b
+ambiente: macOS 26 (build Release instalada em ~/Applications/Tagarela.app); Ollama rodando local com gemma4:e4b
+executado_em: 2026-04-29
+achados: ver tagarela_docs/04-decisoes/cleanup-fase2b1.md
 ---
+
+> **Resumo do aceite (2026-04-29):** Blocos 1-11 e 13 todos OK (1 fix aplicado durante: z-order do popover do MenuBarExtra — commit 8bbd9e7). Bloco 12 com 3 achados:
+> - 12.1 visualizador de histórico — esperado, escopo da Fase 2b-2.
+> - 12.2 custom style respondia à frase em vez de transcrever — **fix aplicado** (commit 855b416, rewriter discipline prefixada).
+> - 12.5 Esc não cancela injeção em vôo — cleanup #5 da 2a, esperado, escopo da Fase 2b-3.
+
 
 # Checklist manual — Fase 2b-1
 

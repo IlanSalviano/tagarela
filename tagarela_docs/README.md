@@ -28,7 +28,8 @@ _(a preencher)_ — análise do Wispr Flow, alternativas, decisões de paridade.
 - [`ADR-0001-sistema-visual.md`](./04-decisoes/ADR-0001-sistema-visual.md) — sistema visual, identidade, indicador default da v1, mudanças de escopo aceitas/recusadas.
 - [`ADR-0003-pipeline-2a.md`](./04-decisoes/ADR-0003-pipeline-2a.md) — pipeline da Fase 2a: 16 decisões nucleares (refiners, persistência, UI mínima, cleanups #2 e #4).
 - [`cleanup-fase1.md`](./04-decisoes/cleanup-fase1.md) — TODOs deixados na Fase 1 (L/R Option, promptTokens, drift visual). Revisitar em 2026-05-11.
-- [`cleanup-fase2a.md`](./04-decisoes/cleanup-fase2a.md) — achados do aceite manual da Fase 2a. Itens 1 (default Ollama thinking) e 4 (logs em stderr) fechados em 2026-04-29. Itens 2/3/5 abertos (fallback silencioso, OpenAI conversacional em raw curto, cancel não cancela HTTP). Revisitar em 2026-05-12.
+- [`cleanup-fase2a.md`](./04-decisoes/cleanup-fase2a.md) — achados do aceite manual da Fase 2a. Itens 1, 3 e 4 fechados em 2026-04-29. Itens 2 e 5 empurrados pra 2b-2 e 2b-3. Revisitar em 2026-05-12.
+- [`cleanup-fase2b1.md`](./04-decisoes/cleanup-fase2b1.md) — achados do aceite manual da Fase 2b-1 em 2026-04-29. 2 fixes aplicados durante o aceite (z-order popover, rewriter discipline pra custom styles); 2 conhecidos (histórico viewer = 2b-2, cancel HTTP = 2b-3). Revisitar em 2026-05-13.
 
 ### 05 — [Sistema visual](./05-design/README.md)
 Identidade, tokens, tipografia, cores, copy pt-BR, catálogo de componentes e bundle do Claude Design (`05-design/bundle/`). Fonte da verdade visual.
