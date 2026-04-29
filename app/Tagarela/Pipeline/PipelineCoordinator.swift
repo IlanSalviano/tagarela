@@ -181,15 +181,29 @@ actor PipelineCoordinator {
                 do {
                     refined = try await refiner.refine(raw, style: style)
                     actualRefinerKind = refiner.kind
-                } catch RefinerError.cancelled {
-                    // Cancelamento real: aborta sem fallback nem inject
-                    logger.info("refiner cancelled")
+                } catch RefinerError.cancelled where cancelled {
+                    // Cancelamento real do usuário (flag `cancelled` foi setada
+                    // por handleCancel via Esc). Aborta sem fallback nem inject.
+                    logger.info("refiner cancelled (user)")
                     setState(.idle); return
                 } catch {
                     logger.error("refiner failed (\(refiner.kind.rawValue, privacy: .public)): \(String(describing: error), privacy: .public)")
                     // Cleanup #2 da Fase 2a: surfaceiar fallback ao usuário via toast.
-                    if let refinerError = error as? RefinerError,
-                       let reason = RefinerFallbackReason(refinerError: refinerError) {
+                    // Se vier RefinerError.cancelled SEM a flag `cancelled` ligada,
+                    // é network-drop disfarçado (URLSession -999 quando remote
+                    // termina conexão abruptamente, ex: `pkill ollama`). Trata
+                    // como networkOffline.
+                    let reason: RefinerFallbackReason?
+                    if let refinerError = error as? RefinerError {
+                        if case .cancelled = refinerError {
+                            reason = .networkOffline   // network-drop disguised
+                        } else {
+                            reason = RefinerFallbackReason(refinerError: refinerError)
+                        }
+                    } else {
+                        reason = nil
+                    }
+                    if let reason {
                         continuation?.yield(.refinerFellBack(reason: reason))
                     }
                     let identityFallback = IdentityRefiner()

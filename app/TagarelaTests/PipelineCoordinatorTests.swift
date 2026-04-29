@@ -37,16 +37,20 @@ final class PipelineCoordinatorTests: XCTestCase {
         XCTAssertEqual(r?.refinedText, "olá mundo", "fallback Identity should pass through raw text")
     }
 
-    func test_cancelledError_abortsWithoutFallback() async {
+    func test_cancelledError_withoutUserCancelFlag_treatedAsNetworkDrop() async {
+        // RefinerError.cancelled SEM flag `cancelled` ligada significa
+        // network-drop disfarçado (URLSession -999 quando remote termina
+        // conexão abruptamente, ex: `pkill ollama`). Pipeline trata como
+        // fallback → emit .refinerFellBack(.networkOffline) + identity
+        // passthrough. Bug encontrado no aceite manual da Fase 2b-2.
         let p = makeCoordinator(refiner: FakeRefiner(kind: .openai, result: .failure(RefinerError.cancelled)))
         let received = collectFinished(from: p)
         await p.handle(.toggle)
         await p.handle(.toggle)
         try? await Task.sleep(nanoseconds: 200_000_000)
         let r = await received.value
-        XCTAssertNil(r, "cancelled error should NOT yield finished event")
-        let s = await p.state
-        XCTAssertEqual(s, .idle)
+        XCTAssertEqual(r?.refinedText, "olá mundo",
+                       "cancelled-from-refiner sem flag user-cancel deve cair em identity fallback")
     }
 
     func test_identityRefiner_skipsRefiningState() async {
