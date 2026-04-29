@@ -29,6 +29,9 @@ struct TagarelaApp: App {
                     container.keyPromptWindow.onCancel = {}  // sem rollback no caminho explícito
                     container.keyPromptWindow.onSaved = {}
                     container.keyPromptWindow.show()
+                },
+                onOpenPreferences: {
+                    container.openPreferences()
                 })
             .environmentObject(container.appState)
             .environmentObject(container.prefs)

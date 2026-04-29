@@ -7,6 +7,7 @@ struct MenuBarContent: View {
     let styleProvider: StyleProvider
     var onSelectOpenAINeedsKey: (RefinerKind) -> Void = { _ in }
     var onExplicitConfigureKey: () -> Void = {}
+    var onOpenPreferences: () -> Void = {}
 
     var body: some View {
         VStack(spacing: 0) {
@@ -36,6 +37,19 @@ struct MenuBarContent: View {
                 // Fallback: sem reactivity (custom styles offline) — só built-ins
                 StyleSubmenuStaticFallback(prefs: prefs, styleProvider: styleProvider)
             }
+
+            Button(action: onOpenPreferences) {
+                HStack {
+                    Text(NSLocalizedString("menubar.preferences", value: "Preferências…", comment: ""))
+                        .font(DS.Font.mono(11))
+                        .foregroundStyle(DS.Color.ink3)
+                    Spacer()
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
 
             Divider().background(DS.Color.hairline)
             Button(action: { NSApp.terminate(nil) }) {
