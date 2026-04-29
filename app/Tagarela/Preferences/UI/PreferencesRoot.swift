@@ -8,6 +8,8 @@ struct PreferencesRoot: View {
     let healthChecker: OllamaHealthChecker
     let indicatorPanel: FloatingIndicatorPanel
     let keychain: KeychainService
+    let historyStore: HistoryStore
+    let injector: Injecting
 
     @State private var selection: PrefsSection = .geral
 
@@ -44,7 +46,7 @@ struct PreferencesRoot: View {
                             .padding()
                     }
             case .audio:         AudioView(prefs: prefs)
-            case .historico:     HistoryView(prefs: prefs)
+            case .historico:     HistoryView(prefs: prefs, historyStore: historyStore, injector: injector)
             case .vocabulario:   VocabularyView(prefs: prefs)
             case .atalhos:       ShortcutsView(prefs: prefs)
             }

@@ -99,6 +99,7 @@
 		BD64F87722132F46B9A177A1 /* RefinerFactoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08409FB81EE882100E04E4CF /* RefinerFactoryTests.swift */; };
 		C089BEDAD880AE8AE873E943 /* WhisperKitTranscriber.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4BE45043CF12FBE67AE1DBD /* WhisperKitTranscriber.swift */; };
 		C92FA6C50DD3D346C24C940A /* PermissionServiceLive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 827CCE37EBEA134265121AF8 /* PermissionServiceLive.swift */; };
+		CC5EB3434258E1D09236170E /* HistoryListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67CBE51F17D5FD50F1087DE4 /* HistoryListView.swift */; };
 		CD66B2474777413B2261DF12 /* IndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BDA8305F7FB0B1951CEEE0 /* IndicatorView.swift */; };
 		CE4AAD082C51712AA9D3CD4A /* RefinerOpenAIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79FC0A41CA3D1963B33D77BF /* RefinerOpenAIView.swift */; };
 		D01132A4843AAD504C18AC1A /* CustomStyleStoreLive.swift in Sources */ = {isa = PBXBuildFile; fileRef = E229AB7DD897353C67D3F49E /* CustomStyleStoreLive.swift */; };
@@ -119,6 +120,7 @@
 		E80BA1C6085B483D0F6E92DA /* PreferencesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4E1ACFB5000E98F5B03733 /* PreferencesStore.swift */; };
 		E8924FEF4C5A1C399E37858D /* PipelineCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC56152B24C02BAFC8827300 /* PipelineCoordinator.swift */; };
 		E9170EE724922DBBB50D166D /* WaveBars.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33F19FE89DB89426AFE260B8 /* WaveBars.swift */; };
+		EEA89CC384A149D183325479 /* HistoryEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE01CF98278A4FAD8FD4A51B /* HistoryEntryView.swift */; };
 		EEF5EEA71C7F9BE724013700 /* VocabularyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 620E904B00271823AADE56B9 /* VocabularyView.swift */; };
 		EFA552262CE858E2BA967417 /* ToastCenterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16D36018E93C09CC0C61C99B /* ToastCenterTests.swift */; };
 		EFAA73358DCF48C1C1037FD8 /* IndicatorPill.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E6F51C94A5B358ED2DB0CBD /* IndicatorPill.swift */; };
@@ -171,6 +173,7 @@
 		62EFB96895497806042A4427 /* PermissionStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionStatus.swift; sourceTree = "<group>"; };
 		63E0CA135AF061EB8FA4E4A2 /* OpenAIRefinerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIRefinerTests.swift; sourceTree = "<group>"; };
 		64EB8767875513C5CBD96EB7 /* Glyph.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Glyph.swift; sourceTree = "<group>"; };
+		67CBE51F17D5FD50F1087DE4 /* HistoryListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryListView.swift; sourceTree = "<group>"; };
 		6AA232DBB32229FCAA0AC660 /* TagarelaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagarelaApp.swift; sourceTree = "<group>"; };
 		6D403F8BAFCB53E3F2460AF6 /* TokenCounter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenCounter.swift; sourceTree = "<group>"; };
 		6FD5358613FA8CC6BD09D9F5 /* StateRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateRow.swift; sourceTree = "<group>"; };
@@ -213,6 +216,7 @@
 		A9781872A9FDF110CC55173A /* PreferencesRoot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesRoot.swift; sourceTree = "<group>"; };
 		AC56152B24C02BAFC8827300 /* PipelineCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PipelineCoordinator.swift; sourceTree = "<group>"; };
 		AC6021940DB203F4703C9623 /* ToastKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastKind.swift; sourceTree = "<group>"; };
+		AE01CF98278A4FAD8FD4A51B /* HistoryEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryEntryView.swift; sourceTree = "<group>"; };
 		AE27CF1064741F7D47CA0DCB /* OpenAIEndpointTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIEndpointTests.swift; sourceTree = "<group>"; };
 		AED216601F513596143B776B /* OnboardWelcome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardWelcome.swift; sourceTree = "<group>"; };
 		AF4E1ACFB5000E98F5B03733 /* PreferencesStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesStore.swift; sourceTree = "<group>"; };
@@ -287,6 +291,15 @@
 				34D03471F0F19E467A741ED6 /* HistoryStoreLive.swift */,
 				D5AAD7252267D4B8F9699DFF /* HistoryStoreNoop.swift */,
 				DFE9E378E1E9AFBC5ACCCFC0 /* Transcription.swift */,
+			);
+			path = History;
+			sourceTree = "<group>";
+		};
+		19E3069A9F56F2E131C012FD /* History */ = {
+			isa = PBXGroup;
+			children = (
+				AE01CF98278A4FAD8FD4A51B /* HistoryEntryView.swift */,
+				67CBE51F17D5FD50F1087DE4 /* HistoryListView.swift */,
 			);
 			path = History;
 			sourceTree = "<group>";
@@ -453,6 +466,7 @@
 		7AC4672A883EAC46F5992C3C /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				19E3069A9F56F2E131C012FD /* History */,
 				C73D819D11B785EE551E3547 /* Sections */,
 				32BCB3668EF809B9D27A14B8 /* Sheets */,
 				A9781872A9FDF110CC55173A /* PreferencesRoot.swift */,
@@ -715,6 +729,8 @@
 				56622911FD63010B500D90B0 /* FloatingIndicatorPanel.swift in Sources */,
 				4F9D601711CA76ED279BC01C /* GeneralView.swift in Sources */,
 				F8FBCE0B00B117991617F4EB /* Glyph.swift in Sources */,
+				EEA89CC384A149D183325479 /* HistoryEntryView.swift in Sources */,
+				CC5EB3434258E1D09236170E /* HistoryListView.swift in Sources */,
 				84A4E93B1409094CB19E37D8 /* HistoryStore.swift in Sources */,
 				B92A18A74D93A4A5C057A5EF /* HistoryStoreLive.swift in Sources */,
 				D4777567135F37A0CAF1FA00 /* HistoryStoreNoop.swift in Sources */,
