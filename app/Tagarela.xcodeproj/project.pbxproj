@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		017F3DE520AC6BCA0882BF02 /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE5CBBDE375CD9B287356A58 /* MenuBarController.swift */; };
+		02B791183CD66E9D1009260B /* ToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B24E50595A03018A6EACB7C /* ToastView.swift */; };
 		053FC805D48C1A035DA6C789 /* HotkeyServiceLive.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3C8FD6338B566BC92448293 /* HotkeyServiceLive.swift */; };
 		05737F2F488BA8F60A638502 /* OnboardingCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD3F6E32DEE6D02B932E861 /* OnboardingCoordinator.swift */; };
 		0625471C404A22DE5A3040A3 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92947106E01306287DDA490B /* DesignSystem.swift */; };
@@ -145,6 +146,7 @@
 		2FC6EF683588FB78503E090B /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		33F19FE89DB89426AFE260B8 /* WaveBars.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveBars.swift; sourceTree = "<group>"; };
 		34D03471F0F19E467A741ED6 /* HistoryStoreLive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryStoreLive.swift; sourceTree = "<group>"; };
+		3B24E50595A03018A6EACB7C /* ToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastView.swift; sourceTree = "<group>"; };
 		3ED9DDFE385D1F49BF9DC9B6 /* TokenCounterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenCounterTests.swift; sourceTree = "<group>"; };
 		4084B44A2E36CF14BE64862A /* BackendSubmenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendSubmenu.swift; sourceTree = "<group>"; };
 		48A38EEE3C74B26A58569FDF /* HotkeyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyService.swift; sourceTree = "<group>"; };
@@ -549,6 +551,7 @@
 				72D87FE39418F9229E42065B /* Toast.swift */,
 				4CA8407C5F4A3FCEEA500C5B /* ToastCenter.swift */,
 				AC6021940DB203F4703C9623 /* ToastKind.swift */,
+				3B24E50595A03018A6EACB7C /* ToastView.swift */,
 			);
 			path = Toast;
 			sourceTree = "<group>";
@@ -746,6 +749,7 @@
 				1ACA4D266E12D45EDAB6DE18 /* Toast.swift in Sources */,
 				1ED4C51A07338B23B42078E4 /* ToastCenter.swift in Sources */,
 				4692961AE3F053121202C809 /* ToastKind.swift in Sources */,
+				02B791183CD66E9D1009260B /* ToastView.swift in Sources */,
 				3A8FDD7D2A62358C77D79CD5 /* TokenCounter.swift in Sources */,
 				7CFB0DDDA053BAAF6A2A90F6 /* Transcribing.swift in Sources */,
 				7E89DE5BC85C3CA9311DFDDD /* Transcription.swift in Sources */,
