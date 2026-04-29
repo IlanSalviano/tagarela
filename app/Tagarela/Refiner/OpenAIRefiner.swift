@@ -3,6 +3,10 @@ import OSLog
 
 final class OpenAIRefiner: TextRefiner, @unchecked Sendable {
     private let logger = Logger(subsystem: "com.tagarela", category: "OpenAIRefiner")
+    /// Tamanho mínimo (em chars trimmed) pra acionar o refiner. Abaixo disso o LLM
+    /// tende a responder conversacionalmente em vez de processar (cleanup #3 da
+    /// Fase 2a). 8 chars deixa passar "ola" mas barra "" e " ".
+    private static let minRawLengthToRefine = 8
     private let session: URLSession
     private let keychain: KeychainService
     private let model: String
@@ -21,13 +25,11 @@ final class OpenAIRefiner: TextRefiner, @unchecked Sendable {
     var kind: RefinerKind { .openai }
 
     func refine(_ rawText: String, style: Style) async throws -> String {
-        // Guard de raw curto: evita LLM responder conversacionalmente quando o input
-        // é vazio ou quase vazio (cleanup #3 da Fase 2a). 8 chars é heurística simples
-        // que deixa passar "ola" mas barra "" e " ".
+        // Guard de raw curto — ver minRawLengthToRefine pra detalhes.
         let trimmed = rawText.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmed.count < 8 {
+        if trimmed.count < OpenAIRefiner.minRawLengthToRefine {
             logger.info("raw curto (\(trimmed.count, privacy: .public) chars), skip refine")
-            return rawText
+            return trimmed
         }
         let storedKey = (try? keychain.openAIKey()) ?? nil
         guard let key = storedKey, !key.isEmpty else {

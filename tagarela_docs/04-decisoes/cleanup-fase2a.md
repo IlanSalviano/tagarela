@@ -48,6 +48,7 @@ Com `gpt-5.4-mini` (default) + estilo "e-mail profissional", quando a transcriç
 **Proposta:** guard de tamanho mínimo do raw (< N chars) → pula refiner, injeta direto OU adicionar instrução no system prompt tipo "Se o ditado for vazio ou ininteligível, responda apenas com o texto original sem comentários."
 
 **Fix aplicado (2026-04-29):** guard de 8 chars (após trim de whitespace/newlines) no início de `OpenAIRefiner.refine(_:style:)`. Se `rawText` for menor, retorna direto sem chamar a API. 8 é heurística que deixa passar "ola" mas barra "" e " ". Implementado junto da injeção de `baseURL` (Tarefa 2 da fase 2b-1). 3 testes cobrindo: raw curto pula API; raw normal chama API; baseURL custom é usada na request.
+**Escopo:** guard é OpenAI-only por agora. `OllamaRefiner` não tem equivalente — cleanup #3 documentou só sintomas com OpenAI/gpt-5.4-mini, e o guard adiciona um overhead que pode ser mais opinativo do que necessário pro Ollama. Se Ollama exibir comportamento similar com algum modelo, abrir débito separado.
 
 ## 4. Logs do pipeline em `stderr` não chegam no Console.app — ✅ FECHADO 2026-04-29
 

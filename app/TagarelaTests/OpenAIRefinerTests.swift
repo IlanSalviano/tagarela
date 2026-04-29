@@ -34,7 +34,7 @@ final class OpenAIRefinerTests: XCTestCase {
     func test_success_returnsRefinedText() async throws {
         MockURLProtocol.responder = { _ in (self.httpResp(200), self.successBody("texto refinado")) }
         let r = makeRefiner()
-        let out = try await r.refine("texto cru", style: BuiltInStyles.conversaInformal)
+        let out = try await r.refine("texto cru suficientemente longo", style: BuiltInStyles.conversaInformal)
         XCTAssertEqual(out, "texto refinado")
     }
 
@@ -201,6 +201,34 @@ final class OpenAIRefinerTests: XCTestCase {
         let out = try await r.refine("isso é um texto longo o suficiente", style: BuiltInStyles.conversaInformal)
         XCTAssertEqual(out, "refinado")
         XCTAssertTrue(apiCalled)
+    }
+
+    func test_rawNoLimite7_skipa() async throws {
+        nonisolated(unsafe) var apiCalled = false
+        MockURLProtocol.responder = { _ in
+            apiCalled = true
+            return (HTTPURLResponse(url: URL(string:"https://x")!, statusCode: 200,
+                                    httpVersion: nil, headerFields: nil)!,
+                    Data(#"{"choices":[{"message":{"content":"refinado"}}]}"#.utf8))
+        }
+        let r = makeRefiner()
+        let out = try await r.refine("1234567", style: BuiltInStyles.conversaInformal)  // 7 chars trimmed
+        XCTAssertEqual(out, "1234567")
+        XCTAssertFalse(apiCalled, "guard deveria pular API com 7 chars (< 8)")
+    }
+
+    func test_rawNoLimite8_chamaAPI() async throws {
+        nonisolated(unsafe) var apiCalled = false
+        MockURLProtocol.responder = { _ in
+            apiCalled = true
+            return (HTTPURLResponse(url: URL(string:"https://x")!, statusCode: 200,
+                                    httpVersion: nil, headerFields: nil)!,
+                    Data(#"{"choices":[{"message":{"content":"refinado"}}]}"#.utf8))
+        }
+        let r = makeRefiner()
+        let out = try await r.refine("12345678", style: BuiltInStyles.conversaInformal)  // 8 chars trimmed
+        XCTAssertEqual(out, "refinado")
+        XCTAssertTrue(apiCalled, "guard deveria chamar API com 8 chars (limite >=8)")
     }
 
     func test_baseURL_customIsUsedInRequest() async throws {
