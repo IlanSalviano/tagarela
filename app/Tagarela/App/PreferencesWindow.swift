@@ -6,9 +6,14 @@ final class PreferencesWindow {
     private var window: NSWindow?
 
     func show(content: () -> AnyView) {
+        // Dismiss do popover do MenuBarExtra antes de qualquer ordering — sem
+        // isso a janela abre por trás do popover quando user clica
+        // "Preferências…" no menu da bandeja. Mesmo pattern aplicado em
+        // OpenAIKeyPromptWindow.
+        Self.dismissMenuBarExtraPopover()
         if let window {
-            window.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
+            window.makeKeyAndOrderFront(nil)
             return
         }
         let host = NSHostingController(rootView: content())
@@ -23,7 +28,21 @@ final class PreferencesWindow {
         // sobrescrita e tamanho nunca persiste entre sessões.
         win.setFrameAutosaveName("PreferencesWindow")
         self.window = win
-        win.makeKeyAndOrderFront(nil)
+        // activate antes do makeKey: garante que o app está em foreground
+        // quando a janela é mostrada (corrige z-order vs popover do MenuBarExtra).
         NSApp.activate(ignoringOtherApps: true)
+        win.makeKeyAndOrderFront(nil)
+    }
+
+    /// Fecha o popover do `MenuBarExtra(style: .window)` se estiver visível.
+    /// SwiftUI não expõe API pra isso — identificamos a janela pelo nome da classe interna.
+    /// Mesmo helper usado em `OpenAIKeyPromptWindow`.
+    private static func dismissMenuBarExtraPopover() {
+        for window in NSApp.windows where window.isVisible {
+            let typeName = String(describing: type(of: window))
+            if typeName.contains("MenuBarExtra") || typeName.contains("NSStatusBarWindow") {
+                window.orderOut(nil)
+            }
+        }
     }
 }
