@@ -29,6 +29,7 @@ final class AppContainer: ObservableObject {
     let customStyleStoreLive: CustomStyleStoreLive?
     let styleProvider: StyleProvider
     let keyPromptWindow: OpenAIKeyPromptWindow
+    let preferencesWindow = PreferencesWindow()
     private var cancellables: Set<AnyCancellable> = []
 
     @Published var showOnboarding: Bool
@@ -219,6 +220,23 @@ final class AppContainer: ObservableObject {
                 Logger.tagarela.info("activationPolicy back to .accessory")
             }
         }
+    }
+
+    @MainActor
+    func openPreferences() {
+        let view = PreferencesRoot(
+            prefs: prefs,
+            styleProvider: styleProvider,
+            customStore: customStyleStore,
+            ollamaModelLister: { [weak self] in
+                OllamaModelLister(
+                    session: .shared,
+                    baseURL: URL(string: self?.prefs.ollamaBaseURL ?? "")
+                        ?? URL(string: "http://localhost:11434")!)
+            },
+            openAIKeyEditor: { [weak self] in self?.keyPromptWindow.show() },
+            healthChecker: healthChecker)
+        preferencesWindow.show(content: { AnyView(view) })
     }
 
     func finishOnboarding() {

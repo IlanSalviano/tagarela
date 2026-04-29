@@ -47,6 +47,14 @@ struct TagarelaApp: App {
         .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)
         .defaultSize(width: 560, height: 560)
+        .commands {
+            CommandGroup(replacing: .appSettings) {
+                Button(String(localized: "preferences.menu.item", defaultValue: "Preferências…")) {
+                    container.openPreferences()
+                }
+                .keyboardShortcut(",", modifiers: .command)
+            }
+        }
     }
 }
 
