@@ -30,15 +30,15 @@ struct PreferencesRoot: View {
             .navigationSplitViewColumnWidth(min: 180, ideal: 200, max: 240)
         } detail: {
             switch selection {
-            case .geral:         GeneralView()
+            case .geral:         GeneralView(prefs: prefs)
             case .refinerGeral:  RefinerGeneralView()
             case .refinerOllama: RefinerOllamaView()
             case .refinerOpenAI: RefinerOpenAIView()
             case .estilos:       StylesView()
-            case .audio:         AudioView()
-            case .historico:     HistoryView()
-            case .vocabulario:   VocabularyView()
-            case .atalhos:       ShortcutsView()
+            case .audio:         AudioView(prefs: prefs)
+            case .historico:     HistoryView(prefs: prefs)
+            case .vocabulario:   VocabularyView(prefs: prefs)
+            case .atalhos:       ShortcutsView(prefs: prefs)
             }
         }
         .frame(minWidth: 600, idealWidth: 720, minHeight: 400, idealHeight: 520)
