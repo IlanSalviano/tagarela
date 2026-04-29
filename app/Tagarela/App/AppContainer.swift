@@ -22,6 +22,7 @@ final class AppContainer: ObservableObject {
     let indicatorPanel = FloatingIndicatorPanel()
     let historyStore: HistoryStore
     let customStyleStore: CustomStyleStore
+    let styleProvider: StyleProvider
     let keyPromptWindow: OpenAIKeyPromptWindow
     private var cancellables: Set<AnyCancellable> = []
 
@@ -46,28 +47,6 @@ final class AppContainer: ObservableObject {
         let healthChecker = OllamaHealthChecker(
             session: session,
             baseURL: URL(string: prefs.ollamaBaseURL) ?? URL(string: "http://localhost:11434")!)
-        // weak prefs: defesa contra deallocação prematura. Na prática, AppContainer
-        // vive durante toda a vida do app, então fatalError aqui é inalcançável.
-        let factory = RefinerFactory(
-            prefs: prefs,
-            openAI: { [weak prefs, keychain] in
-                guard let prefs else { fatalError("prefs deallocated") }
-                return OpenAIRefiner(session: session,
-                                     keychain: keychain,
-                                     baseURL: prefs.openAIEndpoint.baseURL,
-                                     model: prefs.openAIModel,
-                                     timeoutSec: prefs.refinerTimeoutSec)
-            },
-            ollama: { [weak prefs, healthChecker] in
-                guard let prefs else { fatalError("prefs deallocated") }
-                return OllamaRefiner(
-                    session: session,
-                    baseURL: URL(string: prefs.ollamaBaseURL) ?? URL(string: "http://localhost:11434")!,
-                    model: prefs.ollamaModel,
-                    timeoutSec: prefs.refinerTimeoutSec,
-                    healthChecker: healthChecker)
-            })
-
         // Container SwiftData compartilhado entre HistoryStoreLive e CustomStyleStoreLive.
         // Falha → ambos caem em Noop. (Fase 2b-1)
         let sharedContainer: ModelContainer? = try? HistoryStoreLive.sharedContainer()
@@ -91,6 +70,31 @@ final class AppContainer: ObservableObject {
             customStyleStore = CustomStyleStoreNoop()
         }
 
+        let styleProvider = StyleProvider(customStore: customStyleStore)
+
+        // weak prefs: defesa contra deallocação prematura. Na prática, AppContainer
+        // vive durante toda a vida do app, então fatalError aqui é inalcançável.
+        let factory = RefinerFactory(
+            prefs: prefs,
+            styleProvider: styleProvider,
+            openAI: { [weak prefs, keychain] in
+                guard let prefs else { fatalError("prefs deallocated") }
+                return OpenAIRefiner(session: session,
+                                     keychain: keychain,
+                                     baseURL: prefs.openAIEndpoint.baseURL,
+                                     model: prefs.openAIModel,
+                                     timeoutSec: prefs.refinerTimeoutSec)
+            },
+            ollama: { [weak prefs, healthChecker] in
+                guard let prefs else { fatalError("prefs deallocated") }
+                return OllamaRefiner(
+                    session: session,
+                    baseURL: URL(string: prefs.ollamaBaseURL) ?? URL(string: "http://localhost:11434")!,
+                    model: prefs.ollamaModel,
+                    timeoutSec: prefs.refinerTimeoutSec,
+                    healthChecker: healthChecker)
+            })
+
         let keyPromptWindow = OpenAIKeyPromptWindow(keychain: keychain)
 
         self.permissions = permissions
@@ -104,6 +108,7 @@ final class AppContainer: ObservableObject {
         self.hotkeyService = hotkeyService
         self.historyStore = historyStore
         self.customStyleStore = customStyleStore
+        self.styleProvider = styleProvider
         self.keyPromptWindow = keyPromptWindow
         self.pipeline = PipelineCoordinator(
             audio: audio,
@@ -137,6 +142,7 @@ final class AppContainer: ObservableObject {
         wirePipelineToAppState()
         wirePermissionsToAppState()
         wireHealthCheckerInvalidation(prefs: prefs, healthChecker: healthChecker)
+        Task { await customStyleStore.reload() }
 
         if !showOnboarding {
             ensureMicPermission()

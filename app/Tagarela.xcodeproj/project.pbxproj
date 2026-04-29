@@ -33,6 +33,7 @@
 		3D3BA1DE80B62401CDA1813B /* PipelineCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A0F0B03EE5F5FB89DE08B9 /* PipelineCoordinatorTests.swift */; };
 		40BF54990CABDC54B6F1C490 /* HistoryStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E95BE6F37BB77AB9308F1BF /* HistoryStoreTests.swift */; };
 		48E8B9B735C1CC22695F3F2F /* PermissionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86440E3E743253F4C26F8451 /* PermissionService.swift */; };
+		49B0A36CF4734B4B42AD0B42 /* StyleProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85CFBE0BCC471B3A68F474EC /* StyleProviderTests.swift */; };
 		4EF88190CF8123AF3D9D9BF6 /* CustomStyleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09C9789A9548B488C652FF9 /* CustomStyleTests.swift */; };
 		50C6384D0A9534712D2DF346 /* PermissionServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38D1EC0BE929E9255E6D405 /* PermissionServiceTests.swift */; };
 		51A8AB80127108D2D3F8A704 /* OllamaHealthChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4139BFBDBEB25C8A6F0E730 /* OllamaHealthChecker.swift */; };
@@ -78,6 +79,7 @@
 		C92FA6C50DD3D346C24C940A /* PermissionServiceLive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 827CCE37EBEA134265121AF8 /* PermissionServiceLive.swift */; };
 		D01132A4843AAD504C18AC1A /* CustomStyleStoreLive.swift in Sources */ = {isa = PBXBuildFile; fileRef = E229AB7DD897353C67D3F49E /* CustomStyleStoreLive.swift */; };
 		D184234EF281996B98B43E86 /* RefinerErrorMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA50651B0097577FB6353079 /* RefinerErrorMapperTests.swift */; };
+		D1A93967CD63EEA29E690078 /* StyleProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D55AD4214FB11682E68510 /* StyleProvider.swift */; };
 		D3B91FA9784977324C183175 /* Style.swift in Sources */ = {isa = PBXBuildFile; fileRef = A539AA5E429530984A675838 /* Style.swift */; };
 		D4257FEC403C6F3EEFB5D4DB /* OllamaRefinerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B78197C597CBF6A59ECEEA76 /* OllamaRefinerTests.swift */; };
 		D44AC44AFA2D08CC9A8111F5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0B2194D608A5F68AEE4F7C69 /* Assets.xcassets */; };
@@ -142,6 +144,7 @@
 		82624846B13D44387F031C84 /* Transcribing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transcribing.swift; sourceTree = "<group>"; };
 		827CCE37EBEA134265121AF8 /* PermissionServiceLive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionServiceLive.swift; sourceTree = "<group>"; };
 		845129F4E9D16A1A7E620CF0 /* OllamaModelLister.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OllamaModelLister.swift; sourceTree = "<group>"; };
+		85CFBE0BCC471B3A68F474EC /* StyleProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyleProviderTests.swift; sourceTree = "<group>"; };
 		8642522EEA745BE571EDCCC5 /* RefinerFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefinerFactory.swift; sourceTree = "<group>"; };
 		86440E3E743253F4C26F8451 /* PermissionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionService.swift; sourceTree = "<group>"; };
 		8725E91CBBF02586037271E2 /* HistoryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryStore.swift; sourceTree = "<group>"; };
@@ -174,6 +177,7 @@
 		C7EBB86EF951B5C4D72D2C4A /* TextRefiner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextRefiner.swift; sourceTree = "<group>"; };
 		CDA671BF3E800969A73A8EF5 /* Wordmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Wordmark.swift; sourceTree = "<group>"; };
 		D09C9789A9548B488C652FF9 /* CustomStyleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomStyleTests.swift; sourceTree = "<group>"; };
+		D1D55AD4214FB11682E68510 /* StyleProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyleProvider.swift; sourceTree = "<group>"; };
 		D4139BFBDBEB25C8A6F0E730 /* OllamaHealthChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OllamaHealthChecker.swift; sourceTree = "<group>"; };
 		D5AAD7252267D4B8F9699DFF /* HistoryStoreNoop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryStoreNoop.swift; sourceTree = "<group>"; };
 		D935115B6E9C71348D73E53F /* AudioCapturing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioCapturing.swift; sourceTree = "<group>"; };
@@ -323,6 +327,7 @@
 				EA50651B0097577FB6353079 /* RefinerErrorMapperTests.swift */,
 				08409FB81EE882100E04E4CF /* RefinerFactoryTests.swift */,
 				E68546BC2AA01D348444B929 /* RemoteRefinerConfigTests.swift */,
+				85CFBE0BCC471B3A68F474EC /* StyleProviderTests.swift */,
 				8E9B177C502566925C655290 /* StyleTests.swift */,
 				3ED9DDFE385D1F49BF9DC9B6 /* TokenCounterTests.swift */,
 			);
@@ -447,6 +452,7 @@
 				8642522EEA745BE571EDCCC5 /* RefinerFactory.swift */,
 				C658A1FA765D0031A186BB22 /* RemoteRefinerConfig.swift */,
 				A539AA5E429530984A675838 /* Style.swift */,
+				D1D55AD4214FB11682E68510 /* StyleProvider.swift */,
 				C7EBB86EF951B5C4D72D2C4A /* TextRefiner.swift */,
 				6D403F8BAFCB53E3F2460AF6 /* TokenCounter.swift */,
 			);
@@ -625,6 +631,7 @@
 				F11CF8F05C71CAC179EAEA5D /* RemoteRefinerConfig.swift in Sources */,
 				9B791DDD20F7F9797B8BCF92 /* StateRow.swift in Sources */,
 				D3B91FA9784977324C183175 /* Style.swift in Sources */,
+				D1A93967CD63EEA29E690078 /* StyleProvider.swift in Sources */,
 				3B18FD726E3947F06D8D1F30 /* StyleSubmenu.swift in Sources */,
 				8DB6F64CD8DA02B106FCAB21 /* TagarelaApp.swift in Sources */,
 				5F893074B312F218A17C07D7 /* TextRefiner.swift in Sources */,
@@ -660,6 +667,7 @@
 				D184234EF281996B98B43E86 /* RefinerErrorMapperTests.swift in Sources */,
 				BD64F87722132F46B9A177A1 /* RefinerFactoryTests.swift in Sources */,
 				81323C2BE4C6733126B398E0 /* RemoteRefinerConfigTests.swift in Sources */,
+				49B0A36CF4734B4B42AD0B42 /* StyleProviderTests.swift in Sources */,
 				8FECD110F77CE391093D0C4E /* StyleTests.swift in Sources */,
 				9D3DBD5FA1E5D9A56E91B893 /* TokenCounterTests.swift in Sources */,
 			);

@@ -6,6 +6,15 @@ final class RefinerFactoryTests: XCTestCase {
     private var prefs: PreferencesStore!
     private let suite = "tagarela.tests.refinerfactory"
 
+    // Minimal fake store for tests that only need built-in styles.
+    private final class FakeCustomStore: CustomStyleStore, ObservableObject {
+        var styles: [CustomStyle] = []
+        func reload() async {}
+        func create(name: String, systemPrompt: String, appendCodeSwitching: Bool) async throws -> CustomStyle { fatalError() }
+        func update(_ style: CustomStyle) async throws { fatalError() }
+        func delete(_ style: CustomStyle) async throws { fatalError() }
+    }
+
     override func setUp() async throws {
         let defaults = UserDefaults(suiteName: suite)!
         defaults.removePersistentDomain(forName: suite)
@@ -15,7 +24,8 @@ final class RefinerFactoryTests: XCTestCase {
     private func makeFactory(openAI: @escaping () -> OpenAIRefiner = { fatalError("openAI not expected") },
                              ollama: @escaping () -> OllamaRefiner = { fatalError("ollama not expected") })
     -> RefinerFactory {
-        RefinerFactory(prefs: prefs, openAI: openAI, ollama: ollama)
+        let styleProvider = StyleProvider(customStore: FakeCustomStore())
+        return RefinerFactory(prefs: prefs, styleProvider: styleProvider, openAI: openAI, ollama: ollama)
     }
 
     func test_currentWithRefinerKindNone_returnsIdentity() {
@@ -61,6 +71,7 @@ final class RefinerFactoryTests: XCTestCase {
         nonisolated(unsafe) var seenBaseURL: URL?
         let factory = RefinerFactory(
             prefs: prefs,
+            styleProvider: StyleProvider(customStore: FakeCustomStore()),
             openAI: { [weak self] in
                 guard let self else { fatalError() }
                 seenBaseURL = self.prefs.openAIEndpoint.baseURL
