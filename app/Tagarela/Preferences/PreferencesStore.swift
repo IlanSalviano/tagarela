@@ -41,6 +41,9 @@ final class PreferencesStore: ObservableObject {
     }
     @Published var openAIEndpoint: OpenAIEndpoint {
         didSet {
+            // try? é seguro aqui: OpenAIEndpoint só tem String + URL (codifica como String).
+            // Se um campo não-Codable for adicionado no futuro, este try? mascara o erro —
+            // adicionar log ou trocar pra try! com fatalError em debug.
             if let data = try? JSONEncoder().encode(openAIEndpoint) {
                 defaults.set(data, forKey: PreferencesKey.openAIEndpoint)
             }

@@ -30,5 +30,5 @@ enum PreferencesDefaults {
     static let audioBoostMaxGainRange: ClosedRange<Float> = 1...50
     static let openAIEndpoint: OpenAIEndpoint = OpenAIEndpoint(
         provider: .official,
-        baseURL: URL(string: "https://api.openai.com/v1")!)
+        baseURL: OpenAIEndpointDefaults.defaultURL(for: .official)!)
 }

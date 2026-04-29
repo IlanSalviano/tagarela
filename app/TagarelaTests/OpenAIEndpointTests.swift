@@ -21,6 +21,7 @@ final class OpenAIEndpointTests: XCTestCase {
     }
 
     func test_allProvidersAreCaseIterable() {
-        XCTAssertEqual(OpenAIProvider.allCases.count, 4)
+        XCTAssertEqual(Set(OpenAIProvider.allCases),
+                       Set([.official, .openrouter, .lmstudio, .custom]))
     }
 }
