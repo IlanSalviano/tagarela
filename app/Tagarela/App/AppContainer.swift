@@ -321,17 +321,20 @@ final class AppContainer: ObservableObject {
     }
 
     private func refreshIndicator(for state: PipelineState) {
-        switch state {
-        case .idle:
+        // Visibility rule: state != .idle OU toast pendente → visible.
+        // toastCenter ainda não foi adicionado ao AppContainer (Tarefa 11);
+        // nesta tarefa usar toast: nil. T11 adiciona observação real.
+        if case .idle = state {
             indicatorPanel.hide()
-        default:
-            let pipelineRef = self.pipeline
-            indicatorPanel.show(rootView:
-                IndicatorPill(state: state) {
-                    Task { await pipelineRef.handle(.cancel) }
-                }
-            )
+            return
         }
+        let pipelineRef = self.pipeline
+        indicatorPanel.show(
+            state: state,
+            variant: prefs.indicatorVariant,
+            toast: nil,
+            onCancel: { Task { await pipelineRef.handle(.cancel) } },
+            onToastDismiss: { /* T11 conecta */ })
     }
 }
 
