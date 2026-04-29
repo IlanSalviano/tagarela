@@ -16,9 +16,10 @@ final class OpenAIKeyPromptWindow {
     }
 
     func show() {
+        Self.dismissMenuBarExtraPopover()
         if let existing = window {
-            existing.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
+            existing.makeKeyAndOrderFront(nil)
             return
         }
         let view = OpenAIKeyPromptView(
@@ -27,7 +28,7 @@ final class OpenAIKeyPromptWindow {
             onSaved:  { [weak self] in self?.close(canceled: false) })
         let host = NSHostingController(rootView: view)
         let panel = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 360, height: 220),
+            contentRect: NSRect(x: 0, y: 0, width: 360, height: 240),
             styleMask: [.titled, .closable],
             backing: .buffered, defer: false)
         panel.title = NSLocalizedString("openai.key.window.title",
@@ -35,11 +36,23 @@ final class OpenAIKeyPromptWindow {
                                         comment: "")
         panel.contentViewController = host
         panel.center()
-        panel.isFloatingPanel = true
-        panel.becomesKeyOnlyIfNeeded = false
+        // Acima do popover do MenuBarExtra (que vive em .popUpMenu = 101).
+        panel.level = NSWindow.Level(rawValue: NSWindow.Level.popUpMenu.rawValue + 1)
+        panel.hidesOnDeactivate = false
         self.window = panel
         NSApp.activate(ignoringOtherApps: true)
         panel.makeKeyAndOrderFront(nil)
+    }
+
+    /// Fecha o popover do `MenuBarExtra(style: .window)` se estiver visível.
+    /// SwiftUI não expõe API pra isso — identificamos a janela pelo nome da classe interna.
+    private static func dismissMenuBarExtraPopover() {
+        for window in NSApp.windows where window.isVisible {
+            let typeName = String(describing: type(of: window))
+            if typeName.contains("MenuBarExtra") || typeName.contains("NSStatusBarWindow") {
+                window.orderOut(nil)
+            }
+        }
     }
 
     private func close(canceled: Bool) {
@@ -55,6 +68,7 @@ private struct OpenAIKeyPromptView: View {
     let onSaved: () -> Void
     @State private var keyText: String = ""
     @State private var inlineError: String?
+    @State private var existingKeyHint: String?
 
     private static let validKeyPattern = #/^sk-[A-Za-z0-9_\-]{20,}$/#
 
@@ -66,6 +80,15 @@ private struct OpenAIKeyPromptView: View {
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
+            if let existingKeyHint {
+                (Text(NSLocalizedString("openai.key.existing.prefix",
+                    value: "Key cadastrada: ", comment: ""))
+                + Text(existingKeyHint).bold()
+                + Text(NSLocalizedString("openai.key.existing.suffix",
+                    value: ". Digite uma nova pra substituir.", comment: "")))
+                    .font(.callout)
+                    .foregroundStyle(.primary)
+            }
             SecureField("sk-…", text: $keyText)
                 .textFieldStyle(.roundedBorder)
             if let inlineError {
@@ -80,7 +103,6 @@ private struct OpenAIKeyPromptView: View {
                     .foregroundStyle(.orange)
                     .font(.caption)
             } else {
-                // Slot vazio — preserva altura
                 Text(" ").font(.caption)
             }
             HStack {
@@ -93,7 +115,14 @@ private struct OpenAIKeyPromptView: View {
             }
         }
         .padding(20)
-        .frame(width: 360, height: 220)
+        .frame(width: 360, height: 240)
+        .onAppear {
+            if let key = (try? keychain.openAIKey()) ?? nil, !key.isEmpty {
+                existingKeyHint = Self.mask(key)
+            } else {
+                existingKeyHint = nil
+            }
+        }
     }
 
     private func save() {
@@ -104,5 +133,10 @@ private struct OpenAIKeyPromptView: View {
             inlineError = NSLocalizedString("openai.key.error.save",
                 value: "Não foi possível salvar — tente de novo.", comment: "")
         }
+    }
+
+    private static func mask(_ key: String) -> String {
+        let suffixCount = min(4, key.count)
+        return "sk-…\(String(key.suffix(suffixCount)))"
     }
 }

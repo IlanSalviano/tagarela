@@ -22,6 +22,9 @@ actor PipelineCoordinator {
     private var startTime: Date?
     private var currentLevel: Double = 0
     private var recordingTasks: [Task<Void, Never>] = []
+    /// Sinaliza que o usuário cancelou durante .processing/.refining.
+    /// `runTranscribeAndInject` checa após cada await pra abortar antes de inject/save.
+    private var cancelled = false
 
     init(audio: AudioCapturing,
          transcriber: Transcribing,
@@ -92,13 +95,16 @@ actor PipelineCoordinator {
     }
 
     private func handleCancel() async {
+        logger.info("cancel received in state=\(String(describing: self.state), privacy: .public)")
         switch state {
         case .recording:
             cancelRecordingTasks()
             _ = try? await audio.stop()
             setState(.idle)
         case .processing, .refining:
-            // Sem cancel real do whisper na v1 — só marcamos idle e descartamos resultado
+            // Sem cancel real do whisper/refiner na v1 — sinalizamos via flag e
+            // `runTranscribeAndInject` aborta antes de inject/save no próximo await.
+            cancelled = true
             setState(.idle)
         case .idle, .error:
             break
@@ -139,6 +145,7 @@ actor PipelineCoordinator {
     }
 
     private func runTranscribeAndInject() async {
+        cancelled = false
         do {
             FileHandle.standardError.write(Data("[pipeline] stopping audio\n".utf8))
             let buffer = try await audio.stop()
@@ -154,6 +161,7 @@ actor PipelineCoordinator {
                 language: language,
                 initialPrompt: await initialPromptProvider()
             )
+            if cancelled { logger.info("cancelled after transcribe"); setState(.idle); return }
             FileHandle.standardError.write(Data("[pipeline] transcribed: '\(raw)'\n".utf8))
             let (refiner, style) = await refinerProvider()
             let actualRefinerKind: RefinerKind
@@ -180,9 +188,11 @@ actor PipelineCoordinator {
                     actualRefinerKind = identityFallback.kind
                 }
             }
-            FileHandle.standardError.write(Data("[pipeline] injecting (kind=\(actualRefinerKind.rawValue))\n".utf8))
+            if cancelled { logger.info("cancelled after refine"); setState(.idle); return }
+            logger.info("injecting (kind=\(actualRefinerKind.rawValue, privacy: .public))")
             let frontApp = try await injector.inject(text: refined)
-            FileHandle.standardError.write(Data("[pipeline] injected to \(frontApp ?? "?")\n".utf8))
+            if cancelled { logger.info("cancelled after inject"); setState(.idle); return }
+            logger.info("injected to \(frontApp ?? "?", privacy: .public)")
             do {
                 let maxItems = await historyMaxItemsProvider()
                 let maxDays = await historyMaxDaysProvider()

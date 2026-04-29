@@ -3,7 +3,7 @@ import SwiftUI
 struct MenuBarContent: View {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var prefs: PreferencesStore
-    var onSelectOpenAINeedsKey: () -> Void = {}
+    var onSelectOpenAINeedsKey: (RefinerKind) -> Void = { _ in }
     var onExplicitConfigureKey: () -> Void = {}
 
     var body: some View {

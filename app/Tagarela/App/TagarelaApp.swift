@@ -7,7 +7,7 @@ struct TagarelaApp: App {
     var body: some Scene {
         MenuBarExtra {
             MenuBarContent(
-                onSelectOpenAINeedsKey: { [container] in
+                onSelectOpenAINeedsKey: { [container] previous in
                     Task { @MainActor in
                         let hasKey: Bool
                         do {
@@ -16,11 +16,8 @@ struct TagarelaApp: App {
                             hasKey = false
                         }
                         guard !hasKey else { return }
-                        // Captura valor anterior pra rollback em cancel.
-                        // Aqui, o user JÁ trocou pra .openai (decisão do BackendSubmenu);
-                        // se cancelar, revert pra .none.
                         container.keyPromptWindow.onCancel = {
-                            container.prefs.refinerKind = .none
+                            container.prefs.refinerKind = previous
                         }
                         container.keyPromptWindow.onSaved = {}
                         container.keyPromptWindow.show()
