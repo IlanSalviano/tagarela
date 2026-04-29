@@ -43,6 +43,7 @@ Identidade, tokens, tipografia, cores, copy pt-BR, catálogo de componentes e bu
 - [`2026-04-29-tagarela-v1-fase2b1-design.md`](./specs/2026-04-29-tagarela-v1-fase2b1-design.md) — design da Fase 2b-1 (Preferências + Custom styles + Endpoints custom OpenAI + Localizable total). **Status: implementado** (branch `fase-2b1`, 115 testes verdes; aceite manual pendente).
 - [`2026-04-29-tagarela-v1-fase2b1-plan.md`](./specs/2026-04-29-tagarela-v1-fase2b1-plan.md) — plano de implementação da Fase 2b-1 (14 tarefas, +34 testes, suíte 115).
 - [`2026-04-29-tagarela-v1-fase2b2-design.md`](./specs/2026-04-29-tagarela-v1-fase2b2-design.md) — design da Fase 2b-2 (Histórico visível + Indicadores B/C/D + Toasts + Cleanup #2 da 2a + estados de permissão + menu "últimos 5"). **Status: aprovado para implementação.**
+- [`2026-04-29-tagarela-v1-fase2b2-plan.md`](./specs/2026-04-29-tagarela-v1-fase2b2-plan.md) — plano de implementação da Fase 2b-2 (16 tarefas, +27-32 testes, suíte alvo ~143-148).
 
 ---
 
