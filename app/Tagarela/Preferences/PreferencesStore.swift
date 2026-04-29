@@ -39,6 +39,13 @@ final class PreferencesStore: ObservableObject {
             defaults.set(audioBoostMaxGain, forKey: PreferencesKey.audioBoostMaxGain)
         }
     }
+    @Published var openAIEndpoint: OpenAIEndpoint {
+        didSet {
+            if let data = try? JSONEncoder().encode(openAIEndpoint) {
+                defaults.set(data, forKey: PreferencesKey.openAIEndpoint)
+            }
+        }
+    }
 
     init(defaults: UserDefaults = .standard,
          defaultStyleID: UUID) {
@@ -73,6 +80,13 @@ final class PreferencesStore: ObservableObject {
                                           PreferencesDefaults.audioBoostMaxGainRange.upperBound)
         } else {
             self.audioBoostMaxGain = PreferencesDefaults.audioBoostMaxGain
+        }
+
+        if let data = defaults.data(forKey: PreferencesKey.openAIEndpoint),
+           let decoded = try? JSONDecoder().decode(OpenAIEndpoint.self, from: data) {
+            self.openAIEndpoint = decoded
+        } else {
+            self.openAIEndpoint = PreferencesDefaults.openAIEndpoint
         }
     }
 

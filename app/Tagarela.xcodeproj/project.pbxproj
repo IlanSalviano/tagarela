@@ -37,6 +37,7 @@
 		58A935E47E4EADFB2381E629 /* PermissionStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62EFB96895497806042A4427 /* PermissionStatus.swift */; };
 		5F893074B312F218A17C07D7 /* TextRefiner.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7EBB86EF951B5C4D72D2C4A /* TextRefiner.swift */; };
 		600F7E9BA8B277A85D19AC27 /* KeychainServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C21B6DC47F003BD0D9CF4805 /* KeychainServiceTests.swift */; };
+		633DC8F03A720A10B472A412 /* OpenAIEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B1F1FCA91D0C01F7247F1C3 /* OpenAIEndpoint.swift */; };
 		758D7A361EA11C3E32E36E8A /* AudioCapturing.swift in Sources */ = {isa = PBXBuildFile; fileRef = D935115B6E9C71348D73E53F /* AudioCapturing.swift */; };
 		762BF631DAB5A7E717F0401E /* PipelineEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA2A3341042C032C2AD90B62 /* PipelineEvent.swift */; };
 		7906156A7FDCB39A8CD1EEF2 /* HotkeyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48A38EEE3C74B26A58569FDF /* HotkeyService.swift */; };
@@ -76,6 +77,7 @@
 		D44AC44AFA2D08CC9A8111F5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0B2194D608A5F68AEE4F7C69 /* Assets.xcassets */; };
 		D4777567135F37A0CAF1FA00 /* HistoryStoreNoop.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5AAD7252267D4B8F9699DFF /* HistoryStoreNoop.swift */; };
 		D6011D4EA9B97BB8CD07EFE1 /* RefinerErrorMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4B465BEE19AB4757FF27B58 /* RefinerErrorMapper.swift */; };
+		D6CA20473667604E696778CF /* OpenAIEndpointTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE27CF1064741F7D47CA0DCB /* OpenAIEndpointTests.swift */; };
 		E132445401CE971C386D1610 /* IdentityRefiner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89E2D30E8BD941C39FE3D792 /* IdentityRefiner.swift */; };
 		E681CDA890AA16DEDECB9DD7 /* BackendSubmenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4084B44A2E36CF14BE64862A /* BackendSubmenu.swift */; };
 		E80BA1C6085B483D0F6E92DA /* PreferencesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4E1ACFB5000E98F5B03733 /* PreferencesStore.swift */; };
@@ -123,6 +125,7 @@
 		6FD5358613FA8CC6BD09D9F5 /* StateRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateRow.swift; sourceTree = "<group>"; };
 		7123EDA993F7879F2D0F4FA3 /* OnboardModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardModel.swift; sourceTree = "<group>"; };
 		727AD7A472BE6C196EAA6002 /* TagarelaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TagarelaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7B1F1FCA91D0C01F7247F1C3 /* OpenAIEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIEndpoint.swift; sourceTree = "<group>"; };
 		7B1FA7FFEA9114C2D12839AC /* Preferences+Defaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Preferences+Defaults.swift"; sourceTree = "<group>"; };
 		7BD3F6E32DEE6D02B932E861 /* OnboardingCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingCoordinator.swift; sourceTree = "<group>"; };
 		7C1B5B143C23ACACE0B19BC6 /* AudioCaptureLive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioCaptureLive.swift; sourceTree = "<group>"; };
@@ -148,6 +151,7 @@
 		A71F1880249798ECC971911D /* OnboardingWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingWindow.swift; sourceTree = "<group>"; };
 		A8CECA9E4C80A61C089E6870 /* InjectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InjectorTests.swift; sourceTree = "<group>"; };
 		AC56152B24C02BAFC8827300 /* PipelineCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PipelineCoordinator.swift; sourceTree = "<group>"; };
+		AE27CF1064741F7D47CA0DCB /* OpenAIEndpointTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIEndpointTests.swift; sourceTree = "<group>"; };
 		AED216601F513596143B776B /* OnboardWelcome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardWelcome.swift; sourceTree = "<group>"; };
 		AF4E1ACFB5000E98F5B03733 /* PreferencesStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesStore.swift; sourceTree = "<group>"; };
 		B38D1EC0BE929E9255E6D405 /* PermissionServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionServiceTests.swift; sourceTree = "<group>"; };
@@ -292,6 +296,7 @@
 				A8CECA9E4C80A61C089E6870 /* InjectorTests.swift */,
 				C21B6DC47F003BD0D9CF4805 /* KeychainServiceTests.swift */,
 				B78197C597CBF6A59ECEEA76 /* OllamaRefinerTests.swift */,
+				AE27CF1064741F7D47CA0DCB /* OpenAIEndpointTests.swift */,
 				63E0CA135AF061EB8FA4E4A2 /* OpenAIRefinerTests.swift */,
 				B38D1EC0BE929E9255E6D405 /* PermissionServiceTests.swift */,
 				F3A0F0B03EE5F5FB89DE08B9 /* PipelineCoordinatorTests.swift */,
@@ -411,6 +416,7 @@
 				89E2D30E8BD941C39FE3D792 /* IdentityRefiner.swift */,
 				D4139BFBDBEB25C8A6F0E730 /* OllamaHealthChecker.swift */,
 				9D90CEE589F6BACD48866A3C /* OllamaRefiner.swift */,
+				7B1F1FCA91D0C01F7247F1C3 /* OpenAIEndpoint.swift */,
 				7F54A24A7539461F01EA2BC7 /* OpenAIRefiner.swift */,
 				4BEFD414690FBE88FE9E33AF /* RefinerError.swift */,
 				A4B465BEE19AB4757FF27B58 /* RefinerErrorMapper.swift */,
@@ -574,6 +580,7 @@
 				83CFA88301F2CAAEDD3F881C /* OnboardWelcome.swift in Sources */,
 				05737F2F488BA8F60A638502 /* OnboardingCoordinator.swift in Sources */,
 				9BECA633DC1B68388B63CCB9 /* OnboardingWindow.swift in Sources */,
+				633DC8F03A720A10B472A412 /* OpenAIEndpoint.swift in Sources */,
 				1C73D490F7F8111D44B38DD9 /* OpenAIKeyPromptWindow.swift in Sources */,
 				3CF0EFD18A8C1833C0F2C68F /* OpenAIRefiner.swift in Sources */,
 				48E8B9B735C1CC22695F3F2F /* PermissionService.swift in Sources */,
@@ -613,6 +620,7 @@
 				600F7E9BA8B277A85D19AC27 /* KeychainServiceTests.swift in Sources */,
 				143F5921AB16B24888C3404C /* MockURLProtocol.swift in Sources */,
 				D4257FEC403C6F3EEFB5D4DB /* OllamaRefinerTests.swift in Sources */,
+				D6CA20473667604E696778CF /* OpenAIEndpointTests.swift in Sources */,
 				A4D31BE7970D1374AAA35D2D /* OpenAIRefinerTests.swift in Sources */,
 				50C6384D0A9534712D2DF346 /* PermissionServiceTests.swift in Sources */,
 				3D3BA1DE80B62401CDA1813B /* PipelineCoordinatorTests.swift in Sources */,

@@ -28,6 +28,7 @@ final class PreferencesStoreTests: XCTestCase {
         XCTAssertEqual(store.historyMaxItems, 200)
         XCTAssertEqual(store.historyMaxDays, 30)
         XCTAssertEqual(store.audioBoostMaxGain, 20.0)
+        XCTAssertEqual(store.openAIEndpoint, PreferencesDefaults.openAIEndpoint)
     }
 
     func test_setRefinerKind_persistsAcrossInit() {
@@ -58,6 +59,15 @@ final class PreferencesStoreTests: XCTestCase {
         s1.setAudioBoostMaxGain(7.5)
         let s2 = PreferencesStore(defaults: defaults, defaultStyleID: dummyStyleID)
         XCTAssertEqual(s2.audioBoostMaxGain, 7.5, accuracy: 0.001)
+    }
+
+    func test_setOpenAIEndpoint_persistsAcrossInit() {
+        let endpoint = OpenAIEndpoint(provider: .lmstudio,
+                                       baseURL: URL(string: "http://localhost:1234/v1")!)
+        let s1 = PreferencesStore(defaults: defaults, defaultStyleID: dummyStyleID)
+        s1.openAIEndpoint = endpoint
+        let s2 = PreferencesStore(defaults: defaults, defaultStyleID: dummyStyleID)
+        XCTAssertEqual(s2.openAIEndpoint, endpoint)
     }
 
     func test_setRefinerKind_publishesToCombineSubscribers() {
