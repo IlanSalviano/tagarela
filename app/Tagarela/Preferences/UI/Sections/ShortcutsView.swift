@@ -8,7 +8,9 @@ struct ShortcutsView: View {
             Section(header: Text(String(localized: "preferences.shortcuts.header", defaultValue: "Atalhos atuais"))) {
                 LabeledContent(String(localized: "preferences.shortcuts.toggle",
                                        defaultValue: "Iniciar/parar ditado")) {
-                    Text("⌥ direito").font(.system(.body, design: .monospaced))
+                    Text(String(localized: "preferences.shortcuts.toggle.value",
+                                 defaultValue: "⌥ direito"))
+                        .font(.system(.body, design: .monospaced))
                 }
                 LabeledContent(String(localized: "preferences.shortcuts.cancel",
                                        defaultValue: "Cancelar")) {

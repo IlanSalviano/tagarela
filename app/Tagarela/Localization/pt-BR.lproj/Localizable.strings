@@ -1,5 +1,6 @@
 // Tagarela — Localizable.strings (pt-BR)
-// Apenas strings da Fase 2a. Migração total da Fase 1 fica pra 2b.
+// Strings user-facing das Fases 1 + 2a + 2b-1 (migração total feita na T12 da 2b-1).
+// Identifiers Swift continuam em inglês; este arquivo é a source of truth pt-BR.
 
 // Backend submenu
 "backend.none"   = "Sem LLM";
@@ -136,6 +137,7 @@
 // Preferences — Shortcuts
 "preferences.shortcuts.header" = "Atalhos atuais";
 "preferences.shortcuts.toggle" = "Iniciar/parar ditado";
+"preferences.shortcuts.toggle.value" = "⌥ direito";
 "preferences.shortcuts.cancel" = "Cancelar";
 "preferences.shortcuts.help"   = "Atalhos customizáveis chegam em uma versão futura.";
 
