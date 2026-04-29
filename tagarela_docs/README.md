@@ -25,8 +25,9 @@ _(a preencher)_ — análise do Wispr Flow, alternativas, decisões de paridade.
 - [`checklists/fase2a-manual.md`](./03-funcionalidades/checklists/fase2a-manual.md) — aceite manual da Fase 2a (backend submenu, style submenu, modal API key, fallback Identity, retenção do history, injeção em apps reais).
 
 ### 04 — Decisões (ADRs)
-- [`ADR-0001-sistema-visual.md`](./04-decisoes/ADR-0001-sistema-visual.md) — sistema visual, identidade, indicador default da v1, mudanças de escopo aceitas/recusadas.
+- [`ADR-0001-sistema-visual.md`](./04-decisoes/ADR-0001-sistema-visual.md) — sistema visual, identidade, indicador default da v1, mudanças de escopo aceitas/recusadas. **Revisado parcialmente pelo ADR-0004** (histórico viewer entra na 2b-2).
 - [`ADR-0003-pipeline-2a.md`](./04-decisoes/ADR-0003-pipeline-2a.md) — pipeline da Fase 2a: 16 decisões nucleares (refiners, persistência, UI mínima, cleanups #2 e #4).
+- [`ADR-0004-historico-em-preferencias.md`](./04-decisoes/ADR-0004-historico-em-preferencias.md) — histórico viewer mora dentro de Preferências > Histórico (revisa ADR-0001).
 - [`cleanup-fase1.md`](./04-decisoes/cleanup-fase1.md) — TODOs deixados na Fase 1 (L/R Option, promptTokens, drift visual). Revisitar em 2026-05-11.
 - [`cleanup-fase2a.md`](./04-decisoes/cleanup-fase2a.md) — achados do aceite manual da Fase 2a. Itens 1, 3 e 4 fechados em 2026-04-29. Itens 2 e 5 empurrados pra 2b-2 e 2b-3. Revisitar em 2026-05-12.
 - [`cleanup-fase2b1.md`](./04-decisoes/cleanup-fase2b1.md) — achados do aceite manual da Fase 2b-1 em 2026-04-29. 2 fixes aplicados durante o aceite (z-order popover, rewriter discipline pra custom styles); 2 conhecidos (histórico viewer = 2b-2, cancel HTTP = 2b-3). Revisitar em 2026-05-13.
@@ -41,6 +42,7 @@ Identidade, tokens, tipografia, cores, copy pt-BR, catálogo de componentes e bu
 - [`2026-04-27-tagarela-v1-fase2a-plan.md`](./specs/2026-04-27-tagarela-v1-fase2a-plan.md) — plano executado da Fase 2a (16 tarefas, 81 testes verdes ao fim).
 - [`2026-04-29-tagarela-v1-fase2b1-design.md`](./specs/2026-04-29-tagarela-v1-fase2b1-design.md) — design da Fase 2b-1 (Preferências + Custom styles + Endpoints custom OpenAI + Localizable total). **Status: implementado** (branch `fase-2b1`, 115 testes verdes; aceite manual pendente).
 - [`2026-04-29-tagarela-v1-fase2b1-plan.md`](./specs/2026-04-29-tagarela-v1-fase2b1-plan.md) — plano de implementação da Fase 2b-1 (14 tarefas, +34 testes, suíte 115).
+- [`2026-04-29-tagarela-v1-fase2b2-design.md`](./specs/2026-04-29-tagarela-v1-fase2b2-design.md) — design da Fase 2b-2 (Histórico visível + Indicadores B/C/D + Toasts + Cleanup #2 da 2a + estados de permissão + menu "últimos 5"). **Status: aprovado para implementação.**
 
 ---
 
