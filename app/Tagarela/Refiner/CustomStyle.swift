@@ -24,8 +24,24 @@ final class CustomStyle {
         self.updatedAt = updatedAt
     }
 
+    /// Cláusula obrigatória prefixada em todo custom style. Built-ins têm proteção
+    /// equivalente embutida em seus prompts ("Você refina ditados de voz... Não
+    /// adicione informação que não estava no original"). Sem isso, custom styles
+    /// se comportam como chat assistant: o LLM trata o input como pergunta e
+    /// responde, em vez de reescrever. Bug 12.2 do aceite manual da Fase 2b-1.
+    static let rewriterDiscipline = """
+    Você é um pós-processador de transcrição de voz em português brasileiro. \
+    NÃO responda ao que foi dito; apenas reescreva o ditado seguindo as regras abaixo. \
+    NÃO adicione informação além do que foi falado. NÃO faça comentários, perguntas \
+    ou interpretações.
+
+    Regras de reescrita:
+
+    """
+
     /// Converte o `CustomStyle` num `Style` consumível pelo `RefinerFactory`/refiners.
-    /// Cláusula de code-switching é anexada igual aos built-ins (BuiltInStyles).
+    /// Anexa: (1) `rewriterDiscipline` sempre (proteção contra LLM responder em vez
+    /// de transcrever), (2) cláusula de code-switching opcional via toggle.
     func asStyle() -> Style {
         let codeSwitchingClause = """
 
@@ -33,7 +49,8 @@ final class CustomStyle {
         (ex: cloud, deploy, pool, pattern, mutex). Corrija fonetizações óbvias do Whisper \
         (ex: 'loquei' → 'log it', 'diploiei' → 'deployei').
         """
-        let prompt = appendCodeSwitching ? systemPrompt + codeSwitchingClause : systemPrompt
+        var prompt = CustomStyle.rewriterDiscipline + systemPrompt
+        if appendCodeSwitching { prompt += codeSwitchingClause }
         return Style(id: id,
                      name: name,
                      systemPrompt: prompt,

@@ -18,13 +18,28 @@ final class CustomStyleTests: XCTestCase {
                        s.asStyle().systemPrompt.contains("termos técnicos"))
     }
 
-    func test_asStyle_withoutCodeSwitching_returnsRawPrompt() {
+    func test_asStyle_withoutCodeSwitching_keepsDisciplinePrefix() {
         let s = CustomStyle(name: "x", systemPrompt: "base", appendCodeSwitching: false)
-        XCTAssertEqual(s.asStyle().systemPrompt, "base")
+        let prompt = s.asStyle().systemPrompt
+        // Discipline prefix sempre presente
+        XCTAssertTrue(prompt.contains("NÃO responda"))
+        XCTAssertTrue(prompt.contains("base"))
+        // Sem code-switching
+        XCTAssertFalse(prompt.contains("code-switching"))
+        XCTAssertFalse(prompt.contains("termos técnicos"))
     }
 
     func test_asStyle_isBuiltInIsFalse() {
         let s = CustomStyle(name: "x", systemPrompt: "y", appendCodeSwitching: false)
         XCTAssertFalse(s.asStyle().isBuiltIn)
+    }
+
+    func test_asStyle_alwaysPrefixesRewriterDiscipline() {
+        // Built-ins têm proteção embutida no system prompt; custom styles
+        // dependem deste prefixo pra não virar chat assistant.
+        let s1 = CustomStyle(name: "x", systemPrompt: "abc", appendCodeSwitching: false)
+        let s2 = CustomStyle(name: "y", systemPrompt: "def", appendCodeSwitching: true)
+        XCTAssertTrue(s1.asStyle().systemPrompt.hasPrefix("Você é um pós-processador"))
+        XCTAssertTrue(s2.asStyle().systemPrompt.hasPrefix("Você é um pós-processador"))
     }
 }
