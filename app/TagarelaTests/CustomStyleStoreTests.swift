@@ -45,6 +45,9 @@ final class CustomStyleStoreTests: XCTestCase {
         s.name = "x updated"
         try await store.update(s)
         XCTAssertGreaterThan(s.updatedAt, original)
+        // Roundtrip: reload e confirma que o name nova bateu na persistence
+        await store.reload()
+        XCTAssertEqual(store.styles.first?.name, "x updated")
     }
 
     func test_delete_callsCallbackWithDeletedID() async throws {
@@ -69,5 +72,37 @@ final class CustomStyleStoreTests: XCTestCase {
             _ = try await store.create(name: "x", systemPrompt: "y", appendCodeSwitching: false)
             XCTFail("expected throw")
         } catch {}
+    }
+
+    func test_sharedContainer_storesDoNotInterfere() async throws {
+        // Container in-memory com ambos schemas, compartilhado entre os 2 stores
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: Transcription.self, CustomStyle.self,
+                                            configurations: config)
+        let history = HistoryStoreLive(container: container)
+        let custom = CustomStyleStoreLive(container: container) { _ in }
+
+        // Inserir registro em cada store
+        try await history.save(
+            TranscriptionInput(durationSeconds: 1.0,
+                               rawText: "raw", refinedText: "refined",
+                               refinerKind: "ollama",
+                               llmModelName: "gemma4:e4b",
+                               whisperModelName: "large-v3",
+                               styleName: "informal",
+                               frontmostAppBundleID: nil),
+            maxItems: 100, maxDays: 30)
+        _ = try await custom.create(name: "commits",
+                                     systemPrompt: "p",
+                                     appendCodeSwitching: false)
+
+        // Cada store vê só os seus
+        let recents = try await history.recent(limit: 10)
+        XCTAssertEqual(recents.count, 1)
+        XCTAssertEqual(recents.first?.rawText, "raw")
+
+        await custom.reload()
+        XCTAssertEqual(custom.styles.count, 1)
+        XCTAssertEqual(custom.styles.first?.name, "commits")
     }
 }
