@@ -189,7 +189,9 @@ final class PipelineCoordinatorTests: XCTestCase {
         Task {
             for await ev in p.events {
                 if case .injectionFailed = ev { return true }
-                if case .finished = ev { return false }
+                // .finished não é emitido no path de inject error (return early
+                // após setState(.idle)). Sentinel real é .stateChanged(.idle).
+                if case .stateChanged(.idle) = ev { return false }
             }
             return false
         }
