@@ -5,12 +5,16 @@ struct StateRow: View {
 
     private var sub: String {
         switch state {
-        case .idle: return "right ⌥ pra começar"
+        case .idle:
+            return String(localized: "pipeline.sub.idle", defaultValue: "right ⌥ pra começar")
         case .recording(let s, _):
             return String(format: "%02d:%02d · 16 kHz mono", Int(s) / 60, Int(s) % 60)
-        case .processing: return "whisper large-v3"
-        case .refining: return "identity (sem llm)"
-        case .error: return "fallback: texto cru"
+        case .processing:
+            return String(localized: "pipeline.sub.processing", defaultValue: "whisper large-v3")
+        case .refining:
+            return String(localized: "pipeline.sub.refining", defaultValue: "identity (sem llm)")
+        case .error:
+            return String(localized: "pipeline.sub.error", defaultValue: "fallback: texto cru")
         }
     }
 

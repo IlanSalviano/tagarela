@@ -21,3 +21,136 @@
 // Common buttons
 "common.cancel" = "Cancelar";
 "common.save"   = "Salvar";
+"common.delete" = "Apagar";
+
+// Pipeline state labels (StateRow / AppState)
+"pipeline.state.idle"       = "pronto";
+"pipeline.state.recording"  = "gravando";
+"pipeline.state.processing" = "transcrevendo";
+"pipeline.state.refining"   = "refinando";
+
+// Pipeline sub-labels (StateRow)
+"pipeline.sub.idle"       = "right ⌥ pra começar";
+"pipeline.sub.processing" = "whisper large-v3";
+"pipeline.sub.refining"   = "identity (sem llm)";
+"pipeline.sub.error"      = "fallback: texto cru";
+
+// Onboarding — Welcome (passo 1)
+"onboarding.step1.label"      = "PASSO 1 / 3";
+"onboarding.step1.name"       = "BOAS-VINDAS";
+"onboarding.welcome.headline" = "ditado por voz para qualquer coisa que você escreva.";
+"onboarding.welcome.body"     = "aperte ⌥ direito em qualquer app, fale, aperte de novo. o texto refinado aparece onde estiver o cursor. funciona offline. fala português.";
+"onboarding.button.continue"  = "continuar →";
+
+// Onboarding — Permissions (passo 2)
+"onboarding.step2.label"                   = "PASSO 2 / 3";
+"onboarding.perms.headline"                = "três permissões.";
+"onboarding.perms.body"                    = "o macOS exige isso pra app capturar áudio e atalhos globais. nada vai pra fora da máquina.";
+"onboarding.button.back"                   = "← voltar";
+"onboarding.perm.mic.name"                 = "microfone";
+"onboarding.perm.mic.why"                  = "captura sua voz pra transcrever. áudio nunca é salvo, só processado em memória.";
+"onboarding.perm.accessibility.name"       = "acessibilidade";
+"onboarding.perm.accessibility.why"        = "necessário pra registrar o atalho global e simular ⌘V no app de destino.";
+"onboarding.perm.inputmonitoring.name"     = "input monitoring";
+"onboarding.perm.inputmonitoring.why"      = "pra ouvir a tecla ⌥ direito mesmo quando outro app está em foco.";
+"onboarding.perm.status.granted"           = "concedida";
+"onboarding.perm.status.denied"            = "negada";
+"onboarding.perm.status.needed"            = "necessária";
+"onboarding.perm.button.openSettings"      = "abrir configurações";
+
+// Onboarding — Model download (passo 3)
+"onboarding.step3.label"              = "PASSO 3 / 3";
+"onboarding.model.headline"           = "modelos.";
+"onboarding.model.whisper.header"     = "WHISPER · TRANSCRIÇÃO";
+"onboarding.button.start"             = "começar →";
+"onboarding.model.badge.recommended"  = "RECOM.";
+
+// Preferences window
+"preferences.window.title"     = "Preferências";
+"preferences.menu.item"        = "Preferências…";
+
+// Preferences sections
+"preferences.section.geral"         = "Geral";
+"preferences.section.estilos"       = "Estilos";
+"preferences.section.audio"         = "Áudio";
+"preferences.section.historico"     = "Histórico";
+"preferences.section.vocabulario"   = "Vocabulário";
+"preferences.section.atalhos"       = "Atalhos";
+"preferences.section.refiner.group" = "Refiner";
+"preferences.section.refiner.geral"  = "Geral";
+"preferences.section.refiner.ollama" = "Ollama";
+"preferences.section.refiner.openai" = "OpenAI";
+
+// Preferences — Geral
+"preferences.geral.about.header" = "Sobre";
+"preferences.geral.version"      = "Versão";
+"preferences.geral.build"        = "Build";
+
+// Preferences — Refiner > Geral
+"preferences.refiner.geral.backend"          = "Backend";
+"preferences.refiner.geral.timeout.header"   = "Timeout";
+"preferences.refiner.geral.timeout.label"    = "Tempo máximo (s)";
+"preferences.refiner.geral.timeout.help"     = "Aplicado a OpenAI e Ollama. Padrão: 60s. Modelos lentos podem precisar de mais.";
+"refiner.kind.ollama"                        = "Ollama";
+"refiner.kind.openai"                        = "OpenAI";
+"refiner.kind.none"                          = "Sem LLM";
+
+// Preferences — Refiner > Ollama
+"preferences.refiner.ollama.endpoint.header"       = "Endpoint";
+"preferences.refiner.ollama.baseURL"               = "Base URL";
+"preferences.refiner.ollama.model.header"          = "Modelo";
+"preferences.refiner.ollama.loading"               = "Carregando lista…";
+"preferences.refiner.ollama.fallback.placeholder"  = "Digite o nome (ex: gemma4:e4b)";
+"preferences.refiner.ollama.model.label"           = "Modelo";
+"preferences.refiner.ollama.refresh"               = "Atualizar";
+"preferences.refiner.ollama.model.notInstalled"    = "(não instalado)";
+"preferences.refiner.ollama.offline"               = "Ollama offline. Digite o nome manualmente.";
+
+// Preferences — Refiner > OpenAI
+"preferences.refiner.openai.provider.header"   = "Provider";
+"preferences.refiner.openai.provider.official"  = "OpenAI oficial";
+"preferences.refiner.openai.provider.openrouter" = "OpenRouter";
+"preferences.refiner.openai.provider.lmstudio"  = "LM Studio";
+"preferences.refiner.openai.provider.custom"    = "URL custom";
+"preferences.refiner.openai.url.header"         = "Base URL";
+"preferences.refiner.openai.model.header"       = "Modelo";
+"preferences.refiner.openai.key.header"         = "API key";
+"preferences.refiner.openai.key.edit"           = "Alterar…";
+"preferences.refiner.openai.key.missing"        = "Não configurada";
+
+// Preferences — Audio
+"preferences.audio.boost.header"  = "Ganho de áudio";
+"preferences.audio.maxgain.label" = "Ganho máximo:";
+"preferences.audio.maxgain.help"  = "Compensa input gain baixo do microfone. Padrão: 20×.";
+
+// Preferences — History
+"preferences.history.retention.header" = "Retenção";
+"preferences.history.maxItems"         = "Máximo de itens";
+"preferences.history.maxDays"          = "Máximo de dias";
+"preferences.history.help"             = "Histórico é truncado a cada nova captura, mantendo o menor entre os dois limites.";
+
+// Preferences — Vocabulary
+"preferences.vocab.header" = "Vocabulário técnico";
+"preferences.vocab.help"   = "Termos passados como initial prompt pro Whisper, melhorando reconhecimento de jargão. Um por linha.";
+
+// Preferences — Shortcuts
+"preferences.shortcuts.header" = "Atalhos atuais";
+"preferences.shortcuts.toggle" = "Iniciar/parar ditado";
+"preferences.shortcuts.cancel" = "Cancelar";
+"preferences.shortcuts.help"   = "Atalhos customizáveis chegam em uma versão futura.";
+
+// Styles view
+"styles.badge.builtin"           = "PRONTO";
+"styles.add"                     = "Novo estilo custom";
+"styles.context.delete"          = "Apagar";
+"styles.delete.confirm.title"    = "Apagar estilo?";
+"styles.delete.confirm.info"     = "Esta ação não pode ser desfeita.";
+"styles.unavailable"             = "Custom styles indisponíveis (armazenamento offline)";
+
+// Custom style edit sheet
+"styles.edit.name"           = "Nome";
+"styles.edit.prompt"         = "System prompt";
+"styles.edit.codeswitch"     = "Anexar cláusula de code-switching";
+"styles.edit.title.create"   = "Novo estilo custom";
+"styles.edit.title.edit"     = "Editar estilo";
+"styles.edit.save.failed"    = "Não foi possível salvar: ";

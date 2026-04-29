@@ -11,39 +11,43 @@ struct OnboardPerms: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 6) {
-                Text("PASSO 2 / 3")
+                Text(String(localized: "onboarding.step2.label", defaultValue: "PASSO 2 / 3"))
                     .font(DS.Font.mono(9)).tracking(1.4).foregroundStyle(DS.Color.ink3)
-                Text("três permissões.")
+                Text(String(localized: "onboarding.perms.headline", defaultValue: "três permissões."))
                     .font(DS.Font.display(26)).foregroundStyle(DS.Color.ink)
-                Text("o macOS exige isso pra app capturar áudio e atalhos globais. nada vai pra fora da máquina.")
+                Text(String(localized: "onboarding.perms.body",
+                             defaultValue: "o macOS exige isso pra app capturar áudio e atalhos globais. nada vai pra fora da máquina."))
                     .font(DS.Font.ui(12)).foregroundStyle(DS.Color.ink2)
             }
             VStack(spacing: 10) {
-                permCard(name: "microfone",
+                permCard(name: String(localized: "onboarding.perm.mic.name", defaultValue: "microfone"),
                          status: snapshot.microphone,
-                         why: "captura sua voz pra transcrever. áudio nunca é salvo, só processado em memória.",
+                         why: String(localized: "onboarding.perm.mic.why",
+                                     defaultValue: "captura sua voz pra transcrever. áudio nunca é salvo, só processado em memória."),
                          onTap: onMicTap)
-                permCard(name: "acessibilidade",
+                permCard(name: String(localized: "onboarding.perm.accessibility.name", defaultValue: "acessibilidade"),
                          status: snapshot.accessibility,
-                         why: "necessário pra registrar o atalho global e simular ⌘V no app de destino.",
+                         why: String(localized: "onboarding.perm.accessibility.why",
+                                     defaultValue: "necessário pra registrar o atalho global e simular ⌘V no app de destino."),
                          onTap: onAccessibilityTap)
-                permCard(name: "input monitoring",
+                permCard(name: String(localized: "onboarding.perm.inputmonitoring.name", defaultValue: "input monitoring"),
                          status: snapshot.inputMonitoring,
-                         why: "pra ouvir a tecla ⌥ direito mesmo quando outro app está em foco.",
+                         why: String(localized: "onboarding.perm.inputmonitoring.why",
+                                     defaultValue: "pra ouvir a tecla ⌥ direito mesmo quando outro app está em foco."),
                          onTap: onInputMonitoringTap)
             }
             Spacer()
             HStack {
                 Spacer()
                 Button(action: onBack) {
-                    Text("← voltar")
+                    Text(String(localized: "onboarding.button.back", defaultValue: "← voltar"))
                         .font(DS.Font.mono(12))
                         .foregroundStyle(DS.Color.ink3)
                         .padding(.horizontal, 16).padding(.vertical, 8)
                         .background(DS.Color.paper2, in: RoundedRectangle(cornerRadius: 6))
                 }.buttonStyle(.plain)
                 Button(action: onContinue) {
-                    Text("continuar →")
+                    Text(String(localized: "onboarding.button.continue", defaultValue: "continuar →"))
                         .font(DS.Font.mono(12))
                         .foregroundStyle(DS.Color.paper)
                         .padding(.horizontal, 16).padding(.vertical, 8)
@@ -71,9 +75,9 @@ struct OnboardPerms: View {
         }()
         let label: String = {
             switch status {
-            case .granted: return "concedida"
-            case .denied: return "negada"
-            default: return "necessária"
+            case .granted: return String(localized: "onboarding.perm.status.granted", defaultValue: "concedida")
+            case .denied:  return String(localized: "onboarding.perm.status.denied",  defaultValue: "negada")
+            default:       return String(localized: "onboarding.perm.status.needed",  defaultValue: "necessária")
             }
         }()
         VStack(alignment: .leading, spacing: 10) {
@@ -94,7 +98,8 @@ struct OnboardPerms: View {
                 .lineSpacing(2)
             if status != .granted {
                 Button(action: onTap) {
-                    Text("abrir configurações")
+                    Text(String(localized: "onboarding.perm.button.openSettings",
+                                 defaultValue: "abrir configurações"))
                         .font(DS.Font.mono(11))
                         .foregroundStyle(DS.Color.paper)
                         .padding(.horizontal, 10).padding(.vertical, 6)
