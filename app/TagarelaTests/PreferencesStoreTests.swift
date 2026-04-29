@@ -70,6 +70,26 @@ final class PreferencesStoreTests: XCTestCase {
         XCTAssertEqual(s2.openAIEndpoint, endpoint)
     }
 
+    func test_setHistoryMaxItems_clampsToMinimumOne() {
+        let s = PreferencesStore(defaults: defaults, defaultStyleID: dummyStyleID)
+        s.setHistoryMaxItems(0)
+        XCTAssertEqual(s.historyMaxItems, 1)
+        s.setHistoryMaxItems(-100)
+        XCTAssertEqual(s.historyMaxItems, 1)
+        s.setHistoryMaxItems(500)
+        XCTAssertEqual(s.historyMaxItems, 500)
+    }
+
+    func test_setHistoryMaxDays_clampsToMinimumOne() {
+        let s = PreferencesStore(defaults: defaults, defaultStyleID: dummyStyleID)
+        s.setHistoryMaxDays(0)
+        XCTAssertEqual(s.historyMaxDays, 1)
+        s.setHistoryMaxDays(-7)
+        XCTAssertEqual(s.historyMaxDays, 1)
+        s.setHistoryMaxDays(60)
+        XCTAssertEqual(s.historyMaxDays, 60)
+    }
+
     func test_setRefinerKind_publishesToCombineSubscribers() {
         let s = PreferencesStore(defaults: defaults, defaultStyleID: dummyStyleID)
         var received: [RefinerKind] = []

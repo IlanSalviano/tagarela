@@ -8,12 +8,18 @@ struct HistoryView: View {
             Section(header: Text(String(localized: "preferences.history.retention.header",
                                          defaultValue: "Retenção"))) {
                 LabeledContent(String(localized: "preferences.history.maxItems", defaultValue: "Máximo de itens")) {
-                    TextField("", value: $prefs.historyMaxItems, format: .number)
+                    TextField("", value: Binding(
+                        get: { prefs.historyMaxItems },
+                        set: { prefs.setHistoryMaxItems($0) }
+                    ), format: .number)
                         .frame(width: 80)
                         .multilineTextAlignment(.trailing)
                 }
                 LabeledContent(String(localized: "preferences.history.maxDays", defaultValue: "Máximo de dias")) {
-                    TextField("", value: $prefs.historyMaxDays, format: .number)
+                    TextField("", value: Binding(
+                        get: { prefs.historyMaxDays },
+                        set: { prefs.setHistoryMaxDays($0) }
+                    ), format: .number)
                         .frame(width: 80)
                         .multilineTextAlignment(.trailing)
                 }

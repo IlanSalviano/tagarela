@@ -100,4 +100,15 @@ final class PreferencesStore: ObservableObject {
         audioBoostMaxGain = min(max(value, PreferencesDefaults.audioBoostMaxGainRange.lowerBound),
                                 PreferencesDefaults.audioBoostMaxGainRange.upperBound)
     }
+
+    /// Setter clampado pra historyMaxItems. Mínimo 1 (zero ou negativo bloqueia retenção).
+    /// Use isto em vez de atribuir direto quando vier de input externo (TextField etc.).
+    func setHistoryMaxItems(_ value: Int) {
+        historyMaxItems = max(1, value)
+    }
+
+    /// Setter clampado pra historyMaxDays. Mínimo 1.
+    func setHistoryMaxDays(_ value: Int) {
+        historyMaxDays = max(1, value)
+    }
 }
