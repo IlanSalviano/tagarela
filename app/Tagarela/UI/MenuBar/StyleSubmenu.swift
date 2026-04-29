@@ -7,6 +7,17 @@ struct StyleSubmenu: View {
     @ObservedObject var customStore: CustomStyleStoreLive
     let styleProvider: StyleProvider
 
+    /// Hash dos custom styles. Usado em `.id()` pra forçar refresh do Menu
+    /// quando lista muda (insert/delete) OU itens individuais mudam (rename/edit).
+    private var stylesFingerprint: Int {
+        var hasher = Hasher()
+        for s in customStore.styles {
+            hasher.combine(s.id)
+            hasher.combine(s.updatedAt)
+        }
+        return hasher.finalize()
+    }
+
     var body: some View {
         HStack {
             Text(NSLocalizedString("menubar.style.label", value: "Estilo", comment: ""))
@@ -35,11 +46,12 @@ struct StyleSubmenu: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 6)
-        // Acessar customStore.styles dentro do body força SwiftUI a observar
-        // mudanças no @Published. styleProvider.all já lê isso indiretamente,
-        // mas quando o ForEach está dentro de um Menu fechado, a leitura só
-        // acontece ao abrir o menu. Garantir presença explicita aqui.
-        .id(customStore.styles.count)
+        // SwiftUI Menu cacheia o conteúdo de itens já renderizados — body
+        // re-render por @Published não basta pra refrescar a lista do menu
+        // já apresentado. Forçar identity-change com um fingerprint que
+        // muda em insert/delete (count) E em rename/edit (updatedAt). T11
+        // adiciona edit; sem isso, rename não aparece sem reabrir o menu.
+        .id(stylesFingerprint)
     }
 
     private var activeStyleName: String {
