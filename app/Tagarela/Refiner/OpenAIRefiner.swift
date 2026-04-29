@@ -7,11 +7,13 @@ final class OpenAIRefiner: TextRefiner, @unchecked Sendable {
     private let keychain: KeychainService
     private let model: String
     private let timeoutSec: TimeInterval
-    private let baseURL = URL(string: "https://api.openai.com/v1")!
+    private let baseURL: URL
 
-    init(session: URLSession, keychain: KeychainService, model: String, timeoutSec: TimeInterval) {
+    init(session: URLSession, keychain: KeychainService, baseURL: URL,
+         model: String, timeoutSec: TimeInterval) {
         self.session = session
         self.keychain = keychain
+        self.baseURL = baseURL
         self.model = model
         self.timeoutSec = timeoutSec
     }
@@ -19,6 +21,14 @@ final class OpenAIRefiner: TextRefiner, @unchecked Sendable {
     var kind: RefinerKind { .openai }
 
     func refine(_ rawText: String, style: Style) async throws -> String {
+        // Guard de raw curto: evita LLM responder conversacionalmente quando o input
+        // é vazio ou quase vazio (cleanup #3 da Fase 2a). 8 chars é heurística simples
+        // que deixa passar "ola" mas barra "" e " ".
+        let trimmed = rawText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.count < 8 {
+            logger.info("raw curto (\(trimmed.count, privacy: .public) chars), skip refine")
+            return rawText
+        }
         let storedKey = (try? keychain.openAIKey()) ?? nil
         guard let key = storedKey, !key.isEmpty else {
             throw RefinerError.unauthorized

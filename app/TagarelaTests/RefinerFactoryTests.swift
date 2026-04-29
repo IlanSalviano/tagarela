@@ -36,6 +36,7 @@ final class RefinerFactoryTests: XCTestCase {
         prefs.refinerKind = .openai
         let openai = OpenAIRefiner(session: MockURLProtocol.session(),
                                    keychain: FakeKeychainService(initial: "sk"),
+                                   baseURL: URL(string: "https://api.openai.com/v1")!,
                                    model: "gpt-5.4-mini",
                                    timeoutSec: 30)
         let (refiner, _) = makeFactory(openAI: { openai }).current()
@@ -51,5 +52,27 @@ final class RefinerFactoryTests: XCTestCase {
                                    model: "qwen3.5:9b-nvfp4", timeoutSec: 30, healthChecker: hc)
         let (refiner, _) = makeFactory(ollama: { ollama }).current()
         XCTAssertEqual(refiner.kind, .ollama)
+    }
+
+    func test_factory_passesBaseURLFromPrefs_toOpenAIRefiner() {
+        prefs.openAIEndpoint = OpenAIEndpoint(
+            provider: .lmstudio,
+            baseURL: URL(string: "http://localhost:1234/v1")!)
+        nonisolated(unsafe) var seenBaseURL: URL?
+        let factory = RefinerFactory(
+            prefs: prefs,
+            openAI: { [weak self] in
+                guard let self else { fatalError() }
+                seenBaseURL = self.prefs.openAIEndpoint.baseURL
+                return OpenAIRefiner(session: .shared,
+                                     keychain: FakeKeychainService(initial: "sk"),
+                                     baseURL: self.prefs.openAIEndpoint.baseURL,
+                                     model: "x",
+                                     timeoutSec: 30)
+            },
+            ollama: { fatalError("não chamado") })
+        prefs.refinerKind = .openai
+        _ = factory.current()
+        XCTAssertEqual(seenBaseURL, URL(string: "http://localhost:1234/v1"))
     }
 }

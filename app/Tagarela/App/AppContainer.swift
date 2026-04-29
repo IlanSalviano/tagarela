@@ -52,6 +52,7 @@ final class AppContainer: ObservableObject {
                 guard let prefs else { fatalError("prefs deallocated") }
                 return OpenAIRefiner(session: session,
                                      keychain: keychain,
+                                     baseURL: prefs.openAIEndpoint.baseURL,
                                      model: prefs.openAIModel,
                                      timeoutSec: prefs.refinerTimeoutSec)
             },

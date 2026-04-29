@@ -2,14 +2,14 @@
 data: 2026-04-28
 status: parcialmente fechado
 revisitar_em: 2026-05-12
-fechados_em: 2026-04-29 (itens 1 e 4)
+fechados_em: 2026-04-29 (itens 1, 3 e 4)
 ---
 
 # Cleanup pós-Fase 2a
 
 Achados levantados durante o aceite manual da Fase 2a (ver [`fase2a-manual.md`](../03-funcionalidades/checklists/fase2a-manual.md)). Não bloqueiam o fechamento da fase — código está funcional. Bloqueiam a sensação de "limpo" antes da Fase 2b.
 
-**Status (2026-04-29):** itens 1 e 4 fechados como débito imediato antes da Fase 2b (suíte de 81 testes verde). Itens 2, 3 e 5 seguem abertos — entram naturalmente no escopo da 2b ou viram débito separado.
+**Status (2026-04-29):** itens 1, 3 e 4 fechados (suíte de 89 testes verde após T2 da Fase 2b-1). Itens 2 e 5 seguem abertos — entram naturalmente no escopo da 2b ou viram débito separado.
 
 > Quando voltar (sugerido **2026-05-12**), rodar `xcodebuild -project app/Tagarela.xcodeproj -scheme Tagarela test` antes/depois de cada item.
 
@@ -37,7 +37,7 @@ Quando o refiner remoto falha (timeout, offline, key inválida), o pipeline cai 
 
 **Proposta:** event `.refinerFellBack(reason:)` no stream do pipeline → `wirePipelineToAppState` mostra um toast/badge breve no indicador OU muda cor do dot. Decidir UX na Fase 2b.
 
-## 3. OpenAI responde conversacionalmente quando raw é muito curto
+## 3. OpenAI responde conversacionalmente quando raw é muito curto — ✅ FECHADO 2026-04-29
 
 **Arquivos:** [`app/Tagarela/Refiner/OpenAIRefiner.swift`](../../app/Tagarela/Refiner/OpenAIRefiner.swift), [`app/Tagarela/Refiner/BuiltInStyles.swift`](../../app/Tagarela/Refiner/BuiltInStyles.swift).
 
@@ -46,6 +46,8 @@ Com `gpt-5.4-mini` (default) + estilo "e-mail profissional", quando a transcriç
 **Sintoma observado:** 2 de 3 capturas curtas durante o teste de injeção em apps reais.
 
 **Proposta:** guard de tamanho mínimo do raw (< N chars) → pula refiner, injeta direto OU adicionar instrução no system prompt tipo "Se o ditado for vazio ou ininteligível, responda apenas com o texto original sem comentários."
+
+**Fix aplicado (2026-04-29):** guard de 8 chars (após trim de whitespace/newlines) no início de `OpenAIRefiner.refine(_:style:)`. Se `rawText` for menor, retorna direto sem chamar a API. 8 é heurística que deixa passar "ola" mas barra "" e " ". Implementado junto da injeção de `baseURL` (Tarefa 2 da fase 2b-1). 3 testes cobrindo: raw curto pula API; raw normal chama API; baseURL custom é usada na request.
 
 ## 4. Logs do pipeline em `stderr` não chegam no Console.app — ✅ FECHADO 2026-04-29
 

@@ -16,6 +16,7 @@ final class OpenAIRefinerTests: XCTestCase {
     private func makeRefiner(timeout: TimeInterval = 30) -> OpenAIRefiner {
         OpenAIRefiner(session: MockURLProtocol.session(),
                       keychain: keychain,
+                      baseURL: URL(string: "https://api.openai.com/v1")!,
                       model: "gpt-5.4-mini",
                       timeoutSec: timeout)
     }
@@ -41,7 +42,7 @@ final class OpenAIRefinerTests: XCTestCase {
         MockURLProtocol.responder = { _ in (self.httpResp(401), Data()) }
         let r = makeRefiner()
         do {
-            _ = try await r.refine("oi", style: BuiltInStyles.conversaInformal)
+            _ = try await r.refine("texto suficientemente longo", style: BuiltInStyles.conversaInformal)
             XCTFail("expected throw")
         } catch let e as RefinerError {
             XCTAssertEqual(e, .unauthorized)
@@ -54,7 +55,7 @@ final class OpenAIRefinerTests: XCTestCase {
         MockURLProtocol.responder = { _ in (self.httpResp(503), Data()) }
         let r = makeRefiner()
         do {
-            _ = try await r.refine("oi", style: BuiltInStyles.conversaInformal)
+            _ = try await r.refine("texto suficientemente longo", style: BuiltInStyles.conversaInformal)
             XCTFail("expected throw")
         } catch let e as RefinerError {
             XCTAssertEqual(e, .serverError(503))
@@ -65,7 +66,7 @@ final class OpenAIRefinerTests: XCTestCase {
         MockURLProtocol.responder = { _ in throw URLError(.timedOut) }
         let r = makeRefiner()
         do {
-            _ = try await r.refine("oi", style: BuiltInStyles.conversaInformal)
+            _ = try await r.refine("texto suficientemente longo", style: BuiltInStyles.conversaInformal)
             XCTFail("expected throw")
         } catch let e as RefinerError {
             XCTAssertEqual(e, .timedOut)
@@ -76,7 +77,7 @@ final class OpenAIRefinerTests: XCTestCase {
         MockURLProtocol.responder = { _ in (self.httpResp(429), Data()) }
         let r = makeRefiner()
         do {
-            _ = try await r.refine("oi", style: BuiltInStyles.conversaInformal)
+            _ = try await r.refine("texto suficientemente longo", style: BuiltInStyles.conversaInformal)
             XCTFail("expected throw")
         } catch let e as RefinerError {
             XCTAssertEqual(e, .rateLimited)
@@ -87,7 +88,7 @@ final class OpenAIRefinerTests: XCTestCase {
         MockURLProtocol.responder = { _ in (self.httpResp(200), Data("not json".utf8)) }
         let r = makeRefiner()
         do {
-            _ = try await r.refine("oi", style: BuiltInStyles.conversaInformal)
+            _ = try await r.refine("texto suficientemente longo", style: BuiltInStyles.conversaInformal)
             XCTFail("expected throw")
         } catch let e as RefinerError {
             XCTAssertEqual(e, .malformedResponse)
@@ -98,7 +99,7 @@ final class OpenAIRefinerTests: XCTestCase {
         MockURLProtocol.responder = { _ in (self.httpResp(200), Data(#"{"foo":"bar"}"#.utf8)) }
         let r = makeRefiner()
         do {
-            _ = try await r.refine("oi", style: BuiltInStyles.conversaInformal)
+            _ = try await r.refine("texto suficientemente longo", style: BuiltInStyles.conversaInformal)
             XCTFail("expected throw")
         } catch let e as RefinerError {
             XCTAssertEqual(e, .malformedResponse)
@@ -137,7 +138,7 @@ final class OpenAIRefinerTests: XCTestCase {
         keychain = FakeKeychainService(initial: nil)
         let r = makeRefiner()
         do {
-            _ = try await r.refine("oi", style: BuiltInStyles.conversaInformal)
+            _ = try await r.refine("texto suficientemente longo", style: BuiltInStyles.conversaInformal)
             XCTFail("expected throw")
         } catch let e as RefinerError {
             XCTAssertEqual(e, .unauthorized)
@@ -148,10 +149,11 @@ final class OpenAIRefinerTests: XCTestCase {
         let throwingKeychain = ThrowingFakeKeychainService(error: .osStatus(-25300))
         let r = OpenAIRefiner(session: MockURLProtocol.session(),
                               keychain: throwingKeychain,
+                              baseURL: URL(string: "https://api.openai.com/v1")!,
                               model: "gpt-5.4-mini",
                               timeoutSec: 30)
         do {
-            _ = try await r.refine("oi", style: BuiltInStyles.conversaInformal)
+            _ = try await r.refine("texto suficientemente longo", style: BuiltInStyles.conversaInformal)
             XCTFail("expected throw")
         } catch let e as RefinerError {
             XCTAssertEqual(e, .unauthorized)
@@ -164,12 +166,56 @@ final class OpenAIRefinerTests: XCTestCase {
         keychain = FakeKeychainService(initial: "")
         let r = makeRefiner()
         do {
-            _ = try await r.refine("oi", style: BuiltInStyles.conversaInformal)
+            _ = try await r.refine("texto suficientemente longo", style: BuiltInStyles.conversaInformal)
             XCTFail("expected throw")
         } catch let e as RefinerError {
             XCTAssertEqual(e, .unauthorized)
         } catch {
             XCTFail("wrong error: \(error)")
         }
+    }
+
+    func test_rawCurto_skipRefineSemChamarAPI() async throws {
+        nonisolated(unsafe) var apiCalled = false
+        MockURLProtocol.responder = { _ in
+            apiCalled = true
+            return (HTTPURLResponse(url: URL(string: "https://x")!, statusCode: 200,
+                                    httpVersion: nil, headerFields: nil)!,
+                    Data(#"{"choices":[{"message":{"content":"refinado"}}]}"#.utf8))
+        }
+        let r = makeRefiner()
+        let out = try await r.refine("ola", style: BuiltInStyles.conversaInformal)
+        XCTAssertEqual(out, "ola")
+        XCTAssertFalse(apiCalled, "API foi chamada com raw curto — guard quebrou")
+    }
+
+    func test_rawNormal_chamaAPI() async throws {
+        nonisolated(unsafe) var apiCalled = false
+        MockURLProtocol.responder = { _ in
+            apiCalled = true
+            return (HTTPURLResponse(url: URL(string: "https://x")!, statusCode: 200,
+                                    httpVersion: nil, headerFields: nil)!,
+                    Data(#"{"choices":[{"message":{"content":"refinado"}}]}"#.utf8))
+        }
+        let r = makeRefiner()
+        let out = try await r.refine("isso é um texto longo o suficiente", style: BuiltInStyles.conversaInformal)
+        XCTAssertEqual(out, "refinado")
+        XCTAssertTrue(apiCalled)
+    }
+
+    func test_baseURL_customIsUsedInRequest() async throws {
+        nonisolated(unsafe) var capturedURL: URL?
+        MockURLProtocol.responder = { req in
+            capturedURL = req.url
+            return (HTTPURLResponse(url: req.url!, statusCode: 200,
+                                    httpVersion: nil, headerFields: nil)!,
+                    Data(#"{"choices":[{"message":{"content":"r"}}]}"#.utf8))
+        }
+        let session = MockURLProtocol.session()
+        let r = OpenAIRefiner(session: session, keychain: keychain,
+                              baseURL: URL(string: "http://localhost:1234/v1")!,
+                              model: "x", timeoutSec: 30)
+        _ = try await r.refine("texto suficientemente longo", style: BuiltInStyles.conversaInformal)
+        XCTAssertEqual(capturedURL?.absoluteString, "http://localhost:1234/v1/chat/completions")
     }
 }
