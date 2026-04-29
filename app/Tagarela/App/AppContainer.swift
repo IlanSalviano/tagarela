@@ -3,6 +3,7 @@ import AppKit
 import AVFoundation
 import Combine
 import OSLog
+import SwiftData
 
 @MainActor
 final class AppContainer: ObservableObject {
@@ -20,6 +21,7 @@ final class AppContainer: ObservableObject {
     let onboarding: OnboardingCoordinator
     let indicatorPanel = FloatingIndicatorPanel()
     let historyStore: HistoryStore
+    let customStyleStore: CustomStyleStore
     let keyPromptWindow: OpenAIKeyPromptWindow
     private var cancellables: Set<AnyCancellable> = []
 
@@ -66,7 +68,28 @@ final class AppContainer: ObservableObject {
                     healthChecker: healthChecker)
             })
 
-        let historyStore: HistoryStore = (try? HistoryStoreLive()) ?? HistoryStoreNoop()
+        // Container SwiftData compartilhado entre HistoryStoreLive e CustomStyleStoreLive.
+        // Falha → ambos caem em Noop. (Fase 2b-1)
+        let sharedContainer: ModelContainer? = try? HistoryStoreLive.sharedContainer()
+
+        let historyStore: HistoryStore
+        if let c = sharedContainer {
+            historyStore = HistoryStoreLive(container: c)
+        } else {
+            historyStore = HistoryStoreNoop()
+        }
+
+        let customStyleStore: CustomStyleStore
+        if let c = sharedContainer {
+            customStyleStore = CustomStyleStoreLive(container: c) { [weak prefs] deletedID in
+                guard let prefs else { return }
+                if prefs.selectedStyleID == deletedID {
+                    prefs.selectedStyleID = BuiltInStyles.defaultStyleID
+                }
+            }
+        } else {
+            customStyleStore = CustomStyleStoreNoop()
+        }
 
         let keyPromptWindow = OpenAIKeyPromptWindow(keychain: keychain)
 
@@ -80,6 +103,7 @@ final class AppContainer: ObservableObject {
         self.refinerFactory = factory
         self.hotkeyService = hotkeyService
         self.historyStore = historyStore
+        self.customStyleStore = customStyleStore
         self.keyPromptWindow = keyPromptWindow
         self.pipeline = PipelineCoordinator(
             audio: audio,

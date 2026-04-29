@@ -668,7 +668,7 @@ EOF
 - Create: `app/TagarelaTests/CustomStyleTests.swift`
 - Create: `app/TagarelaTests/CustomStyleStoreTests.swift`
 
-- [ ] **Step 1: Definir `@Model CustomStyle`**
+- [x] **Step 1: Definir `@Model CustomStyle`**
 
 ```swift
 // app/Tagarela/Refiner/CustomStyle.swift
@@ -717,7 +717,7 @@ final class CustomStyle {
 }
 ```
 
-- [ ] **Step 2: Definir protocolo `CustomStyleStore`**
+- [x] **Step 2: Definir protocolo `CustomStyleStore`**
 
 ```swift
 // app/Tagarela/Refiner/CustomStyleStore.swift
@@ -743,7 +743,7 @@ enum CustomStyleStoreError: Error {
 }
 ```
 
-- [ ] **Step 3: Implementar `CustomStyleStoreLive` usando SwiftData**
+- [x] **Step 3: Implementar `CustomStyleStoreLive` usando SwiftData**
 
 ```swift
 // app/Tagarela/Refiner/CustomStyleStoreLive.swift
@@ -823,7 +823,7 @@ final class CustomStyleStoreLive: ObservableObject, CustomStyleStore {
 }
 ```
 
-- [ ] **Step 4: Implementar `CustomStyleStoreNoop`**
+- [x] **Step 4: Implementar `CustomStyleStoreNoop`**
 
 ```swift
 // app/Tagarela/Refiner/CustomStyleStoreNoop.swift
@@ -846,7 +846,7 @@ final class CustomStyleStoreNoop: ObservableObject, CustomStyleStore {
 }
 ```
 
-- [ ] **Step 5: Modificar `HistoryStoreLive` pra aceitar `ModelContainer` injetado**
+- [x] **Step 5: Modificar `HistoryStoreLive` pra aceitar `ModelContainer` injetado**
 
 Edit `app/Tagarela/History/HistoryStoreLive.swift`. Auditar o init existente; adicionar overload (sem quebrar API):
 
@@ -873,7 +873,7 @@ extension HistoryStoreLive {
 
 (Auditar `HistoryStoreLive.swift` antes — pode haver fricção com o `Schema` atual que só tem `Transcription`. Adaptar accordingly.)
 
-- [ ] **Step 6: Wire-up no `AppContainer`**
+- [x] **Step 6: Wire-up no `AppContainer`**
 
 Edit `app/Tagarela/App/AppContainer.swift`:
 
@@ -916,7 +916,7 @@ E setar self após `self.historyStore = historyStore`:
 self.customStyleStore = customStyleStore
 ```
 
-- [ ] **Step 7: Testes do `@Model CustomStyle`**
+- [x] **Step 7: Testes do `@Model CustomStyle`**
 
 ```swift
 // app/TagarelaTests/CustomStyleTests.swift
@@ -952,7 +952,7 @@ final class CustomStyleTests: XCTestCase {
 }
 ```
 
-- [ ] **Step 8: Testes do `CustomStyleStoreLive`**
+- [x] **Step 8: Testes do `CustomStyleStoreLive`**
 
 ```swift
 // app/TagarelaTests/CustomStyleStoreTests.swift
@@ -1033,7 +1033,7 @@ final class CustomStyleStoreTests: XCTestCase {
 }
 ```
 
-- [ ] **Step 9: Re-gerar projeto + rodar testes**
+- [x] **Step 9: Re-gerar projeto + rodar testes**
 
 ```bash
 cd /Users/tars/Dev/tagarela/app
@@ -1041,9 +1041,9 @@ xcodegen generate
 xcodebuild -project Tagarela.xcodeproj -scheme Tagarela test 2>&1 | tail -5
 ```
 
-Esperado: ** TEST SUCCEEDED **, +10 testes (~102).
+Esperado: ** TEST SUCCEEDED **, +10 testes (~102). ✅ Resultado real: 105 testes (2026-04-29).
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```bash
 git add app/Tagarela/Refiner/CustomStyle.swift app/Tagarela/Refiner/CustomStyleStore.swift app/Tagarela/Refiner/CustomStyleStoreLive.swift app/Tagarela/Refiner/CustomStyleStoreNoop.swift app/Tagarela/History/HistoryStoreLive.swift app/Tagarela/App/AppContainer.swift app/TagarelaTests/CustomStyleTests.swift app/TagarelaTests/CustomStyleStoreTests.swift app/Tagarela.xcodeproj/project.pbxproj

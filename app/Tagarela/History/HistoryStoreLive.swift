@@ -23,6 +23,10 @@ final class HistoryStoreLive: HistoryStore {
         self.container = try ModelContainer(for: Transcription.self, configurations: config)
     }
 
+    init(container: ModelContainer) {
+        self.container = container
+    }
+
     func save(_ input: TranscriptionInput, maxItems: Int, maxDays: Int) async throws {
         let ctx = container.mainContext
         let t = Transcription(
@@ -63,5 +67,21 @@ final class HistoryStoreLive: HistoryStore {
             for extra in all.dropFirst(maxItems) { ctx.delete(extra) }
         }
         try ctx.save()
+    }
+}
+
+extension HistoryStoreLive {
+    /// Container SwiftData compartilhado entre `HistoryStoreLive` e
+    /// `CustomStyleStoreLive`. URL = mesma de `History.store` em App Support.
+    /// Schema inclui ambos `Transcription` e `CustomStyle`.
+    static func sharedContainer() throws -> ModelContainer {
+        let appSupport = try FileManager.default.url(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask, appropriateFor: nil, create: true)
+        let dir = appSupport.appendingPathComponent("com.tagarela.Tagarela", isDirectory: true)
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let url = dir.appendingPathComponent("History.store")
+        let config = ModelConfiguration(url: url)
+        return try ModelContainer(for: Transcription.self, CustomStyle.self, configurations: config)
     }
 }
