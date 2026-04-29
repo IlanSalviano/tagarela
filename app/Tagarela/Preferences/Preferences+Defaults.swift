@@ -17,8 +17,12 @@ enum PreferencesDefaults {
     static let refinerKind: RefinerKind   = .none
     static let openAIModel: String        = "gpt-5.4-mini"
     static let ollamaBaseURL: String      = "http://localhost:11434"
-    static let ollamaModel: String        = "qwen3.5:9b-nvfp4"
-    static let refinerTimeoutSec: Double  = 30
+    // gemma4:e4b: modelo sem chain-of-thought. Trocado de qwen3.5:9b-nvfp4 (thinking)
+    // que estourava timeout default e caía em fallback Identity silencioso. Ver
+    // tagarela_docs/04-decisoes/cleanup-fase2a.md item 1.
+    static let ollamaModel: String        = "gemma4:e4b"
+    // 60s: margem extra pra Ollama em modelos maiores ou primeira inferência (cold).
+    static let refinerTimeoutSec: Double  = 60
     static let historyMaxItems: Int       = 200
     static let historyMaxDays: Int        = 30
     static let audioBoostMaxGain: Float   = 20.0

@@ -132,26 +132,26 @@ final class AppContainer: ObservableObject {
     private func ensureMicPermission() {
         let status = AVCaptureDevice.authorizationStatus(for: .audio)
         let videoStatus = AVCaptureDevice.authorizationStatus(for: .video)
-        FileHandle.standardError.write(Data("[app] mic status=\(status.rawValue) video status=\(videoStatus.rawValue) (0=notDetermined, 1=restricted, 2=denied, 3=authorized)\n".utf8))
+        Logger.tagarela.info("mic status=\(status.rawValue, privacy: .public) video status=\(videoStatus.rawValue, privacy: .public) (0=notDetermined, 1=restricted, 2=denied, 3=authorized)")
         guard status != .authorized else { return }
 
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
-        FileHandle.standardError.write(Data("[app] activationPolicy promoted to .regular pra prompt\n".utf8))
+        Logger.tagarela.info("activationPolicy promoted to .regular pra prompt")
 
         Task {
             // Tentativa 0: video. C920 é camera+mic combinado; em macOS 26
             // o device pode exigir Camera grant pra liberar o audio também.
             let okVideo = await AVCaptureDevice.requestAccess(for: .video)
-            FileHandle.standardError.write(Data("[app] video requestAccess -> \(okVideo)\n".utf8))
+            Logger.tagarela.info("video requestAccess -> \(okVideo, privacy: .public)")
 
             // Tentativa 1: audio
             let ok1 = await AVCaptureDevice.requestAccess(for: .audio)
-            FileHandle.standardError.write(Data("[app] mic requestAccess -> \(ok1)\n".utf8))
+            Logger.tagarela.info("mic requestAccess -> \(ok1, privacy: .public)")
 
             if !ok1 {
                 // Tentativa 2: AVCaptureSession real, que é o caminho canônico
-                FileHandle.standardError.write(Data("[app] tentando via AVCaptureSession\n".utf8))
+                Logger.tagarela.info("tentando via AVCaptureSession")
                 let session = AVCaptureSession()
                 if let dev = AVCaptureDevice.default(for: .audio) {
                     do {
@@ -159,21 +159,21 @@ final class AppContainer: ObservableObject {
                         if session.canAddInput(input) {
                             session.addInput(input)
                             session.startRunning()
-                            FileHandle.standardError.write(Data("[app] capture session running — popup deveria ter aparecido\n".utf8))
+                            Logger.tagarela.info("capture session running — popup deveria ter aparecido")
                             try? await Task.sleep(nanoseconds: 200_000_000)
                             session.stopRunning()
                         }
                     } catch {
-                        FileHandle.standardError.write(Data("[app] AVCaptureDeviceInput falhou: \(error)\n".utf8))
+                        Logger.tagarela.error("AVCaptureDeviceInput falhou: \(String(describing: error), privacy: .public)")
                     }
                 } else {
-                    FileHandle.standardError.write(Data("[app] AVCaptureDevice.default(.audio) retornou nil\n".utf8))
+                    Logger.tagarela.error("AVCaptureDevice.default(.audio) retornou nil")
                 }
             }
 
             await MainActor.run {
                 NSApp.setActivationPolicy(.accessory)
-                FileHandle.standardError.write(Data("[app] activationPolicy back to .accessory\n".utf8))
+                Logger.tagarela.info("activationPolicy back to .accessory")
             }
         }
     }
@@ -193,14 +193,14 @@ final class AppContainer: ObservableObject {
     private func loadModelLogging(_ name: String) {
         let transcriber = self.transcriber
         Task {
-            FileHandle.standardError.write(Data("[app] loadModel('\(name)') iniciando\n".utf8))
+            Logger.tagarela.info("loadModel('\(name, privacy: .public)') iniciando")
             do {
                 try await transcriber.loadModel(name) { p in
-                    FileHandle.standardError.write(Data("[app] download \(Int(p * 100))%\n".utf8))
+                    Logger.tagarela.info("download \(Int(p * 100), privacy: .public)%")
                 }
-                FileHandle.standardError.write(Data("[app] modelo '\(name)' carregado\n".utf8))
+                Logger.tagarela.info("modelo '\(name, privacy: .public)' carregado")
             } catch {
-                FileHandle.standardError.write(Data("[app] loadModel FALHOU: \(String(describing: error))\n".utf8))
+                Logger.tagarela.error("loadModel FALHOU: \(String(describing: error), privacy: .public)")
             }
         }
     }
@@ -208,10 +208,8 @@ final class AppContainer: ObservableObject {
     private func startHotkeyServiceLogging() {
         do {
             try hotkeyService.start()
-            FileHandle.standardError.write(Data("[app] hotkey service started OK\n".utf8))
             Logger.tagarela.info("hotkey service started")
         } catch {
-            FileHandle.standardError.write(Data("[app] hotkey service FALHOU: \(String(describing: error))\n".utf8))
             Logger.tagarela.error("hotkey service falhou ao iniciar: \(String(describing: error), privacy: .public)")
         }
     }
@@ -221,7 +219,6 @@ final class AppContainer: ObservableObject {
         let pipeline = self.pipeline
         Task {
             for await event in stream {
-                FileHandle.standardError.write(Data("[app] hotkey event consumido: \(event)\n".utf8))
                 Logger.tagarela.info("hotkey event recebido: \(String(describing: event), privacy: .public)")
                 let pipelineEvent: PipelineEvent = (event == .toggle) ? .toggle : .cancel
                 await pipeline.handle(pipelineEvent)

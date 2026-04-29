@@ -68,7 +68,7 @@ actor PipelineCoordinator {
     }
 
     private func handleToggle() async {
-        FileHandle.standardError.write(Data("[pipeline] toggle in state=\(state)\n".utf8))
+        logger.info("toggle in state=\(String(describing: self.state), privacy: .public)")
         // Recovery: se estamos em .error, o toggle limpa o estado e tenta de novo.
         if case .error = state {
             setState(.idle)
@@ -147,22 +147,22 @@ actor PipelineCoordinator {
     private func runTranscribeAndInject() async {
         cancelled = false
         do {
-            FileHandle.standardError.write(Data("[pipeline] stopping audio\n".utf8))
+            logger.info("stopping audio")
             let buffer = try await audio.stop()
-            FileHandle.standardError.write(Data("[pipeline] buffer duration=\(buffer.durationSeconds)s samples=\(buffer.samples.count)\n".utf8))
+            logger.info("buffer duration=\(buffer.durationSeconds, privacy: .public)s samples=\(buffer.samples.count, privacy: .public)")
             guard buffer.durationSeconds >= 0.5 else {
-                FileHandle.standardError.write(Data("[pipeline] buffer too short, descartando\n".utf8))
+                logger.info("buffer too short, descartando")
                 setState(.idle); return
             }
             setState(.processing)
-            FileHandle.standardError.write(Data("[pipeline] transcribing (model loaded? \(transcriber.loadedModelName ?? "NIL"))\n".utf8))
+            logger.info("transcribing (model loaded? \(self.transcriber.loadedModelName ?? "NIL", privacy: .public))")
             let raw = try await transcriber.transcribe(
                 buffer: buffer,
                 language: language,
                 initialPrompt: await initialPromptProvider()
             )
             if cancelled { logger.info("cancelled after transcribe"); setState(.idle); return }
-            FileHandle.standardError.write(Data("[pipeline] transcribed: '\(raw)'\n".utf8))
+            logger.info("transcribed: '\(raw, privacy: .public)'")
             let (refiner, style) = await refinerProvider()
             let actualRefinerKind: RefinerKind
             let refined: String
@@ -179,7 +179,7 @@ actor PipelineCoordinator {
                     actualRefinerKind = refiner.kind
                 } catch RefinerError.cancelled {
                     // Cancelamento real: aborta sem fallback nem inject
-                    FileHandle.standardError.write(Data("[pipeline] refiner cancelled\n".utf8))
+                    logger.info("refiner cancelled")
                     setState(.idle); return
                 } catch {
                     logger.error("refiner failed (\(refiner.kind.rawValue)): \(String(describing: error))")
@@ -217,7 +217,7 @@ actor PipelineCoordinator {
                                           frontmostApp: frontApp))
             setState(.idle)
         } catch {
-            FileHandle.standardError.write(Data("[pipeline] FALHOU: \(String(describing: error))\n".utf8))
+            logger.error("FALHOU: \(String(describing: error), privacy: .public)")
             setState(.error(message: "erro no pipeline"))
             continuation?.yield(.errorOccurred(String(describing: error)))
             // Auto-recover pra idle após 2s

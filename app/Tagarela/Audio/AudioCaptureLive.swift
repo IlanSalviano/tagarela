@@ -23,7 +23,7 @@ final class AudioCaptureLive: AudioCapturing, @unchecked Sendable {
 
     func start() throws {
         let mic = AVCaptureDevice.authorizationStatus(for: .audio)
-        FileHandle.standardError.write(Data("[audio] start: mic auth=\(mic.rawValue)\n".utf8))
+        logger.info("start: mic auth=\(mic.rawValue, privacy: .public)")
         if mic == .denied {
             throw AudioCaptureError.microphoneDenied
         }
@@ -31,9 +31,9 @@ final class AudioCaptureLive: AudioCapturing, @unchecked Sendable {
         let input = engine.inputNode
         let inFormat = input.outputFormat(forBus: 0)
         channelBuffers = Array(repeating: [], count: Int(inFormat.channelCount))
-        FileHandle.standardError.write(Data("[audio] inFormat sampleRate=\(inFormat.sampleRate) channels=\(inFormat.channelCount)\n".utf8))
+        logger.info("inFormat sampleRate=\(inFormat.sampleRate, privacy: .public) channels=\(inFormat.channelCount, privacy: .public)")
         if inFormat.sampleRate == 0 || inFormat.channelCount == 0 {
-            FileHandle.standardError.write(Data("[audio] inputNode sem formato — provavelmente sem permissão de mic\n".utf8))
+            logger.error("inputNode sem formato — provavelmente sem permissão de mic")
             throw AudioCaptureError.microphoneDenied
         }
 
@@ -50,11 +50,10 @@ final class AudioCaptureLive: AudioCapturing, @unchecked Sendable {
         do {
             try engine.start()
         } catch {
-            FileHandle.standardError.write(Data("[audio] engine.start() falhou: \(error)\n".utf8))
+            logger.error("engine.start() falhou: \(String(describing: error), privacy: .public)")
             throw AudioCaptureError.engineFailedToStart
         }
         isRecording = true
-        FileHandle.standardError.write(Data("[audio] engine started successfully\n".utf8))
         logger.info("AudioCapture started")
     }
 
@@ -66,7 +65,7 @@ final class AudioCaptureLive: AudioCapturing, @unchecked Sendable {
         let perChannel = channelBuffers
         channelBuffers.removeAll()
         guard let inFormat = captureFormat else {
-            FileHandle.standardError.write(Data("[audio] stop sem captureFormat\n".utf8))
+            logger.error("stop sem captureFormat")
             return AudioBuffer(samples: [], sampleRate: 16_000)
         }
         let resampled = downmixAndResample(perChannel: perChannel, from: inFormat)
@@ -76,7 +75,7 @@ final class AudioCaptureLive: AudioCapturing, @unchecked Sendable {
         var newPeak: Float = 0
         for s in boosted { let a = abs(s); if a > newPeak { newPeak = a } }
         let totalRaw = perChannel.reduce(0) { $0 + $1.count }
-        FileHandle.standardError.write(Data("[audio] stop: raw=\(totalRaw) samples (\(inFormat.sampleRate)Hz, \(inFormat.channelCount)ch) → resampled=\(resampled.count) (16kHz mono) peak before=\(rawPeak) after=\(newPeak)\n".utf8))
+        logger.info("stop: raw=\(totalRaw, privacy: .public) samples (\(inFormat.sampleRate, privacy: .public)Hz, \(inFormat.channelCount, privacy: .public)ch) → resampled=\(resampled.count, privacy: .public) (16kHz mono) peak before=\(rawPeak, privacy: .public) after=\(newPeak, privacy: .public)")
         return AudioBuffer(samples: boosted, sampleRate: 16_000)
     }
 

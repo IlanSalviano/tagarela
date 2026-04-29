@@ -32,10 +32,10 @@ final class HotkeyServiceLive: HotkeyService, @unchecked Sendable {
         // estiver concedido, IOHIDRequestAccess prompta nativamente.
         var imGranted = IOHIDCheckAccess(kIOHIDRequestTypeListenEvent) == kIOHIDAccessTypeGranted
         if !imGranted {
-            FileHandle.standardError.write(Data("[hotkey] requesting Input Monitoring via IOHIDRequestAccess\n".utf8))
+            logger.info("requesting Input Monitoring via IOHIDRequestAccess")
             imGranted = IOHIDRequestAccess(kIOHIDRequestTypeListenEvent)
         }
-        FileHandle.standardError.write(Data("[hotkey] start() — InputMonitoring granted=\(imGranted)\n".utf8))
+        logger.info("start() — InputMonitoring granted=\(imGranted, privacy: .public)")
         if !imGranted {
             logger.error("Input Monitoring negado mesmo após request")
             throw HotkeyServiceError.inputMonitoringDenied
@@ -52,11 +52,10 @@ final class HotkeyServiceLive: HotkeyService, @unchecked Sendable {
             callback: HotkeyServiceLive.callback,
             userInfo: observer
         ) else {
-            FileHandle.standardError.write(Data("[hotkey] CGEvent.tapCreate retornou nil\n".utf8))
             logger.error("CGEvent.tapCreate retornou nil — provavelmente falta Input Monitoring no binário atual")
             throw HotkeyServiceError.eventTapCreationFailed
         }
-        FileHandle.standardError.write(Data("[hotkey] tap criado, registrando no run loop\n".utf8))
+        logger.info("tap criado, registrando no run loop")
         self.eventTap = tap
         let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
         // Forçar main run loop (independente de quem chamou start()) — alguns
@@ -95,7 +94,7 @@ final class HotkeyServiceLive: HotkeyService, @unchecked Sendable {
         if type == .flagsChanged {
             let keyCode = UInt16(event.getIntegerValueField(.keyboardEventKeycode))
             if keyCode == me.hotkey.virtualKeyCode {
-                FileHandle.standardError.write(Data("[hotkey] flagsChanged keyCode=\(keyCode) (Right Option)\n".utf8))
+                me.logger.info("flagsChanged keyCode=\(keyCode, privacy: .public) (Right Option)")
                 let flags = event.flags
                 // TODO Fase 2: distinguir L/R do Option olhando bits específicos do flag.
                 // Por enquanto, o filtro pelo keyCode (0x3D = Right Option) já restringe

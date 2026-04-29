@@ -1,16 +1,19 @@
 ---
 data: 2026-04-28
-status: aberto
+status: parcialmente fechado
 revisitar_em: 2026-05-12
+fechados_em: 2026-04-29 (itens 1 e 4)
 ---
 
 # Cleanup pós-Fase 2a
 
 Achados levantados durante o aceite manual da Fase 2a (ver [`fase2a-manual.md`](../03-funcionalidades/checklists/fase2a-manual.md)). Não bloqueiam o fechamento da fase — código está funcional. Bloqueiam a sensação de "limpo" antes da Fase 2b.
 
+**Status (2026-04-29):** itens 1 e 4 fechados como débito imediato antes da Fase 2b (suíte de 81 testes verde). Itens 2, 3 e 5 seguem abertos — entram naturalmente no escopo da 2b ou viram débito separado.
+
 > Quando voltar (sugerido **2026-05-12**), rodar `xcodebuild -project app/Tagarela.xcodeproj -scheme Tagarela test` antes/depois de cada item.
 
-## 1. Default de `ollamaModel` é thinking model + timeout curto
+## 1. Default de `ollamaModel` é thinking model + timeout curto — ✅ FECHADO 2026-04-29
 
 **Arquivos:** [`app/Tagarela/Preferences/Preferences+Defaults.swift`](../../app/Tagarela/Preferences/Preferences+Defaults.swift), [`app/Tagarela/Refiner/OllamaRefiner.swift`](../../app/Tagarela/Refiner/OllamaRefiner.swift).
 
@@ -18,12 +21,13 @@ Achados levantados durante o aceite manual da Fase 2a (ver [`fase2a-manual.md`](
 
 **Sintoma observado:** durante o teste controlado de retenção/refiners, todas as capturas Ollama vinham marcadas `refinerKind = "none"` no histórico. Diagnóstico via `time curl` mostrou 52s de latência total no modelo default. Trocar pra `gemma4:e4b` (sem thinking) fez o caminho feliz funcionar.
 
-**Opções de fix (não-mutuamente-exclusivas):**
-1. Trocar default pra modelo sem thinking (`gemma4:e4b`, `llama3.2:3b`).
-2. Subir `refinerTimeoutSec` default pra 90-120s.
-3. Detectar thinking no `OllamaRefiner` e enviar `"think": false` no payload (Ollama API >= 0.4 suporta).
+**Fix aplicado (2026-04-29):**
+- `PreferencesDefaults.ollamaModel` → `"gemma4:e4b"` (sem chain-of-thought).
+- `PreferencesDefaults.refinerTimeoutSec` → `60s` (margem extra pra modelos maiores ou cold start).
+- `PreferencesStoreTests.test_defaults_match_designV1` atualizado pros novos valores.
+- Opção 3 (`"think": false` no payload) não foi adotada — adicionaria dependência da versão Ollama (>=0.4) e a troca de modelo já resolve.
 
-**Critério de aceite:** com defaults zerados, `cmd+option` numa frase técnica usando Ollama → completa em < 30s e grava `refinerKind = "ollama"` no histórico.
+**Critério de aceite (manual, pendente):** com defaults zerados, `cmd+option` numa frase técnica usando Ollama → completa em < 30s e grava `refinerKind = "ollama"` no histórico. *Validar no próximo aceite.*
 
 ## 2. Fallback Identity é silencioso pro usuário
 
@@ -43,15 +47,15 @@ Com `gpt-5.4-mini` (default) + estilo "e-mail profissional", quando a transcriç
 
 **Proposta:** guard de tamanho mínimo do raw (< N chars) → pula refiner, injeta direto OU adicionar instrução no system prompt tipo "Se o ditado for vazio ou ininteligível, responda apenas com o texto original sem comentários."
 
-## 4. Logs do pipeline em `stderr` não chegam no Console.app
+## 4. Logs do pipeline em `stderr` não chegam no Console.app — ✅ FECHADO 2026-04-29
 
-**Arquivos:** [`app/Tagarela/Pipeline/PipelineCoordinator.swift`](../../app/Tagarela/Pipeline/PipelineCoordinator.swift), [`app/Tagarela/Audio/AudioCaptureLive.swift`](../../app/Tagarela/Audio/AudioCaptureLive.swift), [`app/Tagarela/Hotkey/HotkeyServiceLive.swift`](../../app/Tagarela/Hotkey/HotkeyServiceLive.swift).
+**Arquivos:** [`app/Tagarela/Pipeline/PipelineCoordinator.swift`](../../app/Tagarela/Pipeline/PipelineCoordinator.swift), [`app/Tagarela/Audio/AudioCaptureLive.swift`](../../app/Tagarela/Audio/AudioCaptureLive.swift), [`app/Tagarela/Hotkey/HotkeyServiceLive.swift`](../../app/Tagarela/Hotkey/HotkeyServiceLive.swift), [`app/Tagarela/App/AppContainer.swift`](../../app/Tagarela/App/AppContainer.swift).
 
 Vários logs estão em `FileHandle.standardError.write(...)` em vez de `os_log`/`Logger`. stderr de GUI app não vai pro Console.app — só dá pra ver com `sudo log stream` (que o user mantenedor não tem permissão).
 
 **Sintoma observado:** durante o aceite manual, vários diagnósticos exigiram `sudo log stream` que falhou; tive que migrar logs ad-hoc pra `logger.info` pra debugar (cancelamento via pill, hide do indicator).
 
-**Proposta:** padronizar tudo em `Logger(subsystem: "com.tagarela", category: ...)`. Manter stderr só pra erros catastróficos (que já vão pra crashlog).
+**Fix aplicado (2026-04-29):** todos os `FileHandle.standardError.write(...)` substituídos por `Logger(subsystem: "com.tagarela", category: …)` nos 4 arquivos. `Console.app` filtrando por `subsystem:com.tagarela` agora mostra todo o trace do pipeline sem `sudo`. Categorias: `Pipeline`, `Audio`, `Hotkey`, `App`. Suíte de 81 testes continua verde.
 
 ## 5. Cancelamento durante refiner não interrompe a request HTTP
 
