@@ -35,7 +35,14 @@ struct PreferencesRoot: View {
             case .refinerGeral:  RefinerGeneralView(prefs: prefs)
             case .refinerOllama: RefinerOllamaView(prefs: prefs, modelLister: ollamaModelLister)
             case .refinerOpenAI: RefinerOpenAIView(prefs: prefs, keychain: keychain, openAIKeyEditor: openAIKeyEditor)
-            case .estilos:       StylesView()
+            case .estilos:
+                    if let live = customStore as? CustomStyleStoreLive {
+                        StylesView(prefs: prefs, customStore: live)
+                    } else {
+                        Text(String(localized: "styles.unavailable",
+                                     defaultValue: "Custom styles indisponíveis (armazenamento offline)"))
+                            .padding()
+                    }
             case .audio:         AudioView(prefs: prefs)
             case .historico:     HistoryView(prefs: prefs)
             case .vocabulario:   VocabularyView(prefs: prefs)
