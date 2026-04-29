@@ -14,7 +14,7 @@ struct MenuBarContent: View {
             HStack(alignment: .firstTextBaseline) {
                 Wordmark(size: 18)
                 Spacer()
-                Text("v1.0.0-fase2a")
+                Text("v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?")")
                     .font(DS.Font.mono(9))
                     .tracking(0.5)
                     .foregroundStyle(DS.Color.ink3)

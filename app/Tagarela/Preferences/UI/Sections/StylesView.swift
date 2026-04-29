@@ -12,6 +12,12 @@ struct StylesView: View {
     private let columns = [GridItem(.adaptive(minimum: 220), spacing: 12)]
 
     var body: some View {
+        // NOTE: bypass deliberado de StyleProvider — a grid precisa de cards
+        // visualmente distintos (built-ins read-only com badge "PRONTO" vs
+        // custom editáveis com lápis), enquanto StyleProvider achata em uma
+        // lista única ordenada (apropriado pro submenu menubar e RefinerFactory,
+        // não pra esta UI). StyleProvider segue como source of truth pra
+        // refiner selection + menubar; esta tela é exceção documentada.
         ScrollView {
             LazyVGrid(columns: columns, spacing: 12) {
                 ForEach(BuiltInStyles.all, id: \.id) { s in

@@ -226,7 +226,6 @@ final class AppContainer: ObservableObject {
     func openPreferences() {
         let view = PreferencesRoot(
             prefs: prefs,
-            styleProvider: styleProvider,
             customStore: customStyleStore,
             ollamaModelLister: { [weak self] in
                 OllamaModelLister(

@@ -3,7 +3,7 @@ data: 2026-04-29
 fase: 2b-1
 branch: fase-2b1
 testes: 115 verdes (114 + 1 LocalizableKeysTests)
-commits: 24 sobre main (47257ec..e7ed6ca)
+commits: 28 sobre main (47257ec..HEAD)
 ---
 
 # Snapshot — módulos pós-Fase 2b-1
@@ -28,7 +28,7 @@ A Fase 2b-1 entregou a janela de Preferências completa, custom styles via Swift
 | `CustomStyleStore` | `Refiner/CustomStyleStore.swift` | `@MainActor protocol` com CRUD (`reload`, `create`, `update`, `delete`). Typealias `OnStyleDeleted = @MainActor (UUID) -> Void` pro callback pós-delete. Erros: `.invalidInput`, `.persistenceFailed`. |
 | `CustomStyleStoreLive` | `Refiner/CustomStyleStoreLive.swift` | Impl SwiftData. `@Published private(set) var styles`. Trim+validate em `create`. Callback de delete recebe ID pra caller (AppContainer) resetar `prefs.selectedStyleID`. |
 | `CustomStyleStoreNoop` | `Refiner/CustomStyleStoreNoop.swift` | Fallback se `ModelContainer` falha; lista vazia, writes lançam `.persistenceFailed`. |
-| `StyleProvider` | `Refiner/StyleProvider.swift` | `@MainActor` final class. Mescla `BuiltInStyles.all` + `customStore.styles.map(asStyle)` em lista única ordenada por nome (case-insensitive). Lookup em built-ins primeiro, depois custom. `styleOrDefault` cai pra `BuiltInStyles.conversaInformal`. |
+| `StyleProvider` | `Refiner/StyleProvider.swift` | `@MainActor` final class. Mescla `BuiltInStyles.all` + `customStore.styles.map(asStyle)` em lista única ordenada por nome (case-insensitive). Lookup em built-ins primeiro, depois custom. `styleOrDefault` cai pra `BuiltInStyles.conversaInformal`. **Source of truth pra refiner selection + menubar Style submenu**. `StylesView` (grid de Preferências) consome `BuiltInStyles.all` + `customStore.styles` direto — bypass deliberado documentado no código pra suportar UI diferenciada por tipo. |
 
 ### Preferences UI
 

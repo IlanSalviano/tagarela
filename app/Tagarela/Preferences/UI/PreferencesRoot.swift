@@ -2,7 +2,6 @@ import SwiftUI
 
 struct PreferencesRoot: View {
     @ObservedObject var prefs: PreferencesStore
-    let styleProvider: StyleProvider
     let customStore: CustomStyleStore
     let ollamaModelLister: () -> OllamaModelLister
     let openAIKeyEditor: () -> Void
