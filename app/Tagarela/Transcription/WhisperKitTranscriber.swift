@@ -35,14 +35,25 @@ final class WhisperKitTranscriber: Transcribing, @unchecked Sendable {
         guard let pipe else { throw TranscribeError.modelNotLoaded }
         guard buffer.durationSeconds >= 0.5 else { throw TranscribeError.bufferTooShort }
 
-        // initialPrompt poderia virar promptTokens via tokenizer, mas pra v1 usamos
-        // só usePrefillPrompt=true (forçar idioma+task). Vocab vai pra Fase 2.
+        let promptTokens: [Int]?
+        if ProcessInfo.processInfo.environment["TAGARELA_DISABLE_PROMPT"] == "1" {
+            promptTokens = nil
+            logger.info("promptTokens desabilitado via env var TAGARELA_DISABLE_PROMPT=1")
+        } else if let prompt = initialPrompt, !prompt.isEmpty,
+                  let tokenizer = pipe.tokenizer {
+            let encoded = tokenizer.encode(text: prompt)
+            promptTokens = encoded.isEmpty ? nil : encoded
+        } else {
+            promptTokens = nil
+        }
+
         let opts = DecodingOptions(
             verbose: false,
             task: .transcribe,
             language: language,
             usePrefillPrompt: true,
-            withoutTimestamps: true
+            withoutTimestamps: true,
+            promptTokens: promptTokens
         )
 
         do {

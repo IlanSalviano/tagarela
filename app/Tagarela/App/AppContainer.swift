@@ -1,5 +1,7 @@
 import SwiftUI
+import AppKit
 import AVFoundation
+import Combine
 import OSLog
 
 @MainActor
@@ -9,31 +11,97 @@ final class AppContainer: ObservableObject {
     let transcriber: Transcribing
     let audio: AudioCapturing
     let injector: Injecting
-    let refiner: TextRefiner
+    let prefs: PreferencesStore
+    let keychain: KeychainService
+    let healthChecker: OllamaHealthChecker
+    let refinerFactory: RefinerFactory
     let hotkeyService: HotkeyService
     let pipeline: PipelineCoordinator
     let onboarding: OnboardingCoordinator
     let indicatorPanel = FloatingIndicatorPanel()
+    let historyStore: HistoryStore
+    let keyPromptWindow: OpenAIKeyPromptWindow
+    private var cancellables: Set<AnyCancellable> = []
 
     @Published var showOnboarding: Bool
 
     init() {
         let permissions = PermissionServiceLive()
         let transcriber = WhisperKitTranscriber()
-        let audio = AudioCaptureLive()
         let injector = InjectorLive()
-        let refiner = IdentityRefiner()
         let hotkeyService = HotkeyServiceLive()
+
+        let prefs = PreferencesStore(defaults: .standard, defaultStyleID: BuiltInStyles.defaultStyleID)
+        let audio = AudioCaptureLive(
+            maxGainProvider: { @MainActor [weak prefs] in
+                prefs?.audioBoostMaxGain ?? PreferencesDefaults.audioBoostMaxGain
+            } as @Sendable () -> Float)
+        if prefs.technicalVocabulary.isEmpty {
+            prefs.technicalVocabulary = DefaultVocabulary.terms
+        }
+        let keychain: KeychainService = KeychainServiceLive()
+        let session = URLSession.shared
+        let healthChecker = OllamaHealthChecker(
+            session: session,
+            baseURL: URL(string: prefs.ollamaBaseURL) ?? URL(string: "http://localhost:11434")!)
+        // weak prefs: defesa contra deallocação prematura. Na prática, AppContainer
+        // vive durante toda a vida do app, então fatalError aqui é inalcançável.
+        let factory = RefinerFactory(
+            prefs: prefs,
+            openAI: { [weak prefs, keychain] in
+                guard let prefs else { fatalError("prefs deallocated") }
+                return OpenAIRefiner(session: session,
+                                     keychain: keychain,
+                                     model: prefs.openAIModel,
+                                     timeoutSec: prefs.refinerTimeoutSec)
+            },
+            ollama: { [weak prefs, healthChecker] in
+                guard let prefs else { fatalError("prefs deallocated") }
+                return OllamaRefiner(
+                    session: session,
+                    baseURL: URL(string: prefs.ollamaBaseURL) ?? URL(string: "http://localhost:11434")!,
+                    model: prefs.ollamaModel,
+                    timeoutSec: prefs.refinerTimeoutSec,
+                    healthChecker: healthChecker)
+            })
+
+        let historyStore: HistoryStore = (try? HistoryStoreLive()) ?? HistoryStoreNoop()
+
+        let keyPromptWindow = OpenAIKeyPromptWindow(keychain: keychain)
 
         self.permissions = permissions
         self.transcriber = transcriber
         self.audio = audio
         self.injector = injector
-        self.refiner = refiner
+        self.prefs = prefs
+        self.keychain = keychain
+        self.healthChecker = healthChecker
+        self.refinerFactory = factory
         self.hotkeyService = hotkeyService
+        self.historyStore = historyStore
+        self.keyPromptWindow = keyPromptWindow
         self.pipeline = PipelineCoordinator(
-            audio: audio, transcriber: transcriber,
-            refiner: refiner, injector: injector
+            audio: audio,
+            transcriber: transcriber,
+            refinerProvider: { factory.current() },
+            injector: injector,
+            historyStore: historyStore,
+            historyMaxItemsProvider: { [weak prefs] in prefs?.historyMaxItems ?? PreferencesDefaults.historyMaxItems },
+            historyMaxDaysProvider:  { [weak prefs] in prefs?.historyMaxDays  ?? PreferencesDefaults.historyMaxDays },
+            llmModelNameProvider: { [weak prefs] kind in
+                switch kind {
+                case .openai: return prefs?.openAIModel
+                case .ollama: return prefs?.ollamaModel
+                case .none:   return nil
+                }
+            },
+            whisperModelNameProvider: { [weak transcriber] in
+                transcriber?.loadedModelName ?? "<unknown>"
+            },
+            initialPromptProvider: { [weak prefs] in
+                guard let prefs, !prefs.technicalVocabulary.isEmpty else { return nil }
+                return InitialPromptBuilder.build(vocab: prefs.technicalVocabulary)
+            }
         )
         self.onboarding = OnboardingCoordinator(
             permissionService: permissions, transcriber: transcriber
@@ -43,12 +111,22 @@ final class AppContainer: ObservableObject {
         wireHotkeyToPipeline()
         wirePipelineToAppState()
         wirePermissionsToAppState()
+        wireHealthCheckerInvalidation(prefs: prefs, healthChecker: healthChecker)
 
         if !showOnboarding {
             ensureMicPermission()
             startHotkeyServiceLogging()
             loadModelLogging("large-v3")
         }
+    }
+
+    private func wireHealthCheckerInvalidation(prefs: PreferencesStore, healthChecker: OllamaHealthChecker) {
+        prefs.$refinerKind.dropFirst().sink { _ in
+            Task { await healthChecker.invalidate() }
+        }.store(in: &cancellables)
+        prefs.$ollamaBaseURL.dropFirst().sink { _ in
+            Task { await healthChecker.invalidate() }
+        }.store(in: &cancellables)
     }
 
     private func ensureMicPermission() {

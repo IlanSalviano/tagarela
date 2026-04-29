@@ -27,13 +27,131 @@ final class PipelineCoordinatorTests: XCTestCase {
         XCTAssertEqual(s, .idle)
     }
 
-    private func makeCoordinator() -> PipelineCoordinator {
+    func test_refinerFails_fallsBackToIdentity() async {
+        let p = makeCoordinator(refiner: FakeRefiner(kind: .openai, result: .failure(RefinerError.networkOffline)))
+        let received = collectFinished(from: p)
+        await p.handle(.toggle)
+        await p.handle(.toggle)
+        try? await Task.sleep(nanoseconds: 200_000_000)
+        let r = await received.value
+        XCTAssertEqual(r?.refinedText, "olá mundo", "fallback Identity should pass through raw text")
+    }
+
+    func test_cancelledError_abortsWithoutFallback() async {
+        let p = makeCoordinator(refiner: FakeRefiner(kind: .openai, result: .failure(RefinerError.cancelled)))
+        let received = collectFinished(from: p)
+        await p.handle(.toggle)
+        await p.handle(.toggle)
+        try? await Task.sleep(nanoseconds: 200_000_000)
+        let r = await received.value
+        XCTAssertNil(r, "cancelled error should NOT yield finished event")
+        let s = await p.state
+        XCTAssertEqual(s, .idle)
+    }
+
+    func test_identityRefiner_skipsRefiningState() async {
+        let p = makeCoordinator(refiner: IdentityRefiner())
+        let states = collectStates(from: p)
+        await p.handle(.toggle)
+        await p.handle(.toggle)
+        try? await Task.sleep(nanoseconds: 200_000_000)
+        let collected = await states.value
+        // Esperado: idle, recording, processing, idle (sem .refining)
+        XCTAssertFalse(collected.contains { if case .refining = $0 { return true } else { return false } },
+                       "Identity should skip .refining; collected: \(collected)")
+    }
+
+    func test_pipelineSuccess_savesHistory() async {
+        let history = FakeHistoryStore()
+        let p = makeCoordinator(refiner: IdentityRefiner(), history: history)
+        await p.handle(.toggle)
+        await p.handle(.toggle)
+        try? await Task.sleep(nanoseconds: 200_000_000)
+        XCTAssertEqual(history.saved.count, 1)
+        XCTAssertEqual(history.saved.first?.rawText, "olá mundo")
+        XCTAssertEqual(history.saved.first?.refinedText, "olá mundo")
+        XCTAssertEqual(history.saved.first?.refinerKind, "none")
+    }
+
+    func test_pipelineCancel_doesNotSaveHistory() async {
+        let history = FakeHistoryStore()
+        let p = makeCoordinator(refiner: IdentityRefiner(), history: history)
+        await p.handle(.toggle)
+        await p.handle(.cancel)
+        try? await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertEqual(history.saved.count, 0)
+    }
+
+    // Helpers ----------------------------------------------------
+
+    private func makeCoordinator(refiner: TextRefiner = IdentityRefiner(),
+                                 style: Style = BuiltInStyles.conversaInformal,
+                                 history: FakeHistoryStore = FakeHistoryStore()) -> PipelineCoordinator {
         PipelineCoordinator(
             audio: FakeAudio(),
             transcriber: FakeTranscriber(),
-            refiner: IdentityRefiner(),
-            injector: FakeInjector()
+            refinerProvider: { @MainActor in (refiner, style) },
+            injector: FakeInjector(),
+            historyStore: history,
+            historyMaxItemsProvider: { @MainActor in 100 },
+            historyMaxDaysProvider: { @MainActor in 30 },
+            llmModelNameProvider: { @MainActor _ in nil },
+            whisperModelNameProvider: { "fake" }
         )
+    }
+
+    private func collectFinished(from p: PipelineCoordinator) -> Task<(rawText: String, refinedText: String, frontmostApp: String?)?, Never> {
+        Task {
+            for await ev in p.events {
+                if case let .finished(raw, refined, app) = ev {
+                    return (raw, refined, app)
+                }
+                if case .stateChanged(.idle) = ev {
+                    // .idle reached without .finished — provavelmente cancel/error
+                    return nil
+                }
+            }
+            return nil
+        }
+    }
+
+    private func collectStates(from p: PipelineCoordinator) -> Task<[PipelineState], Never> {
+        Task {
+            var collected: [PipelineState] = []
+            for await ev in p.events {
+                if case .stateChanged(let s) = ev {
+                    collected.append(s)
+                    if case .idle = s, collected.count > 1 { break }
+                }
+            }
+            return collected
+        }
+    }
+}
+
+actor ActorBool {
+    private var v: Bool = false
+    func set(_ b: Bool) { v = b }
+    func get() -> Bool { v }
+}
+
+private final class FakeRefiner: TextRefiner, @unchecked Sendable {
+    let kind: RefinerKind
+    let result: Result<String, Error>
+    let onCalled: (@Sendable () async -> Void)?
+
+    init(kind: RefinerKind, result: Result<String, Error>, onCalled: (@Sendable () async -> Void)? = nil) {
+        self.kind = kind
+        self.result = result
+        self.onCalled = onCalled
+    }
+
+    func refine(_ raw: String, style: Style) async throws -> String {
+        await onCalled?()
+        switch result {
+        case .success(let s): return s
+        case .failure(let e): throw e
+        }
     }
 }
 
@@ -43,8 +161,7 @@ private final class FakeAudio: AudioCapturing, @unchecked Sendable {
     func start() throws { isRecording = true }
     func stop() async throws -> AudioBuffer {
         isRecording = false
-        return AudioBuffer(samples: Array(repeating: 0.1, count: 16_000),
-                           sampleRate: 16_000) // 1s
+        return AudioBuffer(samples: Array(repeating: 0.1, count: 16_000), sampleRate: 16_000)
     }
 }
 
@@ -62,4 +179,12 @@ private final class FakeInjector: Injecting, @unchecked Sendable {
         injected = text
         return "com.example.app"
     }
+}
+
+private final class FakeHistoryStore: HistoryStore, @unchecked Sendable {
+    var saved: [TranscriptionInput] = []
+    func save(_ input: TranscriptionInput, maxItems: Int, maxDays: Int) async throws {
+        saved.append(input)
+    }
+    func recent(limit: Int) async throws -> [Transcription] { [] }
 }

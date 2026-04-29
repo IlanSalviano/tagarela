@@ -6,8 +6,30 @@ struct TagarelaApp: App {
 
     var body: some Scene {
         MenuBarExtra {
-            MenuBarContent()
-                .environmentObject(container.appState)
+            MenuBarContent(
+                onSelectOpenAINeedsKey: { [container] previous in
+                    Task { @MainActor in
+                        let hasKey: Bool
+                        do {
+                            hasKey = (try container.keychain.openAIKey()).map { !$0.isEmpty } ?? false
+                        } catch {
+                            hasKey = false
+                        }
+                        guard !hasKey else { return }
+                        container.keyPromptWindow.onCancel = {
+                            container.prefs.refinerKind = previous
+                        }
+                        container.keyPromptWindow.onSaved = {}
+                        container.keyPromptWindow.show()
+                    }
+                },
+                onExplicitConfigureKey: { [container] in
+                    container.keyPromptWindow.onCancel = {}  // sem rollback no caminho explícito
+                    container.keyPromptWindow.onSaved = {}
+                    container.keyPromptWindow.show()
+                })
+            .environmentObject(container.appState)
+            .environmentObject(container.prefs)
         } label: {
             StatusBarIcon(appState: container.appState,
                           shouldOpenOnboarding: container.showOnboarding)

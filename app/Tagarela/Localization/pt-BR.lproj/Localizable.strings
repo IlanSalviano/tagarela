@@ -1,0 +1,23 @@
+// Tagarela — Localizable.strings (pt-BR)
+// Apenas strings da Fase 2a. Migração total da Fase 1 fica pra 2b.
+
+// Backend submenu
+"backend.none"   = "Sem LLM";
+"backend.openai" = "OpenAI";
+"backend.ollama" = "Ollama";
+
+// MenuBar labels
+"menubar.backend.label" = "Backend";
+"menubar.style.label"   = "Estilo";
+"menubar.configure.openaikey" = "Configurar API key da OpenAI…";
+"menubar.quit" = "sair";
+
+// OpenAI key prompt
+"openai.key.window.title" = "API key da OpenAI";
+"openai.key.body" = "A key fica no Keychain do macOS, no serviço com.tagarela. Nunca aparece em logs nem é enviada para outros lugares.";
+"openai.key.warning.format" = "Formato parece inválido — você ainda pode salvar mesmo assim.";
+"openai.key.error.save" = "Não foi possível salvar — tente de novo.";
+
+// Common buttons
+"common.cancel" = "Cancelar";
+"common.save"   = "Salvar";

@@ -4,11 +4,11 @@ import XCTest
 final class IdentityRefinerTests: XCTestCase {
     func test_returnsInputUnchanged() async throws {
         let r = IdentityRefiner()
-        let out = try await r.refine("foo bar", style: "qualquer")
+        let out = try await r.refine("foo bar", style: BuiltInStyles.conversaInformal)
         XCTAssertEqual(out, "foo bar")
     }
 
-    func test_kindIsIdentity() {
-        XCTAssertEqual(IdentityRefiner().kind, .identity)
+    func test_kindIsNone() {
+        XCTAssertEqual(IdentityRefiner().kind, .none)
     }
 }

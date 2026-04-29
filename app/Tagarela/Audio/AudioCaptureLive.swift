@@ -9,11 +9,13 @@ final class AudioCaptureLive: AudioCapturing, @unchecked Sendable {
     /// no array do canal correspondente. Mantém a ordem temporal por canal.
     private var channelBuffers: [[Float]] = []
     private(set) var isRecording: Bool = false
+    private let maxGainProvider: @Sendable () -> Float
 
     nonisolated(unsafe) private var levelContinuation: AsyncStream<Double>.Continuation?
     let levels: AsyncStream<Double>
 
-    init() {
+    init(maxGainProvider: @escaping @Sendable () -> Float = { 20.0 }) {
+        self.maxGainProvider = maxGainProvider
         var ref: AsyncStream<Double>.Continuation!
         self.levels = AsyncStream { c in ref = c }
         self.levelContinuation = ref
@@ -88,8 +90,9 @@ final class AudioCaptureLive: AudioCapturing, @unchecked Sendable {
             if a > peak { peak = a }
         }
         guard peak > 0.0001 else { return samples } // silêncio: não tenta boostar
-        // Limita gain a 20x pra não amplificar ruído muito alto
-        let gain = min(targetPeak / peak, 20)
+        // Limita gain ao cap do provider pra não amplificar ruído muito alto
+        let cap = maxGainProvider()
+        let gain = min(targetPeak / peak, cap)
         return samples.map { s in
             let g = s * gain
             return max(-1, min(1, g))

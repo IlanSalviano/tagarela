@@ -30,6 +30,8 @@ Antes de virar tokens:
 
 **Critério de aceite:** ou (a) decisão documentada de que vocab não vale o esforço (commit no doc), ou (b) `promptTokens` setado, com teste validando que termos do vocab aparecem corretamente em pelo menos 1 amostra.
 
+**Status (2026-04-27, Tarefa 8 da Fase 2a):** `promptTokens` agora é populado via `WhisperKit.tokenizer.encode(prompt)` quando vocab não-vazio e env var `TAGARELA_DISABLE_PROMPT` ≠ "1". Critério de aceite (b) parcialmente atendido — falta validar empiricamente via [`fase2-validacao-prompt.md`](../03-funcionalidades/checklists/fase2-validacao-prompt.md). ADR-0002 documenta decisão final após o A/B.
+
 ## 3. Stderr instrumentation deve virar `Logger.tagarela.info`
 
 **Arquivos com `FileHandle.standardError.write` em produção:**
@@ -59,6 +61,8 @@ Isso resolve o problema imediato de "Whisper transcreve só `...` porque áudio 
 3. Sem AGC (automatic gain control) real — peak normalize é uma aproximação cega.
 
 **Critério de aceite:** ou (a) substituir por AGC simples (RMS-based, com attack/release) ou (b) expor como preferência (Fase 2 quando tiver tela de Preferências) com slider 0-20×, default 8×.
+
+**Status (2026-04-27, Tarefa 9 da Fase 2a):** ✅ Concluído — critério (b) atendido. `audioBoostMaxGain` agora é Float em `PreferencesStore` (default 20, range clamped [1,50]) injetado em `AudioCaptureLive` via `maxGainProvider` closure (`@MainActor @escaping @Sendable () -> Float`). `boostPeakNormalize` lê do provider em vez do hardcoded 20×. Slider UI vai entrar na Fase 2b junto da tela de Preferências; configuração via `defaults write com.tagarela.preferences audioBoostMaxGain -float <N>` funciona desde já. 73 testes verdes inalterados.
 
 ## 5. `AVAudioConverter` streaming não funcionou — workaround documentado
 

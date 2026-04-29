@@ -5,10 +5,15 @@ actor PipelineCoordinator {
     private let logger = Logger(subsystem: "com.tagarela", category: "Pipeline")
     private let audio: AudioCapturing
     private let transcriber: Transcribing
-    private let refiner: TextRefiner
+    private let refinerProvider: @MainActor @Sendable () -> (refiner: TextRefiner, style: Style)
     private let injector: Injecting
+    private let historyStore: HistoryStore
+    private let historyMaxItemsProvider: @MainActor @Sendable () -> Int
+    private let historyMaxDaysProvider: @MainActor @Sendable () -> Int
+    private let llmModelNameProvider: @MainActor @Sendable (RefinerKind) -> String?
+    private let whisperModelNameProvider: @Sendable () -> String
     private let language: String
-    private let initialPromptProvider: @Sendable () -> String?
+    private let initialPromptProvider: @MainActor @Sendable () -> String?
 
     private(set) var state: PipelineState = .idle
     private var continuation: AsyncStream<PipelineEvent>.Continuation?
@@ -17,17 +22,30 @@ actor PipelineCoordinator {
     private var startTime: Date?
     private var currentLevel: Double = 0
     private var recordingTasks: [Task<Void, Never>] = []
+    /// Sinaliza que o usuário cancelou durante .processing/.refining.
+    /// `runTranscribeAndInject` checa após cada await pra abortar antes de inject/save.
+    private var cancelled = false
 
     init(audio: AudioCapturing,
          transcriber: Transcribing,
-         refiner: TextRefiner,
+         refinerProvider: @escaping @MainActor @Sendable () -> (refiner: TextRefiner, style: Style),
          injector: Injecting,
+         historyStore: HistoryStore,
+         historyMaxItemsProvider: @escaping @MainActor @Sendable () -> Int,
+         historyMaxDaysProvider: @escaping @MainActor @Sendable () -> Int,
+         llmModelNameProvider: @escaping @MainActor @Sendable (RefinerKind) -> String?,
+         whisperModelNameProvider: @escaping @Sendable () -> String,
          language: String = "pt",
-         initialPromptProvider: @escaping @Sendable () -> String? = { nil }) {
+         initialPromptProvider: @escaping @MainActor @Sendable () -> String? = { nil }) {
         self.audio = audio
         self.transcriber = transcriber
-        self.refiner = refiner
+        self.refinerProvider = refinerProvider
         self.injector = injector
+        self.historyStore = historyStore
+        self.historyMaxItemsProvider = historyMaxItemsProvider
+        self.historyMaxDaysProvider = historyMaxDaysProvider
+        self.llmModelNameProvider = llmModelNameProvider
+        self.whisperModelNameProvider = whisperModelNameProvider
         self.language = language
         self.initialPromptProvider = initialPromptProvider
 
@@ -77,13 +95,16 @@ actor PipelineCoordinator {
     }
 
     private func handleCancel() async {
+        logger.info("cancel received in state=\(String(describing: self.state), privacy: .public)")
         switch state {
         case .recording:
             cancelRecordingTasks()
             _ = try? await audio.stop()
             setState(.idle)
         case .processing, .refining:
-            // Sem cancel real do whisper na v1 — só marcamos idle e descartamos resultado
+            // Sem cancel real do whisper/refiner na v1 — sinalizamos via flag e
+            // `runTranscribeAndInject` aborta antes de inject/save no próximo await.
+            cancelled = true
             setState(.idle)
         case .idle, .error:
             break
@@ -124,6 +145,7 @@ actor PipelineCoordinator {
     }
 
     private func runTranscribeAndInject() async {
+        cancelled = false
         do {
             FileHandle.standardError.write(Data("[pipeline] stopping audio\n".utf8))
             let buffer = try await audio.stop()
@@ -137,14 +159,59 @@ actor PipelineCoordinator {
             let raw = try await transcriber.transcribe(
                 buffer: buffer,
                 language: language,
-                initialPrompt: initialPromptProvider()
+                initialPrompt: await initialPromptProvider()
             )
+            if cancelled { logger.info("cancelled after transcribe"); setState(.idle); return }
             FileHandle.standardError.write(Data("[pipeline] transcribed: '\(raw)'\n".utf8))
-            setState(.refining)
-            let refined = try await refiner.refine(raw, style: "cru — sem reescrita")
-            FileHandle.standardError.write(Data("[pipeline] injecting\n".utf8))
+            let (refiner, style) = await refinerProvider()
+            let actualRefinerKind: RefinerKind
+            let refined: String
+
+            if refiner.kind == .none {
+                // Identity (cru style ou refinerKind=.none): skip .refining, pass-through instantâneo.
+                // Coerente com spec §3 ("style cru pula .refining").
+                refined = (try? await refiner.refine(raw, style: style)) ?? raw
+                actualRefinerKind = .none
+            } else {
+                setState(.refining)
+                do {
+                    refined = try await refiner.refine(raw, style: style)
+                    actualRefinerKind = refiner.kind
+                } catch RefinerError.cancelled {
+                    // Cancelamento real: aborta sem fallback nem inject
+                    FileHandle.standardError.write(Data("[pipeline] refiner cancelled\n".utf8))
+                    setState(.idle); return
+                } catch {
+                    logger.error("refiner failed (\(refiner.kind.rawValue)): \(String(describing: error))")
+                    let identityFallback = IdentityRefiner()
+                    refined = (try? await identityFallback.refine(raw, style: style)) ?? raw
+                    actualRefinerKind = identityFallback.kind
+                }
+            }
+            if cancelled { logger.info("cancelled after refine"); setState(.idle); return }
+            logger.info("injecting (kind=\(actualRefinerKind.rawValue, privacy: .public))")
             let frontApp = try await injector.inject(text: refined)
-            FileHandle.standardError.write(Data("[pipeline] injected to \(frontApp ?? "?")\n".utf8))
+            if cancelled { logger.info("cancelled after inject"); setState(.idle); return }
+            logger.info("injected to \(frontApp ?? "?", privacy: .public)")
+            do {
+                let maxItems = await historyMaxItemsProvider()
+                let maxDays = await historyMaxDaysProvider()
+                let llmModel = await llmModelNameProvider(actualRefinerKind)
+                try await historyStore.save(
+                    TranscriptionInput(
+                        durationSeconds: buffer.durationSeconds,
+                        rawText: raw,
+                        refinedText: refined,
+                        refinerKind: actualRefinerKind.rawValue,
+                        llmModelName: llmModel,
+                        whisperModelName: whisperModelNameProvider(),
+                        styleName: style.name,
+                        frontmostAppBundleID: frontApp),
+                    maxItems: maxItems,
+                    maxDays:  maxDays)
+            } catch {
+                logger.error("history save failed: \(String(describing: error))")
+            }
             continuation?.yield(.finished(rawText: raw,
                                           refinedText: refined,
                                           frontmostApp: frontApp))

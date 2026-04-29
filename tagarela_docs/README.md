@@ -21,10 +21,13 @@ _(a preencher)_ — análise do Wispr Flow, alternativas, decisões de paridade.
 ### 03 — Funcionalidades
 - [`checklists/fase1-manual.md`](./03-funcionalidades/checklists/fase1-manual.md) — checklist manual de aceite da Fase 1 (onboarding, status bar, pipeline, apps de injeção, edge cases, performance).
 - [`checklists/fase2-diagnostico-asr.md`](./03-funcionalidades/checklists/fase2-diagnostico-asr.md) — diagnóstico ASR pré-Fase 2: dump WAV+TXT por captura, 5 frases-teste pra isolar inversão de sentido (sinal vs modelo vs prompt).
+- [`checklists/fase2a-manual.md`](./03-funcionalidades/checklists/fase2a-manual.md) — aceite manual da Fase 2a (backend submenu, style submenu, modal API key, fallback Identity, retenção do history, injeção em apps reais).
 
 ### 04 — Decisões (ADRs)
 - [`ADR-0001-sistema-visual.md`](./04-decisoes/ADR-0001-sistema-visual.md) — sistema visual, identidade, indicador default da v1, mudanças de escopo aceitas/recusadas.
+- [`ADR-0003-pipeline-2a.md`](./04-decisoes/ADR-0003-pipeline-2a.md) — pipeline da Fase 2a: 16 decisões nucleares (refiners, persistência, UI mínima, cleanups #2 e #4).
 - [`cleanup-fase1.md`](./04-decisoes/cleanup-fase1.md) — TODOs deixados na Fase 1 (L/R Option, promptTokens, drift visual). Revisitar em 2026-05-11.
+- [`cleanup-fase2a.md`](./04-decisoes/cleanup-fase2a.md) — achados do aceite manual da Fase 2a (default Ollama thinking, fallback silencioso, OpenAI conversacional em raw curto, logs em stderr, cancel não cancela HTTP). Revisitar em 2026-05-12.
 
 ### 05 — [Sistema visual](./05-design/README.md)
 Identidade, tokens, tipografia, cores, copy pt-BR, catálogo de componentes e bundle do Claude Design (`05-design/bundle/`). Fonte da verdade visual.
@@ -32,7 +35,8 @@ Identidade, tokens, tipografia, cores, copy pt-BR, catálogo de componentes e bu
 ### specs/
 - [`2026-04-26-tagarela-v1-design.md`](./specs/2026-04-26-tagarela-v1-design.md) — design consolidado da v1 (incorporando decisões visuais).
 - [`2026-04-26-tagarela-v1-fase1-plan.md`](./specs/2026-04-26-tagarela-v1-fase1-plan.md) — plano de implementação da Fase 1 (esqueleto end-to-end "ditado puro"; 30 tarefas).
-- [`2026-04-27-tagarela-v1-fase2a-design.md`](./specs/2026-04-27-tagarela-v1-fase2a-design.md) — design da Fase 2a (Persistência + LLM funcionando: refiners OpenAI/Ollama/Identity, PreferencesStore, HistoryStore, Keychain, submenus na status bar, modal de API key, cleanups #2 e #4). Plan vem em seguida.
+- [`2026-04-27-tagarela-v1-fase2a-design.md`](./specs/2026-04-27-tagarela-v1-fase2a-design.md) — design da Fase 2a. **Status: implementado** (2026-04-27).
+- [`2026-04-27-tagarela-v1-fase2a-plan.md`](./specs/2026-04-27-tagarela-v1-fase2a-plan.md) — plano executado da Fase 2a (16 tarefas, 81 testes verdes ao fim).
 
 ---
 

@@ -523,6 +523,7 @@ enum RefinerError: Error, Equatable, Sendable {
     case contextExceeded
     case modelNotFound(String)
     case malformedResponse
+    case cancelled
 }
 ```
 
@@ -539,6 +540,8 @@ enum RefinerErrorMapper {
                 return .networkOffline
             case .timedOut:
                 return .timedOut
+            case .cancelled:
+                return .cancelled
             default:
                 return .networkOffline
             }
@@ -569,11 +572,22 @@ enum RefinerErrorMapper {
     }
 
     private static func extractModelName(_ body: String) -> String? {
-        // best-effort: procura primeira string com aspas após "model"
-        guard let range = body.range(of: "model") else { return nil }
-        let tail = body[range.upperBound...]
-        let parts = tail.split(separator: "\"")
-        for p in parts where !p.isEmpty && p.count < 64 { return String(p) }
+        // Matches: model followed by quoted token (handles both escaped and unescaped quotes).
+        // Pattern: 'model' + optional space + optional backslash + quote + name + optional backslash + quote
+        let patterns = [
+            // Escaped quotes: model \"name\"
+            try? NSRegularExpression(pattern: "model\\s+\\\\\"([A-Za-z0-9._:\\-]{1,63})\\\\\"", options: []),
+            // Unescaped quotes: model "name"
+            try? NSRegularExpression(pattern: "model\\s+\"([A-Za-z0-9._:\\-]{1,63})\"", options: [])
+        ]
+
+        let nsBody = body as NSString
+        for pattern in patterns.compactMap({ $0 }) {
+            if let match = pattern.firstMatch(in: body, options: [], range: NSRange(location: 0, length: nsBody.length)),
+               let range = Range(match.range(at: 1), in: body) {
+                return String(body[range])
+            }
+        }
         return nil
     }
 }
@@ -606,6 +620,7 @@ enum RemoteRefinerConfig {
     static func contextWindow(for modelName: String) -> Int {
         let lower = modelName.lowercased()
         if lower.hasPrefix("gpt-5.4") { return 200_000 }
+        // Cobre qwen3.5:*, qwen3.0:* etc — todas as variantes Qwen3 tem janela ~32k.
         if lower.hasPrefix("qwen3")   { return 32_768 }
         if lower.hasPrefix("llama3.2"){ return 128_000 }
         return conservativeFallback
@@ -660,11 +675,25 @@ final class RefinerErrorMapperTests: XCTestCase {
 
     func test_http404_withModelMessage_mapsToModelNotFound() {
         let body = Data(#"{"error":"model \"qwen3.5\" not found"}"#.utf8)
-        if case .modelNotFound = RefinerErrorMapper.from(httpStatus: 404, body: body) {
-            // ok
+        if case let .modelNotFound(name) = RefinerErrorMapper.from(httpStatus: 404, body: body) {
+            XCTAssertEqual(name, "qwen3.5")
         } else {
             XCTFail("expected .modelNotFound")
         }
+    }
+
+    func test_http404_withUnquotedModelMessage_returnsQuestionMark() {
+        let body = Data(#"{"error":"model qwen3.5 not found"}"#.utf8)
+        if case let .modelNotFound(name) = RefinerErrorMapper.from(httpStatus: 404, body: body) {
+            XCTAssertEqual(name, "?")
+        } else {
+            XCTFail("expected .modelNotFound")
+        }
+    }
+
+    func test_urlError_cancelled_mapsToCancelled() {
+        let e = URLError(.cancelled)
+        XCTAssertEqual(RefinerErrorMapper.from(e), .cancelled)
     }
 }
 ```
@@ -693,6 +722,38 @@ final class TokenCounterTests: XCTestCase {
 }
 ```
 
+- [ ] **Step 3.6: Escrever `RemoteRefinerConfigTests.swift` (adição).**
+
+```swift
+import XCTest
+@testable import Tagarela
+
+final class RemoteRefinerConfigTests: XCTestCase {
+    func test_gpt54_returns200k() {
+        XCTAssertEqual(RemoteRefinerConfig.contextWindow(for: "gpt-5.4-mini"), 200_000)
+        XCTAssertEqual(RemoteRefinerConfig.contextWindow(for: "GPT-5.4"), 200_000) // case insensitive
+    }
+
+    func test_qwen3DefaultModel_returns32k() {
+        XCTAssertEqual(RemoteRefinerConfig.contextWindow(for: "qwen3.5:9b-nvfp4"), 32_768)
+    }
+
+    func test_llama32_returns128k() {
+        XCTAssertEqual(RemoteRefinerConfig.contextWindow(for: "llama3.2:3b"), 128_000)
+    }
+
+    func test_unknownModel_returnsConservativeFallback() {
+        XCTAssertEqual(
+            RemoteRefinerConfig.contextWindow(for: "gemma:2b"),
+            RemoteRefinerConfig.conservativeFallback)
+    }
+
+    func test_usableFraction_isPointEight() {
+        XCTAssertEqual(RemoteRefinerConfig.usableFraction, 0.8, accuracy: 0.001)
+    }
+}
+```
+
 - [ ] **Step 3.7: Regenerar + rodar.**
 
 ```bash
@@ -701,17 +762,25 @@ xcodegen generate
 xcodebuild -project Tagarela.xcodeproj -scheme Tagarela -destination 'platform=macOS' test 2>&1 | tail -10
 ```
 
-Esperado: 34 testes verdes (24 + 10).
+Esperado: 43 testes verdes (36 + 7 novos: 3 RefinerErrorMapper + 1 cancelled + 5 RemoteRefinerConfig).
 
 - [ ] **Step 3.8: Commit.**
 
 ```bash
 cd /Users/tars/Dev/tagarela
-git add app/Tagarela/Refiner/RefinerError.swift app/Tagarela/Refiner/RefinerErrorMapper.swift app/Tagarela/Refiner/TokenCounter.swift app/Tagarela/Refiner/RemoteRefinerConfig.swift app/TagarelaTests/RefinerErrorMapperTests.swift app/TagarelaTests/TokenCounterTests.swift app/Tagarela.xcodeproj
-git commit -m "feat(refiner): RefinerError + Mapper + TokenCounter + RemoteRefinerConfig"
+git add app/Tagarela/Refiner/RefinerError.swift app/Tagarela/Refiner/RefinerErrorMapper.swift app/Tagarela/Refiner/TokenCounter.swift app/Tagarela/Refiner/RemoteRefinerConfig.swift app/TagarelaTests/RefinerErrorMapperTests.swift app/TagarelaTests/TokenCounterTests.swift app/TagarelaTests/RemoteRefinerConfigTests.swift app/Tagarela.xcodeproj tagarela_docs/specs/2026-04-27-tagarela-v1-fase2a-plan.md
+git commit -m "fix(refiner): extractModelName via regex + .cancelled + cobertura RemoteRefinerConfig
+
+Resolve Critical/Important do code review da Tarefa 3:
+- extractModelName usa regex pra capturar token quotado após \"model\"; agora retorna o nome do modelo correto.
+- Adicionado RefinerError.cancelled + mapping de URLError.cancelled.
+- Comentário inline em RemoteRefinerConfig sobre qwen3.
+- Novo RemoteRefinerConfigTests cobre 4 caminhos da tabela.
+- Teste de modelo sem aspas valida fallback gracioso.
+- Plan atualizado."
 ```
 
-**Critério de aceite:** mapper traduz `URLError` e HTTP status corretamente; TokenCounter retorna estimativa estável; tabela de context window cobre os 4 modelos do design; 10 testes verdes.
+**Critério de aceite:** extractModelName captura corretamente o nome (qwen3.5) do body com escaped quotes; URLError.cancelled mapeia para .cancelled; tabela contextWindow cobre 4 modelos; 43 testes verdes.
 
 ---
 
@@ -2005,7 +2074,7 @@ git commit -m "feat(audio): audioBoostMaxGain configurável via prefs (cleanup #
 - Modify: `app/Tagarela/Pipeline/PipelineCoordinator.swift`
 - Modify: `app/Tagarela/App/AppContainer.swift`
 
-- [ ] **Step 10.1: Escrever `Transcription.swift`.**
+- [x] **Step 10.1: Escrever `Transcription.swift`.**
 
 ```swift
 import Foundation
@@ -2048,7 +2117,7 @@ final class Transcription {
 }
 ```
 
-- [ ] **Step 10.2: Escrever `HistoryStore.swift` (protocol).**
+- [x] **Step 10.2: Escrever `HistoryStore.swift` (protocol).**
 
 ```swift
 import Foundation
@@ -2070,7 +2139,7 @@ protocol HistoryStore: Sendable {
 }
 ```
 
-- [ ] **Step 10.3: Escrever `HistoryStoreLive.swift`.**
+- [x] **Step 10.3: Escrever `HistoryStoreLive.swift`.**
 
 ```swift
 import Foundation
@@ -2142,7 +2211,7 @@ final class HistoryStoreLive: HistoryStore {
 }
 ```
 
-- [ ] **Step 10.4: Escrever `HistoryStoreNoop.swift`.**
+- [x] **Step 10.4: Escrever `HistoryStoreNoop.swift`.**
 
 ```swift
 import OSLog
@@ -2159,7 +2228,7 @@ final class HistoryStoreNoop: HistoryStore {
 }
 ```
 
-- [ ] **Step 10.5: Escrever `HistoryStoreTests.swift`.**
+- [x] **Step 10.5: Escrever `HistoryStoreTests.swift`.**
 
 ```swift
 import XCTest
@@ -2246,7 +2315,7 @@ final class HistoryStoreTests: XCTestCase {
 }
 ```
 
-- [ ] **Step 10.6: Atualizar `PipelineCoordinator.swift`.**
+- [x] **Step 10.6: Atualizar `PipelineCoordinator.swift`.**
 
 (a) Adicionar `historyStore: HistoryStore` ao init.
 (b) Adicionar property `prefs: PreferencesStore` (pra ler `historyMaxItems`/`historyMaxDays`).
@@ -2291,7 +2360,7 @@ do {
 
 > `refinerKindLLMModel` é uma helper local: para `"openai"` retorna `prefs.openAIModel`, para `"ollama"` retorna `prefs.ollamaModel`, para `"none"` retorna `nil`. Esse mapeamento é melhor passado via closure `llmModelNameProvider: @Sendable (String) -> String?` no init pra manter o coordinator desacoplado.
 
-- [ ] **Step 10.7: Atualizar `AppContainer.swift`.**
+- [x] **Step 10.7: Atualizar `AppContainer.swift`.**
 
 ```swift
 let historyStore: HistoryStore = (try? HistoryStoreLive()) ?? HistoryStoreNoop()
@@ -2309,7 +2378,7 @@ let pipeline = PipelineCoordinator(
     })
 ```
 
-- [ ] **Step 10.8: Build + tests.**
+- [x] **Step 10.8: Build + tests.**
 
 ```bash
 cd /Users/tars/Dev/tagarela/app
@@ -2323,7 +2392,7 @@ Esperado: 64 testes verdes (58 + 6).
 
 Fazer 3 capturas seguidas. Verificar que `~/Library/Application Support/com.tagarela.Tagarela/History.store` foi criado e tem entries (inspect via `sqlite3` se quiser, ou esperar Tarefa 16 quando expor `recent` no menu).
 
-- [ ] **Step 10.10: Commit.**
+- [x] **Step 10.10: Commit.**
 
 ```bash
 cd /Users/tars/Dev/tagarela
@@ -2451,7 +2520,7 @@ git commit -m "feat(ui): BackendSubmenu radio na status bar"
 - Create: `app/Tagarela/UI/Onboarding/OpenAIKeyPromptWindow.swift`
 - Modify: `app/Tagarela/App/AppContainer.swift`
 
-- [ ] **Step 12.1: Escrever `OpenAIKeyPromptWindow.swift`.**
+- [x] **Step 12.1: Escrever `OpenAIKeyPromptWindow.swift`.**
 
 ```swift
 import AppKit
@@ -2547,7 +2616,7 @@ private struct OpenAIKeyPromptView: View {
 }
 ```
 
-- [ ] **Step 12.2: Wire-up no `AppContainer`.**
+- [x] **Step 12.2: Wire-up no `AppContainer`.**
 
 ```swift
 let keyPromptWindow = OpenAIKeyPromptWindow(keychain: keychain)
@@ -2589,7 +2658,7 @@ let bridgedConfigure: () -> Void = {
 > }
 > ```
 
-- [ ] **Step 12.3: Build + manual.**
+- [x] **Step 12.3: Build + manual.**
 
 Manual:
 1. Apagar key atual: `security delete-generic-password -s com.tagarela -a openai-api-key 2>/dev/null || true`.
@@ -2599,7 +2668,7 @@ Manual:
 5. Verificar key gravada: `security find-generic-password -s com.tagarela -a openai-api-key -w`.
 6. Próxima captura usa OpenAI.
 
-- [ ] **Step 12.4: Commit.**
+- [x] **Step 12.4: Commit.**
 
 ```bash
 cd /Users/tars/Dev/tagarela
