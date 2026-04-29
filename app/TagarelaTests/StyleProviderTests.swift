@@ -47,4 +47,19 @@ final class StyleProviderTests: XCTestCase {
         let style = provider.styleOrDefault(for: UUID())
         XCTAssertEqual(style.id, BuiltInStyles.defaultStyleID)
     }
+
+    func test_styleForId_builtInTakesPrecedence_overCustomWithSameUUID() {
+        // Hipotético: custom criado com mesmo UUID de um built-in. Não acontece
+        // na prática (custom UUIDs vêm de UUID() fresh), mas o doc-comment do
+        // método promete que built-ins ganham primeiro. Lock the contract.
+        let conflict = CustomStyle(id: BuiltInStyles.conversaInformal.id,
+                                    name: "intruso",
+                                    systemPrompt: "p",
+                                    appendCodeSwitching: false)
+        let store = FakeCustomStore(styles: [conflict])
+        let provider = StyleProvider(customStore: store)
+        let resolved = provider.style(for: BuiltInStyles.conversaInformal.id)
+        XCTAssertEqual(resolved?.name, BuiltInStyles.conversaInformal.name,
+                        "built-in deve ganhar precedência sobre custom de mesmo UUID")
+    }
 }

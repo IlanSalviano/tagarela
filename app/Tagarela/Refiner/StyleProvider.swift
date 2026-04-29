@@ -22,8 +22,8 @@ final class StyleProvider {
         return customStore.styles.first { $0.id == id }?.asStyle()
     }
 
-    /// Style ativo dado um ID; cai pra defaultStyleID se não encontra.
+    /// Style ativo dado um ID; cai pra `conversaInformal` (o defaultStyleID) se não encontra.
     func styleOrDefault(for id: UUID) -> Style {
-        style(for: id) ?? BuiltInStyles.style(for: BuiltInStyles.defaultStyleID)!
+        style(for: id) ?? BuiltInStyles.conversaInformal
     }
 }

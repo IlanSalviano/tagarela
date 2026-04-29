@@ -142,6 +142,12 @@ final class AppContainer: ObservableObject {
         wirePipelineToAppState()
         wirePermissionsToAppState()
         wireHealthCheckerInvalidation(prefs: prefs, healthChecker: healthChecker)
+        // NOTE: fire-and-forget. Se o user dispara hotkey muito cedo (antes do
+        // fetch completar) e o style selecionado for custom, styleProvider
+        // não acha o style e cai pra `conversaInformal`. Probabilidade baixa
+        // (SwiftData fetch é rápido); aceitar como trade-off pra não bloquear
+        // boot atrás de I/O. Resolver com synchronous-reload exigiria quebrar
+        // o contrato `async` do protocolo.
         Task { await customStyleStore.reload() }
 
         if !showOnboarding {
