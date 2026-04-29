@@ -49,6 +49,11 @@ final class PreferencesStore: ObservableObject {
             }
         }
     }
+    @Published var indicatorVariant: IndicatorVariant {
+        didSet {
+            defaults.set(indicatorVariant.rawValue, forKey: PreferencesKey.indicatorVariant)
+        }
+    }
 
     init(defaults: UserDefaults = .standard,
          defaultStyleID: UUID) {
@@ -91,6 +96,11 @@ final class PreferencesStore: ObservableObject {
         } else {
             self.openAIEndpoint = PreferencesDefaults.openAIEndpoint
         }
+
+        let variantRaw = defaults.string(forKey: PreferencesKey.indicatorVariant)
+            ?? PreferencesDefaults.indicatorVariant.rawValue
+        self.indicatorVariant = IndicatorVariant(rawValue: variantRaw)
+            ?? PreferencesDefaults.indicatorVariant
     }
 
     /// Setter que clampa pro range válido [1, 50] antes de publicar.

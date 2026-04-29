@@ -12,6 +12,7 @@ enum PreferencesKey {
     static let historyMaxDays       = "com.tagarela.preferences.historyMaxDays"
     static let audioBoostMaxGain    = "com.tagarela.preferences.audioBoostMaxGain"
     static let openAIEndpoint       = "com.tagarela.preferences.openAIEndpoint"
+    static let indicatorVariant     = "com.tagarela.preferences.indicatorVariant"
 }
 
 enum PreferencesDefaults {
@@ -31,4 +32,5 @@ enum PreferencesDefaults {
     static let openAIEndpoint: OpenAIEndpoint = OpenAIEndpoint(
         provider: .official,
         baseURL: OpenAIEndpointDefaults.defaultURL(for: .official)!)
+    static let indicatorVariant: IndicatorVariant = .pill
 }

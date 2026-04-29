@@ -1,8 +1,13 @@
 import SwiftUI
 
-struct IndicatorPill: View {
+struct IndicatorPill: View, IndicatorView {
     let state: PipelineState
-    var onCancel: () -> Void = {}
+    var onCancel: () -> Void
+
+    init(state: PipelineState, onCancel: @escaping () -> Void = {}) {
+        self.state = state
+        self.onCancel = onCancel
+    }
 
     private var levelAndSeconds: (level: Double, seconds: Double) {
         if case .recording(let secs, let lvl) = state { return (lvl, secs) }
