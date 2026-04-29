@@ -10,6 +10,8 @@
 // MenuBar labels
 "menubar.backend.label" = "Backend";
 "menubar.style.label"   = "Estilo";
+"menubar.recent.label"  = "Últimos";
+"menubar.recent.empty"  = "nenhum item ainda";
 "menubar.configure.openaikey" = "Configurar API key da OpenAI…";
 "menubar.quit" = "sair";
 

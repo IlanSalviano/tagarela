@@ -28,6 +28,7 @@ final class AppContainer: ObservableObject {
     /// este. Components que só precisam do contrato CRUD usam `customStyleStore`.
     let customStyleStoreLive: CustomStyleStoreLive?
     let styleProvider: StyleProvider
+    let recentsProvider: RecentTranscriptionsProvider
     let keyPromptWindow: OpenAIKeyPromptWindow
     let preferencesWindow = PreferencesWindow()
     let toastCenter = ToastCenter()
@@ -103,6 +104,7 @@ final class AppContainer: ObservableObject {
             })
 
         let keyPromptWindow = OpenAIKeyPromptWindow(keychain: keychain)
+        let recentsProvider = RecentTranscriptionsProvider(store: historyStore, limit: 5)
 
         self.permissions = permissions
         self.transcriber = transcriber
@@ -117,6 +119,7 @@ final class AppContainer: ObservableObject {
         self.customStyleStore = customStyleStore
         self.customStyleStoreLive = customStyleStore as? CustomStyleStoreLive
         self.styleProvider = styleProvider
+        self.recentsProvider = recentsProvider
         self.keyPromptWindow = keyPromptWindow
         self.pipeline = PipelineCoordinator(
             audio: audio,
