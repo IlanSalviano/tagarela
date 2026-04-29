@@ -6,6 +6,7 @@ struct PreferencesRoot: View {
     let ollamaModelLister: () -> OllamaModelLister
     let openAIKeyEditor: () -> Void
     let healthChecker: OllamaHealthChecker
+    let indicatorPanel: FloatingIndicatorPanel
     let keychain: KeychainService
 
     @State private var selection: PrefsSection = .geral
@@ -30,7 +31,7 @@ struct PreferencesRoot: View {
             .navigationSplitViewColumnWidth(min: 180, ideal: 200, max: 240)
         } detail: {
             switch selection {
-            case .geral:         GeneralView(prefs: prefs)
+            case .geral:         GeneralView(prefs: prefs, indicatorPanel: indicatorPanel)
             case .refinerGeral:  RefinerGeneralView(prefs: prefs)
             case .refinerOllama: RefinerOllamaView(prefs: prefs, modelLister: ollamaModelLister)
             case .refinerOpenAI: RefinerOpenAIView(prefs: prefs, keychain: keychain, openAIKeyEditor: openAIKeyEditor)

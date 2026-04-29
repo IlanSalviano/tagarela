@@ -74,6 +74,7 @@
 		84F54E14BCFD60F0E854ECB3 /* RefinerError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BEFD414690FBE88FE9E33AF /* RefinerError.swift */; };
 		87DC949110EC521E9AB71D47 /* PrefsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDC3A4DA1D84200F9B613E3F /* PrefsSection.swift */; };
 		89A04ABA6F671B1B26204D1E /* IdentityRefinerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C746B068BBCF245665858B64 /* IdentityRefinerTests.swift */; };
+		8B0B10CDA4F9126640A2FDD3 /* IndicatorPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB8069AEA1AC9A31B315909C /* IndicatorPicker.swift */; };
 		8B5B76C613FDAAFC9743785F /* ToastKindTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6F94E64AE4AEE7F0E13BD05 /* ToastKindTests.swift */; };
 		8BFAF3788331C033B5F8EC16 /* RefinerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8642522EEA745BE571EDCCC5 /* RefinerFactory.swift */; };
 		8DB6F64CD8DA02B106FCAB21 /* TagarelaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AA232DBB32229FCAA0AC660 /* TagarelaApp.swift */; };
@@ -254,6 +255,7 @@
 		F536517168E5CD3C9A40C45A /* GeneralView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralView.swift; sourceTree = "<group>"; };
 		F8E2E64D535690D689AED8FC /* StyleSubmenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyleSubmenu.swift; sourceTree = "<group>"; };
 		FB42C8602A34F30702013834 /* IndicatorVariant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndicatorVariant.swift; sourceTree = "<group>"; };
+		FB8069AEA1AC9A31B315909C /* IndicatorPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndicatorPicker.swift; sourceTree = "<group>"; };
 		FF97A9FF6E8F2B8D5CF07039 /* Hotkey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hotkey.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -553,6 +555,7 @@
 				0A79C17F908D069616F31938 /* AudioView.swift */,
 				F536517168E5CD3C9A40C45A /* GeneralView.swift */,
 				511F4D98C36FD5B80FE7CAD7 /* HistoryView.swift */,
+				FB8069AEA1AC9A31B315909C /* IndicatorPicker.swift */,
 				81CFABCF169C821D63F99C15 /* RefinerGeneralView.swift */,
 				B9A728C5C1F5DFB5F4DD303F /* RefinerOllamaView.swift */,
 				79FC0A41CA3D1963B33D77BF /* RefinerOpenAIView.swift */,
@@ -722,6 +725,7 @@
 				E132445401CE971C386D1610 /* IdentityRefiner.swift in Sources */,
 				E2CB984A8013DC5E4068D3BA /* IndicatorHUD.swift in Sources */,
 				30E5095922CB2BEA75A2B9D5 /* IndicatorOrb.swift in Sources */,
+				8B0B10CDA4F9126640A2FDD3 /* IndicatorPicker.swift in Sources */,
 				EFAA73358DCF48C1C1037FD8 /* IndicatorPill.swift in Sources */,
 				2DBE80BCCCB172430BD8372A /* IndicatorVariant.swift in Sources */,
 				445DC9E00E00A903A3FAAE3E /* IndicatorVertical.swift in Sources */,

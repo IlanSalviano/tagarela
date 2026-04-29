@@ -246,6 +246,7 @@ final class AppContainer: ObservableObject {
             },
             openAIKeyEditor: { [weak self] in self?.keyPromptWindow.show() },
             healthChecker: healthChecker,
+            indicatorPanel: indicatorPanel,
             keychain: keychain)
         preferencesWindow.show(content: { AnyView(view) })
     }
