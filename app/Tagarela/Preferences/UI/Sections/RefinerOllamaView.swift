@@ -8,6 +8,7 @@ struct RefinerOllamaView: View {
     @State private var availableModels: [String] = []
     @State private var loading = false
     @State private var loadError: String?
+    @State private var fetchTask: Task<Void, Never>?
 
     var body: some View {
         Form {
@@ -18,7 +19,8 @@ struct RefinerOllamaView: View {
                         .textFieldStyle(.roundedBorder)
                         .onChange(of: prefs.ollamaBaseURL) { _, _ in
                             availableModels = []
-                            Task { await loadModels() }
+                            fetchTask?.cancel()
+                            fetchTask = Task { await loadModels() }
                         }
                 }
             }
@@ -46,13 +48,18 @@ struct RefinerOllamaView: View {
                     }
                 }
                 Button(String(localized: "preferences.refiner.ollama.refresh", defaultValue: "Atualizar")) {
-                    Task { await loadModels() }
+                    fetchTask?.cancel()
+                    fetchTask = Task { await loadModels() }
                 }
             }
         }
         .formStyle(.grouped)
         .padding()
-        .task { await loadModels() }
+        .task {
+            fetchTask?.cancel()
+            fetchTask = Task { await loadModels() }
+            await fetchTask?.value
+        }
     }
 
     /// Lista exibida no Picker: união da lista de availableModels e do prefs.ollamaModel
@@ -66,7 +73,9 @@ struct RefinerOllamaView: View {
 
     private func displayName(_ name: String) -> String {
         if name == prefs.ollamaModel && !availableModels.contains(name) {
-            return "\(name) (não instalado)"
+            let suffix = String(localized: "preferences.refiner.ollama.model.notInstalled",
+                                 defaultValue: "(não instalado)")
+            return "\(name) \(suffix)"
         }
         return name
     }
@@ -76,8 +85,13 @@ struct RefinerOllamaView: View {
         loadError = nil
         defer { loading = false }
         do {
-            availableModels = try await modelLister().availableModels()
+            let result = try await modelLister().availableModels()
+            // Se o Task foi cancelado durante o fetch (ex: user digitou nova URL),
+            // descarta resultado pra evitar overwrite de fetch mais recente.
+            guard !Task.isCancelled else { return }
+            availableModels = result
         } catch {
+            guard !Task.isCancelled else { return }
             loadError = String(localized: "preferences.refiner.ollama.offline",
                                 defaultValue: "Ollama offline. Digite o nome manualmente.")
         }
