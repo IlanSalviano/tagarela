@@ -27,3 +27,4 @@ tagarela_docs/.obsidian/cache
 *.p12
 *.cer
 *.mobileprovision
+.superpowers/

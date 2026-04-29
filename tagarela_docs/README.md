@@ -37,6 +37,7 @@ Identidade, tokens, tipografia, cores, copy pt-BR, catálogo de componentes e bu
 - [`2026-04-26-tagarela-v1-fase1-plan.md`](./specs/2026-04-26-tagarela-v1-fase1-plan.md) — plano de implementação da Fase 1 (esqueleto end-to-end "ditado puro"; 30 tarefas).
 - [`2026-04-27-tagarela-v1-fase2a-design.md`](./specs/2026-04-27-tagarela-v1-fase2a-design.md) — design da Fase 2a. **Status: implementado** (2026-04-27).
 - [`2026-04-27-tagarela-v1-fase2a-plan.md`](./specs/2026-04-27-tagarela-v1-fase2a-plan.md) — plano executado da Fase 2a (16 tarefas, 81 testes verdes ao fim).
+- [`2026-04-29-tagarela-v1-fase2b1-design.md`](./specs/2026-04-29-tagarela-v1-fase2b1-design.md) — design da Fase 2b-1 (Preferências + Custom styles + Endpoints custom OpenAI + Localizable total). **Status: aprovado para implementação.**
 
 ---
 
