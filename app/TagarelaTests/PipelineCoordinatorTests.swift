@@ -284,4 +284,5 @@ private final class FakeHistoryStore: HistoryStore, @unchecked Sendable {
         saved.append(input)
     }
     func recent(limit: Int) async throws -> [Transcription] { [] }
+    func clearAll() async throws { saved.removeAll() }
 }

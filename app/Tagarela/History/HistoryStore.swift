@@ -14,4 +14,6 @@ struct TranscriptionInput: Sendable {
 protocol HistoryStore: Sendable {
     func save(_ input: TranscriptionInput, maxItems: Int, maxDays: Int) async throws
     func recent(limit: Int) async throws -> [Transcription]
+    /// Apaga todas as transcrições. Idempotente em store vazio. Fase 2b-2.
+    func clearAll() async throws
 }

@@ -10,4 +10,6 @@ final class HistoryStoreNoop: HistoryStore {
     }
 
     func recent(limit: Int) async throws -> [Transcription] { [] }
+
+    func clearAll() async throws { /* noop */ }
 }

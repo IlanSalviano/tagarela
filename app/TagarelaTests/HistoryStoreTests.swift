@@ -80,4 +80,24 @@ final class HistoryStoreTests: XCTestCase {
         let r = try await s.recent(limit: 100)
         XCTAssertEqual(r.count, 2)
     }
+
+    func test_clearAll_removesAllItems() async throws {
+        let s = try make()
+        for i in 0..<3 {
+            try await s.save(sample(rawText: "raw\(i)"), maxItems: 200, maxDays: 30)
+            try await Task.sleep(nanoseconds: 5_000_000)
+        }
+        var fetched = try await s.recent(limit: 100)
+        XCTAssertEqual(fetched.count, 3)
+        try await s.clearAll()
+        fetched = try await s.recent(limit: 100)
+        XCTAssertEqual(fetched.count, 0)
+    }
+
+    func test_clearAll_onEmptyStoreIsNoOp() async throws {
+        let s = try make()
+        try await s.clearAll()
+        let fetched = try await s.recent(limit: 100)
+        XCTAssertEqual(fetched.count, 0)
+    }
 }
