@@ -1,8 +1,10 @@
 ---
 data: 2026-04-29
-status: aprovado para implementação
+status: implementado
 fase: 2b-1 de 3 sub-fases da Fase 2b
 goal: janela de Preferências completa, CRUD de custom styles, endpoints custom OpenAI, migração total para Localizable
+implementado_em: 2026-04-29 (branch fase-2b1, 24 commits, 115 testes verdes)
+aceite_manual: pendente — checklist em `tagarela_docs/03-funcionalidades/checklists/fase2b1-manual.md`
 ---
 
 # tagarela v1 — Fase 2b-1: Preferências + Custom styles + Endpoints custom + Localizable

@@ -668,7 +668,7 @@ EOF
 - Create: `app/TagarelaTests/CustomStyleTests.swift`
 - Create: `app/TagarelaTests/CustomStyleStoreTests.swift`
 
-- [ ] **Step 1: Definir `@Model CustomStyle`**
+- [x] **Step 1: Definir `@Model CustomStyle`**
 
 ```swift
 // app/Tagarela/Refiner/CustomStyle.swift
@@ -717,7 +717,7 @@ final class CustomStyle {
 }
 ```
 
-- [ ] **Step 2: Definir protocolo `CustomStyleStore`**
+- [x] **Step 2: Definir protocolo `CustomStyleStore`**
 
 ```swift
 // app/Tagarela/Refiner/CustomStyleStore.swift
@@ -743,7 +743,7 @@ enum CustomStyleStoreError: Error {
 }
 ```
 
-- [ ] **Step 3: Implementar `CustomStyleStoreLive` usando SwiftData**
+- [x] **Step 3: Implementar `CustomStyleStoreLive` usando SwiftData**
 
 ```swift
 // app/Tagarela/Refiner/CustomStyleStoreLive.swift
@@ -823,7 +823,7 @@ final class CustomStyleStoreLive: ObservableObject, CustomStyleStore {
 }
 ```
 
-- [ ] **Step 4: Implementar `CustomStyleStoreNoop`**
+- [x] **Step 4: Implementar `CustomStyleStoreNoop`**
 
 ```swift
 // app/Tagarela/Refiner/CustomStyleStoreNoop.swift
@@ -846,7 +846,7 @@ final class CustomStyleStoreNoop: ObservableObject, CustomStyleStore {
 }
 ```
 
-- [ ] **Step 5: Modificar `HistoryStoreLive` pra aceitar `ModelContainer` injetado**
+- [x] **Step 5: Modificar `HistoryStoreLive` pra aceitar `ModelContainer` injetado**
 
 Edit `app/Tagarela/History/HistoryStoreLive.swift`. Auditar o init existente; adicionar overload (sem quebrar API):
 
@@ -873,7 +873,7 @@ extension HistoryStoreLive {
 
 (Auditar `HistoryStoreLive.swift` antes — pode haver fricção com o `Schema` atual que só tem `Transcription`. Adaptar accordingly.)
 
-- [ ] **Step 6: Wire-up no `AppContainer`**
+- [x] **Step 6: Wire-up no `AppContainer`**
 
 Edit `app/Tagarela/App/AppContainer.swift`:
 
@@ -916,7 +916,7 @@ E setar self após `self.historyStore = historyStore`:
 self.customStyleStore = customStyleStore
 ```
 
-- [ ] **Step 7: Testes do `@Model CustomStyle`**
+- [x] **Step 7: Testes do `@Model CustomStyle`**
 
 ```swift
 // app/TagarelaTests/CustomStyleTests.swift
@@ -952,7 +952,7 @@ final class CustomStyleTests: XCTestCase {
 }
 ```
 
-- [ ] **Step 8: Testes do `CustomStyleStoreLive`**
+- [x] **Step 8: Testes do `CustomStyleStoreLive`**
 
 ```swift
 // app/TagarelaTests/CustomStyleStoreTests.swift
@@ -1033,7 +1033,7 @@ final class CustomStyleStoreTests: XCTestCase {
 }
 ```
 
-- [ ] **Step 9: Re-gerar projeto + rodar testes**
+- [x] **Step 9: Re-gerar projeto + rodar testes**
 
 ```bash
 cd /Users/tars/Dev/tagarela/app
@@ -1041,9 +1041,9 @@ xcodegen generate
 xcodebuild -project Tagarela.xcodeproj -scheme Tagarela test 2>&1 | tail -5
 ```
 
-Esperado: ** TEST SUCCEEDED **, +10 testes (~102).
+Esperado: ** TEST SUCCEEDED **, +10 testes (~102). ✅ Resultado real: 105 testes (2026-04-29).
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```bash
 git add app/Tagarela/Refiner/CustomStyle.swift app/Tagarela/Refiner/CustomStyleStore.swift app/Tagarela/Refiner/CustomStyleStoreLive.swift app/Tagarela/Refiner/CustomStyleStoreNoop.swift app/Tagarela/History/HistoryStoreLive.swift app/Tagarela/App/AppContainer.swift app/TagarelaTests/CustomStyleTests.swift app/TagarelaTests/CustomStyleStoreTests.swift app/Tagarela.xcodeproj/project.pbxproj
@@ -1281,11 +1281,17 @@ EOF
 
 ## Tarefa 6: Status bar Style submenu usa `StyleProvider`
 
+**Status: implementado em 2026-04-29.** Build clean, 112 testes verdes.
+
 **Files:**
 - Modify: `app/Tagarela/UI/MenuBar/StyleSubmenu.swift`
-- Modify: `app/Tagarela/App/AppContainer.swift` (passa `styleProvider` pro submenu)
+- Modify: `app/Tagarela/UI/MenuBar/MenuBarController.swift` (MenuBarContent recebe customStore? + styleProvider)
+- Modify: `app/Tagarela/App/AppContainer.swift` (expõe customStyleStoreLive; passa pro MenuBarContent)
+- Modify: `app/Tagarela/App/TagarelaApp.swift` (passa os novos params ao instanciar MenuBarContent)
 
-- [ ] **Step 1: Auditar `StyleSubmenu.swift` atual**
+**Nota de implementação:** A task foi expandida em relação ao plano original. `StyleSubmenu` recebe `@ObservedObject customStore: CustomStyleStoreLive` (para reactivity ao vivo quando custom styles forem criados na T11) e `styleProvider`. `StyleSubmenuStaticFallback` foi adicionado no mesmo arquivo para o caso degenerado onde `customStyleStoreLive` é nil. `AppContainer` expõe `customStyleStoreLive: CustomStyleStoreLive?` via downcast. O hack `.id(customStore.styles.count)` força re-render do menu quando a contagem de custom styles muda.
+
+- [x] **Step 1: Auditar `StyleSubmenu.swift` atual**
 
 ```bash
 cat /Users/tars/Dev/tagarela/app/Tagarela/UI/MenuBar/StyleSubmenu.swift
@@ -1293,7 +1299,7 @@ cat /Users/tars/Dev/tagarela/app/Tagarela/UI/MenuBar/StyleSubmenu.swift
 
 Identificar onde `BuiltInStyles.all` é consumido e substituir por `styleProvider.all`.
 
-- [ ] **Step 2: Modificar `StyleSubmenu` pra aceitar `StyleProvider`**
+- [x] **Step 2: Modificar `StyleSubmenu` pra aceitar `StyleProvider`**
 
 Padrão típico (adaptar conforme o código real):
 
@@ -1319,7 +1325,7 @@ struct StyleSubmenu: View {
 
 (Se `StyleSubmenu` é AppKit/`NSMenu`, adaptar o pattern equivalente — auditar antes.)
 
-- [ ] **Step 3: Wire-up no `AppContainer`**
+- [x] **Step 3: Wire-up no `AppContainer`**
 
 Onde o `MenuBarController`/`MenuBarContent` é construído, passar `styleProvider`:
 
@@ -1327,21 +1333,21 @@ Onde o `MenuBarController`/`MenuBarContent` é construído, passar `styleProvide
 StyleSubmenu(prefs: prefs, styleProvider: styleProvider)
 ```
 
-- [ ] **Step 4: Build (sem testes — UI)**
+- [x] **Step 4: Build (sem testes — UI)**
 
 ```bash
 cd /Users/tars/Dev/tagarela/app
 xcodebuild -project Tagarela.xcodeproj -scheme Tagarela build 2>&1 | tail -10
 ```
 
-- [ ] **Step 5: Aceite manual rápido (não automatizado)**
+- [ ] **Step 5: Aceite manual rápido (não automatizado)** — pendente, executar manualmente
 
 Rodar app, abrir menubar:
 - Submenu "Estilo" deve listar **4 built-ins** (mesma lista de antes).
 - Selecionar um: indica check.
 - Validação posterior: depois da T11 (StylesView CRUD), criar 1 custom; voltar aqui e confirmar que aparece no submenu misturado aos built-ins, ordenado.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add app/Tagarela/UI/MenuBar/StyleSubmenu.swift app/Tagarela/App/AppContainer.swift
@@ -2053,7 +2059,11 @@ struct RefinerOpenAIView: View {
     }
 
     private func refreshKeyDisplay() {
+        // try? sobre `throws -> String?` colapsa pra `String?` (SE-0230). Não duplo-bind.
         if let key = try? keychain.openAIKey(), let key, !key.isEmpty {
+            // ⚠️ se você está executando isto: o `let key` no meio é redundante e
+            // não compila em Swift 5.0+ — remova. Implementer corrigiu pra:
+            //     if let key = try? keychain.openAIKey(), !key.isEmpty
             let last4 = String(key.suffix(4))
             keyMaskedDisplay = "••••••••\(last4)"
         } else {

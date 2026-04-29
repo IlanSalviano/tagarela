@@ -7,6 +7,8 @@ struct TagarelaApp: App {
     var body: some Scene {
         MenuBarExtra {
             MenuBarContent(
+                customStore: container.customStyleStoreLive,
+                styleProvider: container.styleProvider,
                 onSelectOpenAINeedsKey: { [container] previous in
                     Task { @MainActor in
                         let hasKey: Bool
@@ -27,6 +29,9 @@ struct TagarelaApp: App {
                     container.keyPromptWindow.onCancel = {}  // sem rollback no caminho explícito
                     container.keyPromptWindow.onSaved = {}
                     container.keyPromptWindow.show()
+                },
+                onOpenPreferences: {
+                    container.openPreferences()
                 })
             .environmentObject(container.appState)
             .environmentObject(container.prefs)
@@ -45,6 +50,14 @@ struct TagarelaApp: App {
         .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)
         .defaultSize(width: 560, height: 560)
+        .commands {
+            CommandGroup(replacing: .appSettings) {
+                Button(String(localized: "preferences.menu.item", defaultValue: "Preferências…")) {
+                    container.openPreferences()
+                }
+                .keyboardShortcut(",", modifiers: .command)
+            }
+        }
     }
 }
 

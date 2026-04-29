@@ -8,13 +8,13 @@ struct OnboardModel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             VStack(alignment: .leading, spacing: 6) {
-                Text("PASSO 3 / 3")
+                Text(String(localized: "onboarding.step3.label", defaultValue: "PASSO 3 / 3"))
                     .font(DS.Font.mono(9)).tracking(1.4).foregroundStyle(DS.Color.ink3)
-                Text("modelos.")
+                Text(String(localized: "onboarding.model.headline", defaultValue: "modelos."))
                     .font(DS.Font.display(26)).foregroundStyle(DS.Color.ink)
             }
             VStack(alignment: .leading, spacing: 8) {
-                Text("WHISPER · TRANSCRIÇÃO")
+                Text(String(localized: "onboarding.model.whisper.header", defaultValue: "WHISPER · TRANSCRIÇÃO"))
                     .font(DS.Font.mono(10)).tracking(1.4).foregroundStyle(DS.Color.ink3)
                 modelRow(name: "large-v3", size: "2.9 GB", ram: "≥ 16 GB",
                          recommended: true, selected: true)
@@ -27,7 +27,8 @@ struct OnboardModel: View {
                         ProgressView(value: downloadProgress)
                             .progressViewStyle(.linear)
                             .tint(DS.Color.carmine)
-                        Text("baixando \(Int(downloadProgress * 100))%")
+                        Text(String(localized: "onboarding.model.downloading",
+                                     defaultValue: "baixando \(Int(downloadProgress * 100))%"))
                             .font(DS.Font.mono(10))
                             .foregroundStyle(DS.Color.ink3)
                     }
@@ -37,7 +38,7 @@ struct OnboardModel: View {
             HStack {
                 Spacer()
                 Button(action: onStart) {
-                    Text("começar →")
+                    Text(String(localized: "onboarding.button.start", defaultValue: "começar →"))
                         .font(DS.Font.mono(12))
                         .foregroundStyle(DS.Color.paper)
                         .padding(.horizontal, 18).padding(.vertical, 9)
@@ -74,7 +75,7 @@ struct OnboardModel: View {
             }
             Spacer()
             if recommended {
-                Text("RECOM.")
+                Text(String(localized: "onboarding.model.badge.recommended", defaultValue: "RECOM."))
                     .font(DS.Font.mono(9))
                     .tracking(1)
                     .foregroundStyle(DS.Color.carmine)

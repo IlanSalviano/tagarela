@@ -8,19 +8,16 @@ final class HistoryStoreLive: HistoryStore {
     private let container: ModelContainer
 
     init() throws {
-        let appSupport = try FileManager.default.url(
-            for: .applicationSupportDirectory,
-            in: .userDomainMask, appropriateFor: nil, create: true)
-        let dir = appSupport.appendingPathComponent("com.tagarela.Tagarela", isDirectory: true)
-        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        let url = dir.appendingPathComponent("History.store")
-        let config = ModelConfiguration(url: url)
-        self.container = try ModelContainer(for: Transcription.self, configurations: config)
+        self.container = try HistoryStoreLive.sharedContainer()
     }
 
     init(inMemory: Bool) throws {
         let config = ModelConfiguration(isStoredInMemoryOnly: inMemory)
         self.container = try ModelContainer(for: Transcription.self, configurations: config)
+    }
+
+    init(container: ModelContainer) {
+        self.container = container
     }
 
     func save(_ input: TranscriptionInput, maxItems: Int, maxDays: Int) async throws {
@@ -63,5 +60,25 @@ final class HistoryStoreLive: HistoryStore {
             for extra in all.dropFirst(maxItems) { ctx.delete(extra) }
         }
         try ctx.save()
+    }
+}
+
+extension HistoryStoreLive {
+    /// Container SwiftData compartilhado entre `HistoryStoreLive` e
+    /// `CustomStyleStoreLive`. URL = mesma de `History.store` em App Support.
+    /// Schema inclui ambos `Transcription` e `CustomStyle`.
+    ///
+    /// Acoplamento deliberado: este factory mora em History/ porque ele dona
+    /// a URL do store, mas o schema referencia `CustomStyle` (Refiner/). Se
+    /// `CustomStyle` for renomeado/movido, este método precisa atualizar.
+    static func sharedContainer() throws -> ModelContainer {
+        let appSupport = try FileManager.default.url(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask, appropriateFor: nil, create: true)
+        let dir = appSupport.appendingPathComponent("com.tagarela.Tagarela", isDirectory: true)
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let url = dir.appendingPathComponent("History.store")
+        let config = ModelConfiguration(url: url)
+        return try ModelContainer(for: Transcription.self, CustomStyle.self, configurations: config)
     }
 }

@@ -11,6 +11,7 @@ enum PreferencesKey {
     static let historyMaxItems      = "com.tagarela.preferences.historyMaxItems"
     static let historyMaxDays       = "com.tagarela.preferences.historyMaxDays"
     static let audioBoostMaxGain    = "com.tagarela.preferences.audioBoostMaxGain"
+    static let openAIEndpoint       = "com.tagarela.preferences.openAIEndpoint"
 }
 
 enum PreferencesDefaults {
@@ -27,4 +28,7 @@ enum PreferencesDefaults {
     static let historyMaxDays: Int        = 30
     static let audioBoostMaxGain: Float   = 20.0
     static let audioBoostMaxGainRange: ClosedRange<Float> = 1...50
+    static let openAIEndpoint: OpenAIEndpoint = OpenAIEndpoint(
+        provider: .official,
+        baseURL: OpenAIEndpointDefaults.defaultURL(for: .official)!)
 }

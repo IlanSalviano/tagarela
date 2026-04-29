@@ -39,6 +39,16 @@ final class PreferencesStore: ObservableObject {
             defaults.set(audioBoostMaxGain, forKey: PreferencesKey.audioBoostMaxGain)
         }
     }
+    @Published var openAIEndpoint: OpenAIEndpoint {
+        didSet {
+            // try? é seguro aqui: OpenAIEndpoint só tem String + URL (codifica como String).
+            // Se um campo não-Codable for adicionado no futuro, este try? mascara o erro —
+            // adicionar log ou trocar pra try! com fatalError em debug.
+            if let data = try? JSONEncoder().encode(openAIEndpoint) {
+                defaults.set(data, forKey: PreferencesKey.openAIEndpoint)
+            }
+        }
+    }
 
     init(defaults: UserDefaults = .standard,
          defaultStyleID: UUID) {
@@ -74,6 +84,13 @@ final class PreferencesStore: ObservableObject {
         } else {
             self.audioBoostMaxGain = PreferencesDefaults.audioBoostMaxGain
         }
+
+        if let data = defaults.data(forKey: PreferencesKey.openAIEndpoint),
+           let decoded = try? JSONDecoder().decode(OpenAIEndpoint.self, from: data) {
+            self.openAIEndpoint = decoded
+        } else {
+            self.openAIEndpoint = PreferencesDefaults.openAIEndpoint
+        }
     }
 
     /// Setter que clampa pro range válido [1, 50] antes de publicar.
@@ -82,5 +99,16 @@ final class PreferencesStore: ObservableObject {
     func setAudioBoostMaxGain(_ value: Float) {
         audioBoostMaxGain = min(max(value, PreferencesDefaults.audioBoostMaxGainRange.lowerBound),
                                 PreferencesDefaults.audioBoostMaxGainRange.upperBound)
+    }
+
+    /// Setter clampado pra historyMaxItems. Mínimo 1 (zero ou negativo bloqueia retenção).
+    /// Use isto em vez de atribuir direto quando vier de input externo (TextField etc.).
+    func setHistoryMaxItems(_ value: Int) {
+        historyMaxItems = max(1, value)
+    }
+
+    /// Setter clampado pra historyMaxDays. Mínimo 1.
+    func setHistoryMaxDays(_ value: Int) {
+        historyMaxDays = max(1, value)
     }
 }

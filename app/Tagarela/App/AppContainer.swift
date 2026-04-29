@@ -3,6 +3,7 @@ import AppKit
 import AVFoundation
 import Combine
 import OSLog
+import SwiftData
 
 @MainActor
 final class AppContainer: ObservableObject {
@@ -20,7 +21,15 @@ final class AppContainer: ObservableObject {
     let onboarding: OnboardingCoordinator
     let indicatorPanel = FloatingIndicatorPanel()
     let historyStore: HistoryStore
+    let customStyleStore: CustomStyleStore
+    /// Armazenamento do CustomStyleStore.Live concreto, quando disponível.
+    /// `nil` quando o ModelContainer falhou e estamos em Noop. UI components
+    /// que precisam de @Published (StyleSubmenu, StylesView na T11) observam
+    /// este. Components que só precisam do contrato CRUD usam `customStyleStore`.
+    let customStyleStoreLive: CustomStyleStoreLive?
+    let styleProvider: StyleProvider
     let keyPromptWindow: OpenAIKeyPromptWindow
+    let preferencesWindow = PreferencesWindow()
     private var cancellables: Set<AnyCancellable> = []
 
     @Published var showOnboarding: Bool
@@ -44,14 +53,41 @@ final class AppContainer: ObservableObject {
         let healthChecker = OllamaHealthChecker(
             session: session,
             baseURL: URL(string: prefs.ollamaBaseURL) ?? URL(string: "http://localhost:11434")!)
+        // Container SwiftData compartilhado entre HistoryStoreLive e CustomStyleStoreLive.
+        // Falha → ambos caem em Noop. (Fase 2b-1)
+        let sharedContainer: ModelContainer? = try? HistoryStoreLive.sharedContainer()
+
+        let historyStore: HistoryStore
+        if let c = sharedContainer {
+            historyStore = HistoryStoreLive(container: c)
+        } else {
+            historyStore = HistoryStoreNoop()
+        }
+
+        let customStyleStore: CustomStyleStore
+        if let c = sharedContainer {
+            customStyleStore = CustomStyleStoreLive(container: c) { [weak prefs] deletedID in
+                guard let prefs else { return }
+                if prefs.selectedStyleID == deletedID {
+                    prefs.selectedStyleID = BuiltInStyles.defaultStyleID
+                }
+            }
+        } else {
+            customStyleStore = CustomStyleStoreNoop()
+        }
+
+        let styleProvider = StyleProvider(customStore: customStyleStore)
+
         // weak prefs: defesa contra deallocação prematura. Na prática, AppContainer
         // vive durante toda a vida do app, então fatalError aqui é inalcançável.
         let factory = RefinerFactory(
             prefs: prefs,
+            styleProvider: styleProvider,
             openAI: { [weak prefs, keychain] in
                 guard let prefs else { fatalError("prefs deallocated") }
                 return OpenAIRefiner(session: session,
                                      keychain: keychain,
+                                     baseURL: prefs.openAIEndpoint.baseURL,
                                      model: prefs.openAIModel,
                                      timeoutSec: prefs.refinerTimeoutSec)
             },
@@ -65,8 +101,6 @@ final class AppContainer: ObservableObject {
                     healthChecker: healthChecker)
             })
 
-        let historyStore: HistoryStore = (try? HistoryStoreLive()) ?? HistoryStoreNoop()
-
         let keyPromptWindow = OpenAIKeyPromptWindow(keychain: keychain)
 
         self.permissions = permissions
@@ -79,6 +113,9 @@ final class AppContainer: ObservableObject {
         self.refinerFactory = factory
         self.hotkeyService = hotkeyService
         self.historyStore = historyStore
+        self.customStyleStore = customStyleStore
+        self.customStyleStoreLive = customStyleStore as? CustomStyleStoreLive
+        self.styleProvider = styleProvider
         self.keyPromptWindow = keyPromptWindow
         self.pipeline = PipelineCoordinator(
             audio: audio,
@@ -112,6 +149,13 @@ final class AppContainer: ObservableObject {
         wirePipelineToAppState()
         wirePermissionsToAppState()
         wireHealthCheckerInvalidation(prefs: prefs, healthChecker: healthChecker)
+        // NOTE: fire-and-forget. Se o user dispara hotkey muito cedo (antes do
+        // fetch completar) e o style selecionado for custom, styleProvider
+        // não acha o style e cai pra `conversaInformal`. Probabilidade baixa
+        // (SwiftData fetch é rápido); aceitar como trade-off pra não bloquear
+        // boot atrás de I/O. Resolver com synchronous-reload exigiria quebrar
+        // o contrato `async` do protocolo.
+        Task { await customStyleStore.reload() }
 
         if !showOnboarding {
             ensureMicPermission()
@@ -176,6 +220,23 @@ final class AppContainer: ObservableObject {
                 Logger.tagarela.info("activationPolicy back to .accessory")
             }
         }
+    }
+
+    @MainActor
+    func openPreferences() {
+        let view = PreferencesRoot(
+            prefs: prefs,
+            customStore: customStyleStore,
+            ollamaModelLister: { [weak self] in
+                OllamaModelLister(
+                    session: .shared,
+                    baseURL: URL(string: self?.prefs.ollamaBaseURL ?? "")
+                        ?? URL(string: "http://localhost:11434")!)
+            },
+            openAIKeyEditor: { [weak self] in self?.keyPromptWindow.show() },
+            healthChecker: healthChecker,
+            keychain: keychain)
+        preferencesWindow.show(content: { AnyView(view) })
     }
 
     func finishOnboarding() {

@@ -19,10 +19,10 @@ enum PipelineState: Equatable {
 
     var label: String {
         switch self {
-        case .idle: return "pronto"
-        case .recording: return "gravando"
-        case .processing: return "transcrevendo"
-        case .refining: return "refinando"
+        case .idle:       return String(localized: "pipeline.state.idle",        defaultValue: "pronto")
+        case .recording:  return String(localized: "pipeline.state.recording",   defaultValue: "gravando")
+        case .processing: return String(localized: "pipeline.state.processing",  defaultValue: "transcrevendo")
+        case .refining:   return String(localized: "pipeline.state.refining",    defaultValue: "refinando")
         case .error(let msg): return msg
         }
     }
