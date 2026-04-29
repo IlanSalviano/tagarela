@@ -2059,7 +2059,11 @@ struct RefinerOpenAIView: View {
     }
 
     private func refreshKeyDisplay() {
+        // try? sobre `throws -> String?` colapsa pra `String?` (SE-0230). Não duplo-bind.
         if let key = try? keychain.openAIKey(), let key, !key.isEmpty {
+            // ⚠️ se você está executando isto: o `let key` no meio é redundante e
+            // não compila em Swift 5.0+ — remova. Implementer corrigiu pra:
+            //     if let key = try? keychain.openAIKey(), !key.isEmpty
             let last4 = String(key.suffix(4))
             keyMaskedDisplay = "••••••••\(last4)"
         } else {
