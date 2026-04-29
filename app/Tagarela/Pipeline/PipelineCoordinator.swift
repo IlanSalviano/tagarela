@@ -81,6 +81,10 @@ actor PipelineCoordinator {
                 currentLevel = 0
                 setState(.recording(elapsedSeconds: 0, audioLevel: 0))
                 spawnRecordingTasks()
+            } catch AudioCaptureError.microphoneDenied {
+                continuation?.yield(.permissionDenied(kind: .microphone))
+                setState(.error(message: "mic"))
+                continuation?.yield(.errorOccurred("mic denied"))
             } catch {
                 setState(.error(message: "mic indisponível"))
                 continuation?.yield(.errorOccurred("mic: \(error)"))
@@ -182,7 +186,12 @@ actor PipelineCoordinator {
                     logger.info("refiner cancelled")
                     setState(.idle); return
                 } catch {
-                    logger.error("refiner failed (\(refiner.kind.rawValue)): \(String(describing: error))")
+                    logger.error("refiner failed (\(refiner.kind.rawValue, privacy: .public)): \(String(describing: error), privacy: .public)")
+                    // Cleanup #2 da Fase 2a: surfaceiar fallback ao usuário via toast.
+                    if let refinerError = error as? RefinerError,
+                       let reason = RefinerFallbackReason(refinerError: refinerError) {
+                        continuation?.yield(.refinerFellBack(reason: reason))
+                    }
                     let identityFallback = IdentityRefiner()
                     refined = (try? await identityFallback.refine(raw, style: style)) ?? raw
                     actualRefinerKind = identityFallback.kind
@@ -190,7 +199,19 @@ actor PipelineCoordinator {
             }
             if cancelled { logger.info("cancelled after refine"); setState(.idle); return }
             logger.info("injecting (kind=\(actualRefinerKind.rawValue, privacy: .public))")
-            let frontApp = try await injector.inject(text: refined)
+            let frontApp: String?
+            do {
+                frontApp = try await injector.inject(text: refined)
+            } catch InjectionError.accessibilityDenied {
+                continuation?.yield(.permissionDenied(kind: .accessibility))
+                setState(.idle)
+                return
+            } catch {
+                logger.error("inject failed: \(String(describing: error), privacy: .public)")
+                continuation?.yield(.injectionFailed)
+                setState(.idle)
+                return
+            }
             if cancelled { logger.info("cancelled after inject"); setState(.idle); return }
             logger.info("injected to \(frontApp ?? "?", privacy: .public)")
             do {
@@ -210,7 +231,8 @@ actor PipelineCoordinator {
                     maxItems: maxItems,
                     maxDays:  maxDays)
             } catch {
-                logger.error("history save failed: \(String(describing: error))")
+                logger.error("history save failed: \(String(describing: error), privacy: .public)")
+                continuation?.yield(.historySaveFailed)
             }
             continuation?.yield(.finished(rawText: raw,
                                           refinedText: refined,

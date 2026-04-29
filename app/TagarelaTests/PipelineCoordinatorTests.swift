@@ -84,14 +84,16 @@ final class PipelineCoordinatorTests: XCTestCase {
 
     // Helpers ----------------------------------------------------
 
-    private func makeCoordinator(refiner: TextRefiner = IdentityRefiner(),
+    private func makeCoordinator(audio: AudioCapturing = FakeAudio(),
+                                 refiner: TextRefiner = IdentityRefiner(),
                                  style: Style = BuiltInStyles.conversaInformal,
+                                 injector: Injecting = FakeInjector(),
                                  history: FakeHistoryStore = FakeHistoryStore()) -> PipelineCoordinator {
         PipelineCoordinator(
-            audio: FakeAudio(),
+            audio: audio,
             transcriber: FakeTranscriber(),
             refinerProvider: { @MainActor in (refiner, style) },
-            injector: FakeInjector(),
+            injector: injector,
             historyStore: history,
             historyMaxItemsProvider: { @MainActor in 100 },
             historyMaxDaysProvider: { @MainActor in 30 },
@@ -127,6 +129,91 @@ final class PipelineCoordinatorTests: XCTestCase {
             return collected
         }
     }
+
+    func test_refinerFails_emitsRefinerFellBackWithReason() async {
+        let p = makeCoordinator(refiner: FakeRefiner(kind: .openai, result: .failure(RefinerError.networkOffline)))
+        let captured = collectFallback(from: p)
+        await p.handle(.toggle)
+        await p.handle(.toggle)
+        try? await Task.sleep(nanoseconds: 200_000_000)
+        let reason = await captured.value
+        XCTAssertEqual(reason, .networkOffline)
+    }
+
+    func test_injectFails_emitsInjectionFailed() async {
+        let injector = FakeInjector()
+        injector.injectError = NSError(domain: "test", code: 1)
+        let p = makeCoordinator(refiner: IdentityRefiner(), injector: injector)
+        let captured = collectInjectionFailed(from: p)
+        await p.handle(.toggle)
+        await p.handle(.toggle)
+        try? await Task.sleep(nanoseconds: 200_000_000)
+        let result = await captured.value
+        XCTAssertTrue(result)
+    }
+
+    func test_saveFails_emitsHistorySaveFailed() async {
+        let history = FakeHistoryStore()
+        history.saveError = NSError(domain: "test", code: 2)
+        let p = makeCoordinator(refiner: IdentityRefiner(), history: history)
+        let captured = collectHistorySaveFailed(from: p)
+        await p.handle(.toggle)
+        await p.handle(.toggle)
+        try? await Task.sleep(nanoseconds: 200_000_000)
+        let result = await captured.value
+        XCTAssertTrue(result)
+    }
+
+    func test_micDenied_emitsPermissionDeniedMicrophone() async {
+        let audio = FakeAudio()
+        audio.startError = AudioCaptureError.microphoneDenied
+        let p = makeCoordinator(audio: audio)
+        let captured = collectPermissionDenied(from: p)
+        await p.handle(.toggle)
+        try? await Task.sleep(nanoseconds: 100_000_000)
+        let kind = await captured.value
+        XCTAssertEqual(kind, .microphone)
+    }
+
+    private func collectFallback(from p: PipelineCoordinator) -> Task<RefinerFallbackReason?, Never> {
+        Task {
+            for await ev in p.events {
+                if case .refinerFellBack(let reason) = ev { return reason }
+                if case .stateChanged(.idle) = ev { return nil }
+            }
+            return nil
+        }
+    }
+
+    private func collectInjectionFailed(from p: PipelineCoordinator) -> Task<Bool, Never> {
+        Task {
+            for await ev in p.events {
+                if case .injectionFailed = ev { return true }
+                if case .finished = ev { return false }
+            }
+            return false
+        }
+    }
+
+    private func collectHistorySaveFailed(from p: PipelineCoordinator) -> Task<Bool, Never> {
+        Task {
+            for await ev in p.events {
+                if case .historySaveFailed = ev { return true }
+                if case .stateChanged(.idle) = ev { return false }
+            }
+            return false
+        }
+    }
+
+    private func collectPermissionDenied(from p: PipelineCoordinator) -> Task<PermissionKind?, Never> {
+        Task {
+            for await ev in p.events {
+                if case .permissionDenied(let kind) = ev { return kind }
+                if case .stateChanged(.idle) = ev { return nil }
+            }
+            return nil
+        }
+    }
 }
 
 actor ActorBool {
@@ -158,7 +245,11 @@ private final class FakeRefiner: TextRefiner, @unchecked Sendable {
 private final class FakeAudio: AudioCapturing, @unchecked Sendable {
     var isRecording = false
     let levels = AsyncStream<Double> { _ in }
-    func start() throws { isRecording = true }
+    var startError: Error?   // NEW
+    func start() throws {
+        if let e = startError { throw e }
+        isRecording = true
+    }
     func stop() async throws -> AudioBuffer {
         isRecording = false
         return AudioBuffer(samples: Array(repeating: 0.1, count: 16_000), sampleRate: 16_000)
@@ -175,7 +266,9 @@ private final class FakeTranscriber: Transcribing, @unchecked Sendable {
 
 private final class FakeInjector: Injecting, @unchecked Sendable {
     var injected: String?
+    var injectError: Error?   // NEW
     func inject(text: String) async throws -> String? {
+        if let e = injectError { throw e }
         injected = text
         return "com.example.app"
     }
@@ -183,7 +276,9 @@ private final class FakeInjector: Injecting, @unchecked Sendable {
 
 private final class FakeHistoryStore: HistoryStore, @unchecked Sendable {
     var saved: [TranscriptionInput] = []
+    var saveError: Error?   // NEW
     func save(_ input: TranscriptionInput, maxItems: Int, maxDays: Int) async throws {
+        if let e = saveError { throw e }
         saved.append(input)
     }
     func recent(limit: Int) async throws -> [Transcription] { [] }
