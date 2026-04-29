@@ -18,6 +18,7 @@
 		143F5921AB16B24888C3404C /* MockURLProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98EA5F8C9B6070B2A26F569E /* MockURLProtocol.swift */; };
 		1ACA4D266E12D45EDAB6DE18 /* Toast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72D87FE39418F9229E42065B /* Toast.swift */; };
 		1C73D490F7F8111D44B38DD9 /* OpenAIKeyPromptWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135434B5A422DE2340594BB5 /* OpenAIKeyPromptWindow.swift */; };
+		1ED4C51A07338B23B42078E4 /* ToastCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CA8407C5F4A3FCEEA500C5B /* ToastCenter.swift */; };
 		297819BA5A957F06C5FE0F1F /* ShortcutsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F959F346FC72FDBA5B0A3C0 /* ShortcutsView.swift */; };
 		29AE01905EAC0648F69BBE3E /* OnboardModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7123EDA993F7879F2D0F4FA3 /* OnboardModel.swift */; };
 		2A3C2873638E4A39E896CD0C /* PreferencesStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9046134AA822B8003E250 /* PreferencesStoreTests.swift */; };
@@ -111,6 +112,7 @@
 		E8924FEF4C5A1C399E37858D /* PipelineCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC56152B24C02BAFC8827300 /* PipelineCoordinator.swift */; };
 		E9170EE724922DBBB50D166D /* WaveBars.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33F19FE89DB89426AFE260B8 /* WaveBars.swift */; };
 		EEF5EEA71C7F9BE724013700 /* VocabularyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 620E904B00271823AADE56B9 /* VocabularyView.swift */; };
+		EFA552262CE858E2BA967417 /* ToastCenterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16D36018E93C09CC0C61C99B /* ToastCenterTests.swift */; };
 		EFAA73358DCF48C1C1037FD8 /* IndicatorPill.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E6F51C94A5B358ED2DB0CBD /* IndicatorPill.swift */; };
 		F11CF8F05C71CAC179EAEA5D /* RemoteRefinerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = C658A1FA765D0031A186BB22 /* RemoteRefinerConfig.swift */; };
 		F4CFA2E3B88D0CFA2DA1A068 /* CustomStyleStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD31E2B52177A74935D9866F /* CustomStyleStore.swift */; };
@@ -136,6 +138,7 @@
 		0F959F346FC72FDBA5B0A3C0 /* ShortcutsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsView.swift; sourceTree = "<group>"; };
 		135434B5A422DE2340594BB5 /* OpenAIKeyPromptWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIKeyPromptWindow.swift; sourceTree = "<group>"; };
 		139D12A4A1889934F103A9B1 /* LocalizableKeysTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizableKeysTests.swift; sourceTree = "<group>"; };
+		16D36018E93C09CC0C61C99B /* ToastCenterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastCenterTests.swift; sourceTree = "<group>"; };
 		1E3AF30F1AE5DEAA3522590D /* InjectorLive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InjectorLive.swift; sourceTree = "<group>"; };
 		1E6F51C94A5B358ED2DB0CBD /* IndicatorPill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndicatorPill.swift; sourceTree = "<group>"; };
 		265CDA7DE0CCADB7E45F98EA /* FloatingIndicatorPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingIndicatorPanel.swift; sourceTree = "<group>"; };
@@ -147,6 +150,7 @@
 		48A38EEE3C74B26A58569FDF /* HotkeyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyService.swift; sourceTree = "<group>"; };
 		4957C5587E1637BDC0A791B8 /* BuiltInStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuiltInStyles.swift; sourceTree = "<group>"; };
 		4BEFD414690FBE88FE9E33AF /* RefinerError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefinerError.swift; sourceTree = "<group>"; };
+		4CA8407C5F4A3FCEEA500C5B /* ToastCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastCenter.swift; sourceTree = "<group>"; };
 		4DB6FB551445042E1DC287A5 /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
 		511F4D98C36FD5B80FE7CAD7 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
 		546B9E9134BAAF0569059D02 /* HotkeyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyTests.swift; sourceTree = "<group>"; };
@@ -378,6 +382,7 @@
 				E68546BC2AA01D348444B929 /* RemoteRefinerConfigTests.swift */,
 				85CFBE0BCC471B3A68F474EC /* StyleProviderTests.swift */,
 				8E9B177C502566925C655290 /* StyleTests.swift */,
+				16D36018E93C09CC0C61C99B /* ToastCenterTests.swift */,
 				D6F94E64AE4AEE7F0E13BD05 /* ToastKindTests.swift */,
 				3ED9DDFE385D1F49BF9DC9B6 /* TokenCounterTests.swift */,
 			);
@@ -542,6 +547,7 @@
 			isa = PBXGroup;
 			children = (
 				72D87FE39418F9229E42065B /* Toast.swift */,
+				4CA8407C5F4A3FCEEA500C5B /* ToastCenter.swift */,
 				AC6021940DB203F4703C9623 /* ToastKind.swift */,
 			);
 			path = Toast;
@@ -738,6 +744,7 @@
 				8DB6F64CD8DA02B106FCAB21 /* TagarelaApp.swift in Sources */,
 				5F893074B312F218A17C07D7 /* TextRefiner.swift in Sources */,
 				1ACA4D266E12D45EDAB6DE18 /* Toast.swift in Sources */,
+				1ED4C51A07338B23B42078E4 /* ToastCenter.swift in Sources */,
 				4692961AE3F053121202C809 /* ToastKind.swift in Sources */,
 				3A8FDD7D2A62358C77D79CD5 /* TokenCounter.swift in Sources */,
 				7CFB0DDDA053BAAF6A2A90F6 /* Transcribing.swift in Sources */,
@@ -776,6 +783,7 @@
 				81323C2BE4C6733126B398E0 /* RemoteRefinerConfigTests.swift in Sources */,
 				49B0A36CF4734B4B42AD0B42 /* StyleProviderTests.swift in Sources */,
 				8FECD110F77CE391093D0C4E /* StyleTests.swift in Sources */,
+				EFA552262CE858E2BA967417 /* ToastCenterTests.swift in Sources */,
 				8B5B76C613FDAAFC9743785F /* ToastKindTests.swift in Sources */,
 				9D3DBD5FA1E5D9A56E91B893 /* TokenCounterTests.swift in Sources */,
 			);
