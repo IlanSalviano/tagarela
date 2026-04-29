@@ -1281,11 +1281,17 @@ EOF
 
 ## Tarefa 6: Status bar Style submenu usa `StyleProvider`
 
+**Status: implementado em 2026-04-29.** Build clean, 112 testes verdes.
+
 **Files:**
 - Modify: `app/Tagarela/UI/MenuBar/StyleSubmenu.swift`
-- Modify: `app/Tagarela/App/AppContainer.swift` (passa `styleProvider` pro submenu)
+- Modify: `app/Tagarela/UI/MenuBar/MenuBarController.swift` (MenuBarContent recebe customStore? + styleProvider)
+- Modify: `app/Tagarela/App/AppContainer.swift` (expõe customStyleStoreLive; passa pro MenuBarContent)
+- Modify: `app/Tagarela/App/TagarelaApp.swift` (passa os novos params ao instanciar MenuBarContent)
 
-- [ ] **Step 1: Auditar `StyleSubmenu.swift` atual**
+**Nota de implementação:** A task foi expandida em relação ao plano original. `StyleSubmenu` recebe `@ObservedObject customStore: CustomStyleStoreLive` (para reactivity ao vivo quando custom styles forem criados na T11) e `styleProvider`. `StyleSubmenuStaticFallback` foi adicionado no mesmo arquivo para o caso degenerado onde `customStyleStoreLive` é nil. `AppContainer` expõe `customStyleStoreLive: CustomStyleStoreLive?` via downcast. O hack `.id(customStore.styles.count)` força re-render do menu quando a contagem de custom styles muda.
+
+- [x] **Step 1: Auditar `StyleSubmenu.swift` atual**
 
 ```bash
 cat /Users/tars/Dev/tagarela/app/Tagarela/UI/MenuBar/StyleSubmenu.swift
@@ -1293,7 +1299,7 @@ cat /Users/tars/Dev/tagarela/app/Tagarela/UI/MenuBar/StyleSubmenu.swift
 
 Identificar onde `BuiltInStyles.all` é consumido e substituir por `styleProvider.all`.
 
-- [ ] **Step 2: Modificar `StyleSubmenu` pra aceitar `StyleProvider`**
+- [x] **Step 2: Modificar `StyleSubmenu` pra aceitar `StyleProvider`**
 
 Padrão típico (adaptar conforme o código real):
 
@@ -1319,7 +1325,7 @@ struct StyleSubmenu: View {
 
 (Se `StyleSubmenu` é AppKit/`NSMenu`, adaptar o pattern equivalente — auditar antes.)
 
-- [ ] **Step 3: Wire-up no `AppContainer`**
+- [x] **Step 3: Wire-up no `AppContainer`**
 
 Onde o `MenuBarController`/`MenuBarContent` é construído, passar `styleProvider`:
 
@@ -1327,21 +1333,21 @@ Onde o `MenuBarController`/`MenuBarContent` é construído, passar `styleProvide
 StyleSubmenu(prefs: prefs, styleProvider: styleProvider)
 ```
 
-- [ ] **Step 4: Build (sem testes — UI)**
+- [x] **Step 4: Build (sem testes — UI)**
 
 ```bash
 cd /Users/tars/Dev/tagarela/app
 xcodebuild -project Tagarela.xcodeproj -scheme Tagarela build 2>&1 | tail -10
 ```
 
-- [ ] **Step 5: Aceite manual rápido (não automatizado)**
+- [ ] **Step 5: Aceite manual rápido (não automatizado)** — pendente, executar manualmente
 
 Rodar app, abrir menubar:
 - Submenu "Estilo" deve listar **4 built-ins** (mesma lista de antes).
 - Selecionar um: indica check.
 - Validação posterior: depois da T11 (StylesView CRUD), criar 1 custom; voltar aqui e confirmar que aparece no submenu misturado aos built-ins, ordenado.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add app/Tagarela/UI/MenuBar/StyleSubmenu.swift app/Tagarela/App/AppContainer.swift

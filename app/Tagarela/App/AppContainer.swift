@@ -22,6 +22,11 @@ final class AppContainer: ObservableObject {
     let indicatorPanel = FloatingIndicatorPanel()
     let historyStore: HistoryStore
     let customStyleStore: CustomStyleStore
+    /// Armazenamento do CustomStyleStore.Live concreto, quando disponível.
+    /// `nil` quando o ModelContainer falhou e estamos em Noop. UI components
+    /// que precisam de @Published (StyleSubmenu, StylesView na T11) observam
+    /// este. Components que só precisam do contrato CRUD usam `customStyleStore`.
+    let customStyleStoreLive: CustomStyleStoreLive?
     let styleProvider: StyleProvider
     let keyPromptWindow: OpenAIKeyPromptWindow
     private var cancellables: Set<AnyCancellable> = []
@@ -108,6 +113,7 @@ final class AppContainer: ObservableObject {
         self.hotkeyService = hotkeyService
         self.historyStore = historyStore
         self.customStyleStore = customStyleStore
+        self.customStyleStoreLive = customStyleStore as? CustomStyleStoreLive
         self.styleProvider = styleProvider
         self.keyPromptWindow = keyPromptWindow
         self.pipeline = PipelineCoordinator(

@@ -3,6 +3,8 @@ import SwiftUI
 struct MenuBarContent: View {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var prefs: PreferencesStore
+    let customStore: CustomStyleStoreLive?  // nil quando container falha
+    let styleProvider: StyleProvider
     var onSelectOpenAINeedsKey: (RefinerKind) -> Void = { _ in }
     var onExplicitConfigureKey: () -> Void = {}
 
@@ -28,7 +30,12 @@ struct MenuBarContent: View {
                            onSelectOpenAINeedsKey: onSelectOpenAINeedsKey,
                            onExplicitConfigureKey: onExplicitConfigureKey)
 
-            StyleSubmenu(prefs: prefs)
+            if let customStore {
+                StyleSubmenu(prefs: prefs, customStore: customStore, styleProvider: styleProvider)
+            } else {
+                // Fallback: sem reactivity (custom styles offline) — só built-ins
+                StyleSubmenuStaticFallback(prefs: prefs, styleProvider: styleProvider)
+            }
 
             Divider().background(DS.Color.hairline)
             Button(action: { NSApp.terminate(nil) }) {

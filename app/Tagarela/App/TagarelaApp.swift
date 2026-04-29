@@ -7,6 +7,8 @@ struct TagarelaApp: App {
     var body: some Scene {
         MenuBarExtra {
             MenuBarContent(
+                customStore: container.customStyleStoreLive,
+                styleProvider: container.styleProvider,
                 onSelectOpenAINeedsKey: { [container] previous in
                     Task { @MainActor in
                         let hasKey: Bool
