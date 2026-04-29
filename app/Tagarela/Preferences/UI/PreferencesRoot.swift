@@ -31,8 +31,8 @@ struct PreferencesRoot: View {
         } detail: {
             switch selection {
             case .geral:         GeneralView(prefs: prefs)
-            case .refinerGeral:  RefinerGeneralView()
-            case .refinerOllama: RefinerOllamaView()
+            case .refinerGeral:  RefinerGeneralView(prefs: prefs)
+            case .refinerOllama: RefinerOllamaView(prefs: prefs, modelLister: ollamaModelLister)
             case .refinerOpenAI: RefinerOpenAIView()
             case .estilos:       StylesView()
             case .audio:         AudioView(prefs: prefs)
