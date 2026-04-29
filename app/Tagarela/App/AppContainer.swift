@@ -235,7 +235,8 @@ final class AppContainer: ObservableObject {
                         ?? URL(string: "http://localhost:11434")!)
             },
             openAIKeyEditor: { [weak self] in self?.keyPromptWindow.show() },
-            healthChecker: healthChecker)
+            healthChecker: healthChecker,
+            keychain: keychain)
         preferencesWindow.show(content: { AnyView(view) })
     }
 

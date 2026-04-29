@@ -7,6 +7,7 @@ struct PreferencesRoot: View {
     let ollamaModelLister: () -> OllamaModelLister
     let openAIKeyEditor: () -> Void
     let healthChecker: OllamaHealthChecker
+    let keychain: KeychainService
 
     @State private var selection: PrefsSection = .geral
 
@@ -33,7 +34,7 @@ struct PreferencesRoot: View {
             case .geral:         GeneralView(prefs: prefs)
             case .refinerGeral:  RefinerGeneralView(prefs: prefs)
             case .refinerOllama: RefinerOllamaView(prefs: prefs, modelLister: ollamaModelLister)
-            case .refinerOpenAI: RefinerOpenAIView()
+            case .refinerOpenAI: RefinerOpenAIView(prefs: prefs, keychain: keychain, openAIKeyEditor: openAIKeyEditor)
             case .estilos:       StylesView()
             case .audio:         AudioView(prefs: prefs)
             case .historico:     HistoryView(prefs: prefs)
