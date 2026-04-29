@@ -43,6 +43,11 @@ struct HistoryListView: View {
             .frame(minHeight: 200)
         }
         .task { await reload() }
+        // Reage a mudança em historyMaxItems (Retenção section acima): se user
+        // sobe ou diminui o limite com a aba aberta, lista re-fetch.
+        .onChange(of: limitProvider()) { _, _ in
+            Task { await reload() }
+        }
     }
 
     private var filtered: [Transcription] {
