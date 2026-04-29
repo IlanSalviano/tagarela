@@ -36,7 +36,7 @@ struct CustomStyleEditSheet: View {
                 Button(String(localized: "common.cancel", defaultValue: "Cancelar")) { onClose() }
                 Button(String(localized: "common.save", defaultValue: "Salvar")) { Task { await save() } }
                     .keyboardShortcut(.defaultAction)
-                    .disabled(name.isEmpty || systemPrompt.isEmpty)
+                    .disabled(trimmedName.isEmpty || trimmedPrompt.isEmpty)
             }
         }
         .padding(20)
@@ -51,6 +51,13 @@ struct CustomStyleEditSheet: View {
         }
     }
 
+    private var trimmedName: String {
+        name.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+    private var trimmedPrompt: String {
+        systemPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     private func populate() {
         if case .edit(let s) = mode {
             name = s.name
@@ -63,12 +70,14 @@ struct CustomStyleEditSheet: View {
         do {
             switch mode {
             case .create:
-                _ = try await customStore.create(name: name,
-                                                  systemPrompt: systemPrompt,
+                _ = try await customStore.create(name: trimmedName,
+                                                  systemPrompt: trimmedPrompt,
                                                   appendCodeSwitching: appendCodeSwitching)
             case .edit(let s):
-                s.name = name
-                s.systemPrompt = systemPrompt
+                // Trim antes de mutar — store.update não revalida (only create faz).
+                // Mantém edit consistente com create: whitespace-only não passa.
+                s.name = trimmedName
+                s.systemPrompt = trimmedPrompt
                 s.appendCodeSwitching = appendCodeSwitching
                 try await customStore.update(s)
             }
