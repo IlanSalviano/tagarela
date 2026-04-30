@@ -45,6 +45,7 @@ Identidade, tokens, tipografia, cores, copy pt-BR, catálogo de componentes e bu
 - [`2026-04-29-tagarela-v1-fase2b1-plan.md`](./specs/2026-04-29-tagarela-v1-fase2b1-plan.md) — plano de implementação da Fase 2b-1 (14 tarefas, +34 testes, suíte 115).
 - [`2026-04-29-tagarela-v1-fase2b2-design.md`](./specs/2026-04-29-tagarela-v1-fase2b2-design.md) — design da Fase 2b-2 (Histórico visível + Indicadores B/C/D + Toasts + Cleanup #2 da 2a + estados de permissão + menu "últimos 5"). **Status: implementado** (branch `fase-2b2`, 145 testes verdes; aceite manual ✅).
 - [`2026-04-29-tagarela-v1-fase2b2-plan.md`](./specs/2026-04-29-tagarela-v1-fase2b2-plan.md) — plano executado da Fase 2b-2 (16 tarefas, +30 testes, suíte 145).
+- [`2026-04-30-tagarela-v1-fase2b3-design.md`](./specs/2026-04-30-tagarela-v1-fase2b3-design.md) — design da Fase 2b-3 (cancel HTTP em vôo via `Task.cancel()` + UX modo refinador/livre pros custom styles). **Status: design** (plan e implementação pendentes). Fecha cleanup #5 da 2a e cleanups #2 (follow-up) e #4 da 2b-1.
 
 ---
 
