@@ -86,6 +86,73 @@ final class PipelineCoordinatorTests: XCTestCase {
         XCTAssertEqual(history.saved.count, 0)
     }
 
+    func test_cancelDuringProcessing_doesNotCallRefiner() async {
+        // FakeTranscriber atual retorna instantâneo, então cancel ANTES de
+        // entrar em refine é difícil de programar deterministicamente.
+        // Estratégia: refiner que conta calls; cancel logo após toggle final;
+        // dar pouco tempo (50ms) — se o cancel chega antes do refine ser
+        // chamado, count == 0. Se chega depois, conta 1 (test fica flaky).
+        // Pra garantir: usar transcriber lento.
+        let slowTranscriber = FakeTranscriberSlow()
+        let counted = CountingRefiner(kind: .openai)
+        let p = PipelineCoordinator(
+            audio: FakeAudio(),
+            transcriber: slowTranscriber,
+            refinerProvider: { @MainActor in (counted, BuiltInStyles.conversaInformal) },
+            injector: FakeInjector(),
+            historyStore: FakeHistoryStore(),
+            historyMaxItemsProvider: { @MainActor in 100 },
+            historyMaxDaysProvider: { @MainActor in 30 },
+            llmModelNameProvider: { @MainActor _ in nil },
+            whisperModelNameProvider: { "fake" }
+        )
+        await p.handle(.toggle)
+        await p.handle(.toggle)
+        // Em .processing — cancel antes do transcribe completar
+        try? await Task.sleep(nanoseconds: 100_000_000)
+        await p.handle(.cancel)
+        try? await Task.sleep(nanoseconds: 1_500_000_000) // > slow transcribe
+        let count = await counted.callCount.get()
+        XCTAssertEqual(count, 0,
+                       "refiner não deve ser chamado quando cancel ocorre em .processing")
+    }
+
+    func test_cancelDuringRefining_doesNotInject() async {
+        let slow = FakeRefinerSlow(kind: .openai)
+        let injector = FakeInjector()
+        let p = makeCoordinator(refiner: slow, injector: injector)
+        await p.handle(.toggle)
+        await p.handle(.toggle)
+        try? await Task.sleep(nanoseconds: 100_000_000)
+        await p.handle(.cancel)
+        try? await Task.sleep(nanoseconds: 200_000_000)
+        XCTAssertNil(injector.injected,
+                     "inject não deve acontecer quando cancel ocorre em .refining")
+    }
+
+    func test_cancelDuringRefining_doesNotSaveHistory() async {
+        let slow = FakeRefinerSlow(kind: .openai)
+        let history = FakeHistoryStore()
+        let p = makeCoordinator(refiner: slow, history: history)
+        await p.handle(.toggle)
+        await p.handle(.toggle)
+        try? await Task.sleep(nanoseconds: 100_000_000)
+        await p.handle(.cancel)
+        try? await Task.sleep(nanoseconds: 200_000_000)
+        XCTAssertEqual(history.saved.count, 0,
+                       "history não deve ser salvo quando cancel ocorre em .refining")
+    }
+
+    func test_pipelineTask_clearedAfterCompletion() async {
+        let p = makeCoordinator(refiner: IdentityRefiner())
+        await p.handle(.toggle)  // → recording
+        await p.handle(.toggle)  // → processing → idle (Identity passa direto)
+        try? await Task.sleep(nanoseconds: 200_000_000)
+        let taskHandle = await p.pipelineTask
+        XCTAssertNil(taskHandle,
+                     "pipelineTask deve ser limpo após runTranscribeAndInject completar")
+    }
+
     func test_cancelDuringRefining_cancelsRefinerTask() async {
         // Refiner lento + cooperative cancel: a única forma do
         // wasCancelled virar true é se Task.cancel() se propagar
@@ -327,5 +394,30 @@ private final class FakeRefinerSlow: TextRefiner, @unchecked Sendable {
             await cancelledBox.set(true)
             throw RefinerError.cancelled
         }
+    }
+}
+
+private final class FakeTranscriberSlow: Transcribing, @unchecked Sendable {
+    var loadedModelName: String? = "fake"
+    func loadModel(_ name: String, onProgress: @escaping (Double) -> Void) async throws {}
+    func transcribe(buffer: AudioBuffer, language: String, initialPrompt: String?) async throws -> String {
+        try await Task.sleep(nanoseconds: 1_000_000_000) // 1s
+        return "olá mundo"
+    }
+}
+
+actor ActorInt {
+    private var v: Int = 0
+    func inc() { v += 1 }
+    func get() -> Int { v }
+}
+
+private final class CountingRefiner: TextRefiner, @unchecked Sendable {
+    let kind: RefinerKind
+    let callCount = ActorInt()
+    init(kind: RefinerKind) { self.kind = kind }
+    func refine(_ raw: String, style: Style) async throws -> String {
+        await callCount.inc()
+        return "refined"
     }
 }
