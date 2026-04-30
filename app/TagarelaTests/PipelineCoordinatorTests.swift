@@ -144,13 +144,31 @@ final class PipelineCoordinatorTests: XCTestCase {
     }
 
     func test_pipelineTask_clearedAfterCompletion() async {
-        let p = makeCoordinator(refiner: IdentityRefiner())
+        // Sentinela em duas fases: pipelineTask deve ser não-nil durante
+        // o processamento (FakeTranscriberSlow segura em .processing por 1s)
+        // E voltar a nil após completion. Sem o non-nil mid-check, o teste
+        // passaria também se pipelineTask nunca fosse atribuído.
+        let p = PipelineCoordinator(
+            audio: FakeAudio(),
+            transcriber: FakeTranscriberSlow(),
+            refinerProvider: { @MainActor in (IdentityRefiner(), BuiltInStyles.conversaInformal) },
+            injector: FakeInjector(),
+            historyStore: FakeHistoryStore(),
+            historyMaxItemsProvider: { @MainActor in 100 },
+            historyMaxDaysProvider: { @MainActor in 30 },
+            llmModelNameProvider: { @MainActor _ in nil },
+            whisperModelNameProvider: { "fake" }
+        )
         await p.handle(.toggle)  // → recording
-        await p.handle(.toggle)  // → processing → idle (Identity passa direto)
+        await p.handle(.toggle)  // → processing (transcriber segura por 1s)
+        // 200ms basta pra Task ser atribuída e transcribe começar
         try? await Task.sleep(nanoseconds: 200_000_000)
-        let taskHandle = await p.pipelineTask
-        XCTAssertNil(taskHandle,
-                     "pipelineTask deve ser limpo após runTranscribeAndInject completar")
+        let mid = await p.pipelineTask
+        XCTAssertNotNil(mid, "pipelineTask deve estar setado durante .processing")
+        // Aguardar o pipeline completar (1s do transcribe + folga)
+        try? await Task.sleep(nanoseconds: 1_200_000_000)
+        let after = await p.pipelineTask
+        XCTAssertNil(after, "pipelineTask deve ser limpo após runTranscribeAndInject completar")
     }
 
     func test_cancelDuringRefining_cancelsRefinerTask() async {
@@ -406,7 +424,7 @@ private final class FakeTranscriberSlow: Transcribing, @unchecked Sendable {
     }
 }
 
-actor ActorInt {
+private actor ActorInt {
     private var v: Int = 0
     func inc() { v += 1 }
     func get() -> Int { v }
