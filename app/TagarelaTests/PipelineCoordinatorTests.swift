@@ -86,6 +86,26 @@ final class PipelineCoordinatorTests: XCTestCase {
         XCTAssertEqual(history.saved.count, 0)
     }
 
+    func test_cancelDuringRefining_cancelsRefinerTask() async {
+        // Refiner lento + cooperative cancel: a única forma do
+        // wasCancelled virar true é se Task.cancel() se propagar
+        // até o sleep do refiner. Hoje (sem pipelineTask), não propaga.
+        let slow = FakeRefinerSlow(kind: .openai)
+        let p = makeCoordinator(refiner: slow)
+        await p.handle(.toggle)
+        await p.handle(.toggle)
+        // dar 100ms pra entrar em .refining
+        try? await Task.sleep(nanoseconds: 100_000_000)
+        await p.handle(.cancel)
+        // dar 100ms pro cancellation se propagar e estado ir pra idle
+        try? await Task.sleep(nanoseconds: 200_000_000)
+        let s = await p.state
+        XCTAssertEqual(s, .idle)
+        let wasCancelled = await slow.cancelledBox.get()
+        XCTAssertTrue(wasCancelled,
+                      "Task.cancel() deve propagar até o refiner.refine sleep")
+    }
+
     // Helpers ----------------------------------------------------
 
     private func makeCoordinator(audio: AudioCapturing = FakeAudio(),
@@ -289,4 +309,23 @@ private final class FakeHistoryStore: HistoryStore, @unchecked Sendable {
     }
     func recent(limit: Int) async throws -> [Transcription] { [] }
     func clearAll() async throws { saved.removeAll() }
+}
+
+private final class FakeRefinerSlow: TextRefiner, @unchecked Sendable {
+    let kind: RefinerKind
+    /// Sinaliza que o sleep foi interrompido por cancellation cooperativa.
+    /// Lê via @MainActor wrapper pra atravessar boundary do actor pipeline.
+    let cancelledBox = ActorBool()
+
+    init(kind: RefinerKind = .openai) { self.kind = kind }
+
+    func refine(_ raw: String, style: Style) async throws -> String {
+        do {
+            try await Task.sleep(nanoseconds: 1_000_000_000) // 1s
+            return "refined"
+        } catch is CancellationError {
+            await cancelledBox.set(true)
+            throw RefinerError.cancelled
+        }
+    }
 }
