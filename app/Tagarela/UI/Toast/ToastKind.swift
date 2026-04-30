@@ -66,21 +66,21 @@ enum ToastKind: Equatable, Sendable {
             }
         case .injectionFailed:
             return String(localized: "toast.injection.failed",
-                          defaultValue: "Não foi possível colar — texto está na área de transferência.")
+                          defaultValue: "Cola falhou — texto na área de transferência.")
         case .historySaveFailed:
             return String(localized: "toast.history.saveFailed",
-                          defaultValue: "Histórico não salvou desta captura.")
+                          defaultValue: "Histórico não salvou.")
         case .permissionDenied(let kind):
             switch kind {
             case .microphone:
                 return String(localized: "toast.permission.microphone",
-                              defaultValue: "Microfone negado. Abra Configurações › Privacidade › Microfone.")
+                              defaultValue: "Microfone negado — abra Configurações.")
             case .accessibility:
                 return String(localized: "toast.permission.accessibility",
-                              defaultValue: "Acessibilidade negada. Abra Configurações › Privacidade › Acessibilidade.")
+                              defaultValue: "Acessibilidade negada — abra Configurações.")
             case .inputMonitoring:
                 return String(localized: "toast.permission.inputMonitoring",
-                              defaultValue: "Input Monitoring negado. Abra Configurações › Privacidade › Input Monitoring.")
+                              defaultValue: "Input Monitoring negado — abra Configurações.")
             }
         }
     }

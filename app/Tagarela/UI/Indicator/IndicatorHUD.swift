@@ -72,7 +72,7 @@ struct IndicatorHUD: View, IndicatorView {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
-        .frame(width: 260, height: 80)
+        .frame(width: 300, height: 80)
         .background(Color.black.opacity(0.85), in: RoundedRectangle(cornerRadius: 16))
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(.white.opacity(0.1), lineWidth: 0.5))
         .shadow(color: .black.opacity(0.4), radius: 12, x: 0, y: 4)

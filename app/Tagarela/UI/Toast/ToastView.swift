@@ -20,7 +20,7 @@ struct ToastView: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .frame(maxWidth: 320, alignment: .leading)
+        .frame(maxWidth: 380, alignment: .leading)
         .background(DS.Color.paper, in: RoundedRectangle(cornerRadius: 8))
         .overlay(
             RoundedRectangle(cornerRadius: 8)

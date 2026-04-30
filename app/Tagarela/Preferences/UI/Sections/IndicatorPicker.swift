@@ -29,16 +29,19 @@ struct IndicatorPicker: View {
     }
 
     private func card(_ variant: IndicatorVariant) -> some View {
-        VStack(spacing: 8) {
+        let size = previewVisualSize(variant)
+        return VStack(spacing: 8) {
             ZStack {
                 FloatingIndicatorPanel.indicator(
                     for: variant,
                     state: previewState,
                     onCancel: {})
-                    .scaleEffect(0.7)
-                    .frame(maxWidth: .infinity, maxHeight: 88)
+                    .scaleEffect(0.6, anchor: .center)
+                    .frame(width: size.width, height: size.height, alignment: .center)
             }
-            .frame(height: 96)
+            .frame(maxWidth: .infinity)
+            .frame(height: 120)
+            .clipped()
             .background(variant.isDarkOnly ? Color.black.opacity(0.85) : DS.Color.paper2,
                          in: RoundedRectangle(cornerRadius: 8))
             HStack {
@@ -59,5 +62,18 @@ struct IndicatorPicker: View {
                         lineWidth: prefs.indicatorVariant == variant ? 2 : 1))
         .contentShape(RoundedRectangle(cornerRadius: 8))
         .onTapGesture { prefs.indicatorVariant = variant }
+    }
+
+    // Tamanho visual após scaleEffect 0.6 — colapsa o layout box de cada
+    // variante pra que o ZStack centre todos pelo CENTRO VISUAL, em vez
+    // de centrar pelo bounding-box natural (Orb 92×108 vs HUD 300×80
+    // tem centros visuais em alturas distintas se não normalizar).
+    private func previewVisualSize(_ variant: IndicatorVariant) -> CGSize {
+        switch variant {
+        case .pill:     return CGSize(width: 90, height: 24)
+        case .orb:      return CGSize(width: 60, height: 70)
+        case .vertical: return CGSize(width: 22, height: 100)
+        case .hud:      return CGSize(width: 180, height: 48)
+        }
     }
 }

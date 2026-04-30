@@ -14,7 +14,8 @@ struct GeneralView: View {
                     Text(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "—")
                 }
             }
-            Section {
+            Section(header: Text(String(localized: "preferences.geral.indicator.header",
+                                          defaultValue: "Indicador"))) {
                 IndicatorPicker(prefs: prefs, indicatorPanel: indicatorPanel)
             }
         }

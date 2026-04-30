@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Variação C — barra vertical fina (28×120). Dot pulsante carmim no topo,
-/// waveform vertical no meio, timer rotacionado abaixo.
+/// Variação C — barra vertical fina (32×160). Dot pulsante carmim no topo,
+/// 8 barrinhas reagindo ao audio level, timer rotacionado abaixo.
 struct IndicatorVertical: View, IndicatorView {
     let state: PipelineState
     var onCancel: () -> Void
@@ -39,12 +39,17 @@ struct IndicatorVertical: View, IndicatorView {
                 .fill(dotColor)
                 .frame(width: 8, height: 8)
                 .modifier(PulseIfRecordingVertical(state: state))
+            // 8 barrinhas altura fixa que mudam opacity conforme audio level.
+            // Cada barra "acende" em threshold crescente — visualmente é
+            // uma régua de volume. Mantém altura fixa pra caber no frame.
             VStack(spacing: 2) {
                 ForEach(0..<8, id: \.self) { i in
-                    let intensity = max(0, level - Double(i) * 0.12)
+                    let threshold = Double(i) * 0.04
+                    let active = max(0, min(1, (level - threshold) * 10))
                     Rectangle()
-                        .fill(dotColor.opacity(0.3 + intensity * 0.7))
-                        .frame(width: 4, height: 6)
+                        .fill(dotColor.opacity(0.2 + active * 0.8))
+                        .frame(width: 6, height: 7)
+                        .animation(.easeOut(duration: 0.08), value: level)
                 }
             }
             Text(formatted)
@@ -54,12 +59,12 @@ struct IndicatorVertical: View, IndicatorView {
                 .rotationEffect(.degrees(-90))
                 .frame(width: 12, height: 38)
         }
-        .padding(.horizontal, 8)
+        .padding(.horizontal, 10)
         .padding(.vertical, 12)
         .background(DS.Color.paper, in: RoundedRectangle(cornerRadius: 12))
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(DS.Color.hairlineStrong, lineWidth: 0.5))
         .dsShadowPop()
-        .frame(width: 28, height: 120)
+        .frame(width: 32, height: 160)
         .contentShape(Rectangle())
         .onTapGesture { onCancel() }
     }
