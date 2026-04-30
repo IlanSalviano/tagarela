@@ -29,6 +29,7 @@ final class PreferencesStoreTests: XCTestCase {
         XCTAssertEqual(store.historyMaxDays, 30)
         XCTAssertEqual(store.audioBoostMaxGain, 20.0)
         XCTAssertEqual(store.openAIEndpoint, PreferencesDefaults.openAIEndpoint)
+        XCTAssertEqual(store.indicatorVariant, .pill)
     }
 
     func test_setRefinerKind_persistsAcrossInit() {
@@ -105,5 +106,12 @@ final class PreferencesStoreTests: XCTestCase {
         cancellable.cancel()
 
         XCTAssertEqual(received, [.none, .openai])
+    }
+
+    func test_setIndicatorVariant_persistsAcrossInit() {
+        let s1 = PreferencesStore(defaults: defaults, defaultStyleID: dummyStyleID)
+        s1.indicatorVariant = .hud
+        let s2 = PreferencesStore(defaults: defaults, defaultStyleID: dummyStyleID)
+        XCTAssertEqual(s2.indicatorVariant, .hud)
     }
 }

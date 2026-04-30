@@ -2,11 +2,14 @@
 data: 2026-04-29
 status: parcialmente fechado
 revisitar_em: 2026-05-13
+fechados_em: 2026-04-29 (itens 1, 2 e 3 — item 3 fechado pela Fase 2b-2)
 ---
 
 # Cleanup pós-Fase 2b-1
 
 Achados levantados durante o aceite manual da Fase 2b-1 (ver [`fase2b1-manual.md`](../03-funcionalidades/checklists/fase2b1-manual.md)). 1 fix aplicado durante o aceite, 2 achados conhecidos do roadmap, 1 follow-up de UX pra Fase 2b-3.
+
+**Status (2026-04-29):** itens 1, 2, 3 fechados; item 4 segue empurrado pra 2b-3; item 5 = grupo informacional.
 
 ## 1. Janela de Preferências abria atrás do popover do MenuBarExtra — ✅ FECHADO 2026-04-29
 
@@ -34,13 +37,11 @@ User criou um custom style com prompt direto (estilo "reescreva como mensagem de
 
 **Follow-up pra Fase 2b-3:** decidir UX dedicada — talvez toggle "modo refinador" na sheet de edição (igual ao toggle de code-switching), com explicação do que cada modo faz. Ou: deixar a discipline sempre on e adicionar campo "tom do output" pra usuário customizar comportamento. Combinar com tuning fino dos prompts dos built-in styles que já está no escopo da 2b-3.
 
-## 3. Visualizador de histórico não existe ainda — esperado (escopo da Fase 2b-2)
+## 3. Visualizador de histórico não existe ainda — ✅ FECHADO 2026-04-29 (Fase 2b-2)
 
 **Sintoma observado:** não há UI pra ver as transcrições gravadas. SwiftData store é populado normalmente (verificável via `defaults` ou inspecionando o arquivo em `~/Library/Application Support/com.tagarela.Tagarela/History.store`).
 
-**Why aberto:** janela "Histórico completo" + menu "últimos 5" estão na lista de não-objetivos da 2b-1 ([`fase2b1-design.md` §1.3](../specs/2026-04-29-tagarela-v1-fase2b1-design.md#13-não-objetivos-da-2b-1)) e foram empurrados pra 2b-2.
-
-**How to apply:** bug não-existente; só rastreio aqui pra fechar a discrepância "no checklist 12.1 dizia validar histórico mas não há viewer".
+**Fix aplicado (Fase 2b-2):** `HistoryListView` + `HistoryEntryView` em `Preferences/UI/History/`, embutidos na seção `HistoryView` (Preferências > Histórico) — paginação observa `historyMaxItems`, cada entry mostra timestamp/raw/refined com kind badge, botão "Limpar tudo" com confirm. Plus: `RecentTranscriptionsSubmenu` (status bar) com últimos 5 entries que re-injetam no app de foco ao clicar. Verificado no aceite manual da 2b-2 (Bloco 7 + Bloco 8).
 
 ## 4. Esc não cancela injeção HTTP em vôo — referência ao cleanup #5 da Fase 2a
 

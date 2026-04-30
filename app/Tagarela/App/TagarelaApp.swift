@@ -9,6 +9,8 @@ struct TagarelaApp: App {
             MenuBarContent(
                 customStore: container.customStyleStoreLive,
                 styleProvider: container.styleProvider,
+                recentsProvider: container.recentsProvider,
+                injector: container.injector,
                 onSelectOpenAINeedsKey: { [container] previous in
                     Task { @MainActor in
                         let hasKey: Bool

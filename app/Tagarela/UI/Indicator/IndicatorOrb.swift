@@ -1,6 +1,8 @@
 import SwiftUI
 
-struct IndicatorPill: View, IndicatorView {
+/// Variação B — orb radial 92×92. Dot pulsante carmim no centro,
+/// ring com waveform circular, timer mono abaixo.
+struct IndicatorOrb: View, IndicatorView {
     let state: PipelineState
     var onCancel: () -> Void
 
@@ -32,41 +34,34 @@ struct IndicatorPill: View, IndicatorView {
 
     var body: some View {
         let (level, _) = levelAndSeconds
-        HStack(spacing: 12) {
-            Circle()
-                .fill(dotColor)
-                .frame(width: 8, height: 8)
-                .modifier(PulseIfRecording(state: state))
-            WaveBars(level: level,
-                     color: state == .idle ? DS.Color.ink3 : DS.Color.ink,
-                     count: 16, height: 22, width: 84)
+        VStack(spacing: 4) {
+            ZStack {
+                Circle()
+                    .stroke(DS.Color.hairlineStrong, lineWidth: 0.8)
+                    .frame(width: 76, height: 76)
+                Circle()
+                    .stroke(dotColor.opacity(0.4 + level * 0.6), lineWidth: 2)
+                    .frame(width: 56, height: 56)
+                Circle()
+                    .fill(dotColor)
+                    .frame(width: 12, height: 12)
+                    .modifier(PulseIfRecordingOrb(state: state))
+            }
+            .frame(width: 92, height: 92)
+            .background(DS.Color.paper, in: Circle())
+            .overlay(Circle().stroke(DS.Color.hairlineStrong, lineWidth: 0.5))
+            .dsShadowPop()
             Text(formatted)
-                .font(DS.Font.mono(11))
+                .font(DS.Font.mono(10))
                 .monospacedDigit()
                 .foregroundStyle(DS.Color.ink2)
-                .frame(minWidth: 38)
-            Rectangle()
-                .fill(DS.Color.hairline)
-                .frame(width: 1, height: 16)
-            Button(action: onCancel) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundStyle(DS.Color.ink3)
-                    .frame(width: 22, height: 22)
-            }
-            .buttonStyle(.plain)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .background(DS.Color.paper, in: Capsule())
-        .overlay(Capsule().stroke(DS.Color.hairlineStrong, lineWidth: 0.5))
-        .dsShadowPop()
-        .contentShape(Capsule())
+        .contentShape(Circle())
         .onTapGesture { onCancel() }
     }
 }
 
-private struct PulseIfRecording: ViewModifier {
+private struct PulseIfRecordingOrb: ViewModifier {
     let state: PipelineState
     @State private var pulsing = false
 
@@ -86,13 +81,11 @@ private struct PulseIfRecording: ViewModifier {
 
 #Preview {
     VStack(spacing: 20) {
-        IndicatorPill(state: .recording(elapsedSeconds: 12, audioLevel: 0.6))
-        IndicatorPill(state: .processing)
-        IndicatorPill(state: .refining)
-        IndicatorPill(state: .error(message: "erro"))
+        IndicatorOrb(state: .recording(elapsedSeconds: 12, audioLevel: 0.6))
+        IndicatorOrb(state: .processing)
+        IndicatorOrb(state: .refining)
+        IndicatorOrb(state: .error(message: "erro"))
     }
     .padding(40)
-    .background(LinearGradient(colors: [DS.Color.paper2, DS.Color.paper],
-                               startPoint: .topLeading,
-                               endPoint: .bottomTrailing))
+    .background(DS.Color.paper2)
 }

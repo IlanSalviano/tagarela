@@ -28,8 +28,10 @@ final class AppContainer: ObservableObject {
     /// este. Components que só precisam do contrato CRUD usam `customStyleStore`.
     let customStyleStoreLive: CustomStyleStoreLive?
     let styleProvider: StyleProvider
+    let recentsProvider: RecentTranscriptionsProvider
     let keyPromptWindow: OpenAIKeyPromptWindow
     let preferencesWindow = PreferencesWindow()
+    let toastCenter = ToastCenter()
     private var cancellables: Set<AnyCancellable> = []
 
     @Published var showOnboarding: Bool
@@ -102,6 +104,7 @@ final class AppContainer: ObservableObject {
             })
 
         let keyPromptWindow = OpenAIKeyPromptWindow(keychain: keychain)
+        let recentsProvider = RecentTranscriptionsProvider(store: historyStore, limit: 5)
 
         self.permissions = permissions
         self.transcriber = transcriber
@@ -116,6 +119,7 @@ final class AppContainer: ObservableObject {
         self.customStyleStore = customStyleStore
         self.customStyleStoreLive = customStyleStore as? CustomStyleStoreLive
         self.styleProvider = styleProvider
+        self.recentsProvider = recentsProvider
         self.keyPromptWindow = keyPromptWindow
         self.pipeline = PipelineCoordinator(
             audio: audio,
@@ -156,6 +160,16 @@ final class AppContainer: ObservableObject {
         // boot atrás de I/O. Resolver com synchronous-reload exigiria quebrar
         // o contrato `async` do protocolo.
         Task { await customStyleStore.reload() }
+
+        // Quando toast muda (show/dismiss/auto-dismiss), re-render do panel
+        // — garante que o toast aparece (e some) mesmo quando o pipeline
+        // está em .idle.
+        toastCenter.$current
+            .sink { [weak self] _ in
+                guard let self else { return }
+                Task { @MainActor in self.refreshIndicator(for: self.appState.pipeline) }
+            }
+            .store(in: &cancellables)
 
         if !showOnboarding {
             ensureMicPermission()
@@ -235,7 +249,10 @@ final class AppContainer: ObservableObject {
             },
             openAIKeyEditor: { [weak self] in self?.keyPromptWindow.show() },
             healthChecker: healthChecker,
-            keychain: keychain)
+            indicatorPanel: indicatorPanel,
+            keychain: keychain,
+            historyStore: historyStore,
+            injector: injector)
         preferencesWindow.show(content: { AnyView(view) })
     }
 
@@ -301,7 +318,16 @@ final class AppContainer: ObservableObject {
                         Logger.tagarela.error("pipeline error: \(msg, privacy: .public)")
                     case .finished:
                         break
-                    default: break
+                    case .refinerFellBack(let reason):
+                        self.toastCenter.show(Toast(kind: .refinerFellBack(reason: reason)))
+                    case .injectionFailed:
+                        self.toastCenter.show(Toast(kind: .injectionFailed))
+                    case .historySaveFailed:
+                        self.toastCenter.show(Toast(kind: .historySaveFailed))
+                    case .permissionDenied(let kind):
+                        self.toastCenter.show(Toast(kind: .permissionDenied(kind: kind)))
+                    case .toggle, .cancel:
+                        break
                     }
                 }
             }
@@ -321,17 +347,22 @@ final class AppContainer: ObservableObject {
     }
 
     private func refreshIndicator(for state: PipelineState) {
-        switch state {
-        case .idle:
+        // Visibility rule: state != .idle OU toast pendente → visible.
+        // Quando state vai pra .idle mas há toast: panel fica visível
+        // mostrando só o toast até auto-dismiss (4s).
+        let toast = toastCenter.current
+        if case .idle = state, toast == nil {
             indicatorPanel.hide()
-        default:
-            let pipelineRef = self.pipeline
-            indicatorPanel.show(rootView:
-                IndicatorPill(state: state) {
-                    Task { await pipelineRef.handle(.cancel) }
-                }
-            )
+            return
         }
+        let pipelineRef = self.pipeline
+        let toastCenterRef = self.toastCenter
+        indicatorPanel.show(
+            state: state,
+            variant: prefs.indicatorVariant,
+            toast: toast,
+            onCancel: { Task { await pipelineRef.handle(.cancel) } },
+            onToastDismiss: { toastCenterRef.dismiss() })
     }
 }
 

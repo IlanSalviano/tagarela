@@ -44,6 +44,13 @@ final class HistoryStoreLive: HistoryStore {
         return try ctx.fetch(fd)
     }
 
+    func clearAll() async throws {
+        let ctx = container.mainContext
+        let all = try ctx.fetch(FetchDescriptor<Transcription>())
+        for t in all { ctx.delete(t) }
+        try ctx.save()
+    }
+
     private func applyRetention(maxItems: Int, maxDays: Int) throws {
         let ctx = container.mainContext
         // (1) Apaga por idade

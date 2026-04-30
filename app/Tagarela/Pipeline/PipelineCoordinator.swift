@@ -81,6 +81,10 @@ actor PipelineCoordinator {
                 currentLevel = 0
                 setState(.recording(elapsedSeconds: 0, audioLevel: 0))
                 spawnRecordingTasks()
+            } catch AudioCaptureError.microphoneDenied {
+                continuation?.yield(.permissionDenied(kind: .microphone))
+                setState(.error(message: "mic"))
+                continuation?.yield(.errorOccurred("mic denied"))
             } catch {
                 setState(.error(message: "mic indisponível"))
                 continuation?.yield(.errorOccurred("mic: \(error)"))
@@ -177,12 +181,31 @@ actor PipelineCoordinator {
                 do {
                     refined = try await refiner.refine(raw, style: style)
                     actualRefinerKind = refiner.kind
-                } catch RefinerError.cancelled {
-                    // Cancelamento real: aborta sem fallback nem inject
-                    logger.info("refiner cancelled")
+                } catch RefinerError.cancelled where cancelled {
+                    // Cancelamento real do usuário (flag `cancelled` foi setada
+                    // por handleCancel via Esc). Aborta sem fallback nem inject.
+                    logger.info("refiner cancelled (user)")
                     setState(.idle); return
                 } catch {
-                    logger.error("refiner failed (\(refiner.kind.rawValue)): \(String(describing: error))")
+                    logger.error("refiner failed (\(refiner.kind.rawValue, privacy: .public)): \(String(describing: error), privacy: .public)")
+                    // Cleanup #2 da Fase 2a: surfaceiar fallback ao usuário via toast.
+                    // Se vier RefinerError.cancelled SEM a flag `cancelled` ligada,
+                    // é network-drop disfarçado (URLSession -999 quando remote
+                    // termina conexão abruptamente, ex: `pkill ollama`). Trata
+                    // como networkOffline.
+                    let reason: RefinerFallbackReason?
+                    if let refinerError = error as? RefinerError {
+                        if case .cancelled = refinerError {
+                            reason = .networkOffline   // network-drop disguised
+                        } else {
+                            reason = RefinerFallbackReason(refinerError: refinerError)
+                        }
+                    } else {
+                        reason = nil
+                    }
+                    if let reason {
+                        continuation?.yield(.refinerFellBack(reason: reason))
+                    }
                     let identityFallback = IdentityRefiner()
                     refined = (try? await identityFallback.refine(raw, style: style)) ?? raw
                     actualRefinerKind = identityFallback.kind
@@ -190,7 +213,19 @@ actor PipelineCoordinator {
             }
             if cancelled { logger.info("cancelled after refine"); setState(.idle); return }
             logger.info("injecting (kind=\(actualRefinerKind.rawValue, privacy: .public))")
-            let frontApp = try await injector.inject(text: refined)
+            let frontApp: String?
+            do {
+                frontApp = try await injector.inject(text: refined)
+            } catch InjectionError.accessibilityDenied {
+                continuation?.yield(.permissionDenied(kind: .accessibility))
+                setState(.idle)
+                return
+            } catch {
+                logger.error("inject failed: \(String(describing: error), privacy: .public)")
+                continuation?.yield(.injectionFailed)
+                setState(.idle)
+                return
+            }
             if cancelled { logger.info("cancelled after inject"); setState(.idle); return }
             logger.info("injected to \(frontApp ?? "?", privacy: .public)")
             do {
@@ -210,7 +245,8 @@ actor PipelineCoordinator {
                     maxItems: maxItems,
                     maxDays:  maxDays)
             } catch {
-                logger.error("history save failed: \(String(describing: error))")
+                logger.error("history save failed: \(String(describing: error), privacy: .public)")
+                continuation?.yield(.historySaveFailed)
             }
             continuation?.yield(.finished(rawText: raw,
                                           refinedText: refined,

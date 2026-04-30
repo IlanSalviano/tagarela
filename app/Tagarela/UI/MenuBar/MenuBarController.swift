@@ -5,6 +5,8 @@ struct MenuBarContent: View {
     @EnvironmentObject var prefs: PreferencesStore
     let customStore: CustomStyleStoreLive?  // nil quando container falha
     let styleProvider: StyleProvider
+    let recentsProvider: RecentTranscriptionsProvider
+    let injector: Injecting
     var onSelectOpenAINeedsKey: (RefinerKind) -> Void = { _ in }
     var onExplicitConfigureKey: () -> Void = {}
     var onOpenPreferences: () -> Void = {}
@@ -37,6 +39,11 @@ struct MenuBarContent: View {
                 // Fallback: sem reactivity (custom styles offline) — só built-ins
                 StyleSubmenuStaticFallback(prefs: prefs, styleProvider: styleProvider)
             }
+
+            Divider().background(DS.Color.hairline)
+
+            RecentTranscriptionsSubmenu(provider: recentsProvider,
+                                         injector: injector)
 
             Button(action: onOpenPreferences) {
                 HStack {

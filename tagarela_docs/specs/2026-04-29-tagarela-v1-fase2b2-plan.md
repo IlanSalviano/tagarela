@@ -1,8 +1,9 @@
 ---
 data: 2026-04-29
-status: pronto pra execução
+status: implementado
 fase: 2b-2 de 3 sub-fases da Fase 2b
 goal: feedback visual + histórico viewer + indicadores B/C/D + toasts + cleanup #2 da 2a
+implementado_em: 2026-04-29 (branch fase-2b2, 16 tarefas, 145 testes verdes, aceite manual ✅)
 ---
 
 # tagarela v1 — Fase 2b-2: Implementation Plan

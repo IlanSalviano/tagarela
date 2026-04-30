@@ -2,6 +2,8 @@ import SwiftUI
 
 struct HistoryView: View {
     @ObservedObject var prefs: PreferencesStore
+    let historyStore: HistoryStore
+    let injector: Injecting
 
     var body: some View {
         Form {
@@ -26,6 +28,12 @@ struct HistoryView: View {
                 Text(String(localized: "preferences.history.help",
                              defaultValue: "Histórico é truncado a cada nova captura, mantendo o menor entre os dois limites."))
                     .font(.caption).foregroundStyle(.secondary)
+            }
+            Section(header: Text(String(localized: "preferences.history.records.header",
+                                         defaultValue: "Registros"))) {
+                HistoryListView(historyStore: historyStore,
+                                injector: injector,
+                                limitProvider: { prefs.historyMaxItems })
             }
         }
         .formStyle(.grouped)
