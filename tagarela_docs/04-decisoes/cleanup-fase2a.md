@@ -2,14 +2,14 @@
 data: 2026-04-28
 status: parcialmente fechado
 revisitar_em: 2026-05-12
-fechados_em: 2026-04-29 (itens 1, 3 e 4)
+fechados_em: 2026-04-29 (itens 1, 2, 3 e 4)
 ---
 
 # Cleanup pós-Fase 2a
 
 Achados levantados durante o aceite manual da Fase 2a (ver [`fase2a-manual.md`](../03-funcionalidades/checklists/fase2a-manual.md)). Não bloqueiam o fechamento da fase — código está funcional. Bloqueiam a sensação de "limpo" antes da Fase 2b.
 
-**Status (2026-04-29):** itens 1, 3 e 4 fechados (suíte de 89 testes verde após T2 da Fase 2b-1). Itens 2 e 5 seguem abertos — entram naturalmente no escopo da 2b ou viram débito separado.
+**Status (2026-04-29):** itens 1, 2, 3 e 4 fechados (item 2 fechado na Fase 2b-2; suíte de 145 testes verde). Item 5 segue aberto — empurrado pra 2b-3.
 
 > Quando voltar (sugerido **2026-05-12**), rodar `xcodebuild -project app/Tagarela.xcodeproj -scheme Tagarela test` antes/depois de cada item.
 
@@ -29,13 +29,17 @@ Achados levantados durante o aceite manual da Fase 2a (ver [`fase2a-manual.md`](
 
 **Critério de aceite (manual, pendente):** com defaults zerados, `cmd+option` numa frase técnica usando Ollama → completa em < 30s e grava `refinerKind = "ollama"` no histórico. *Validar no próximo aceite.*
 
-## 2. Fallback Identity é silencioso pro usuário
+## 2. Fallback Identity é silencioso pro usuário — ✅ FECHADO 2026-04-29
 
 **Arquivo:** [`app/Tagarela/Pipeline/PipelineCoordinator.swift`](../../app/Tagarela/Pipeline/PipelineCoordinator.swift).
 
 Quando o refiner remoto falha (timeout, offline, key inválida), o pipeline cai em `IdentityRefiner` e injeta o texto cru. Hoje o usuário só percebe vendo que o texto não veio refinado — nenhuma sinalização visual. Único registro é `logger.error("refiner failed (...)")` em `os_log`.
 
-**Proposta:** event `.refinerFellBack(reason:)` no stream do pipeline → `wirePipelineToAppState` mostra um toast/badge breve no indicador OU muda cor do dot. Decidir UX na Fase 2b.
+**Fix aplicado (2026-04-29, Fase 2b-2):** novo `PipelineEvent.refinerFellBack(reason: RefinerFallbackReason)` emitido no `catch` do refine. Mapeamento de erros em `RefinerFallbackReason.init(refinerError:)` (8 casos: networkOffline, timeout, serverError, keyInvalid, modelMissing, ollamaUnreachable, malformedResponse, identityForced). `wirePipelineToAppState` em `AppContainer` consome o event e dispara `ToastCenter.show(.refinerFellBack(reason:))` que renderiza um `ToastView` 4s acima do indicator pill (ver [`fase2b2-design.md` §3 Toasts](../specs/2026-04-29-tagarela-v1-fase2b2-design.md)).
+
+**Bonus (descoberto no aceite manual da 2b-2):** `URLError.cancelled` (-999) chega no refiner como `RefinerError.cancelled` quando o remote termina conexão abruptamente (ex: `pkill ollama` durante refine). Distinção via flag interna `cancelled` no `PipelineCoordinator`: `catch RefinerError.cancelled where cancelled` é user-cancel real (Esc); `catch RefinerError.cancelled` sem a flag vira `RefinerFallbackReason.networkOffline`. Commit `99d174e`.
+
+**Critério de aceite (validado em 2026-04-29):** com Ollama backend, capturar texto e matar `ollama serve` durante o refine → toast "Refiner falhou — usando texto bruto" aparece + texto cru injetado. Verificado durante o aceite manual da 2b-2.
 
 ## 3. OpenAI responde conversacionalmente quando raw é muito curto — ✅ FECHADO 2026-04-29
 

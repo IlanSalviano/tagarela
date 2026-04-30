@@ -1,8 +1,9 @@
 ---
 data: 2026-04-29
-status: aberto
+status: fechado ✅
 fase: 2b-2
 ambiente: macOS 26 (Release em ~/Applications/Tagarela.app); Ollama rodando local com gemma4:e4b
+fechado_em: 2026-04-29 (todos 8 blocos verdes após fixes; 145/145 testes; commits 99d174e + 22e0c2d + 53500aa nascidos do aceite)
 ---
 
 # Checklist manual — Fase 2b-2

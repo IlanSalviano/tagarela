@@ -1,8 +1,9 @@
 ---
 data: 2026-04-29
-status: aprovado para implementação
+status: implementado
 fase: 2b-2 de 3 sub-fases da Fase 2b
 goal: histórico visível + indicadores B/C/D + toasts + cleanup #2 da 2a + estados de permissão + menu "últimos 5"
+implementado_em: 2026-04-29 (branch fase-2b2, 145 testes verdes, aceite manual ✅)
 ---
 
 # tagarela v1 — Fase 2b-2: Feedback visual + Histórico + Indicadores
