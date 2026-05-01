@@ -28,7 +28,7 @@ _(a preencher)_ — análise do Wispr Flow, alternativas, decisões de paridade.
 - [`checklists/fase2-diagnostico-asr.md`](./03-funcionalidades/checklists/fase2-diagnostico-asr.md) — diagnóstico ASR pré-Fase 2: dump WAV+TXT por captura, 5 frases-teste pra isolar inversão de sentido (sinal vs modelo vs prompt).
 - [`checklists/fase2a-manual.md`](./03-funcionalidades/checklists/fase2a-manual.md) — aceite manual da Fase 2a (backend submenu, style submenu, modal API key, fallback Identity, retenção do history, injeção em apps reais).
 - [`checklists/fase2c-cleanup-manual.md`](./03-funcionalidades/checklists/fase2c-cleanup-manual.md) — aceite manual da Fase 2c-cleanup (apenas Blocos D + E após reverts). Status `ok-com-achados`: Bloco E (L/R Option) ✅, Bloco D (downloadBase) ❌.
-- [`checklists/fase2d-manual.md`](./03-funcionalidades/checklists/fase2d-manual.md) — aceite manual da Fase 2d (9 blocos: onboarding picker, swap fluxo feliz, erro/retry, migration, não-regressão). Status `ok` com bench formal pendente — números preliminares mostram ganho menor que esperado em ditados curtos (Whisper sempre processa janela de 30s).
+- [`checklists/fase2d-manual.md`](./03-funcionalidades/checklists/fase2d-manual.md) — aceite manual da Fase 2d (9 blocos: onboarding picker, swap fluxo feliz, erro/retry, migration, não-regressão, bench oficial). Status `ok`. Bench: turbo é só ~8% mais rápido que large-v3 neste hardware (esperado eram 5–8×). Variants quantizadas + ditado longo ficaram em [`cleanup-fase2d.md`](./04-decisoes/cleanup-fase2d.md).
 
 ### 04 — Decisões (ADRs)
 - [`ADR-0001-sistema-visual.md`](./04-decisoes/ADR-0001-sistema-visual.md) — sistema visual, identidade, indicador default da v1, mudanças de escopo aceitas/recusadas. **Revisado parcialmente pelo ADR-0004** (histórico viewer entra na 2b-2).
@@ -39,6 +39,7 @@ _(a preencher)_ — análise do Wispr Flow, alternativas, decisões de paridade.
 - [`cleanup-fase1.md`](./04-decisoes/cleanup-fase1.md) — atualizado pela 2c-cleanup em 2026-05-01: itens #1 e #3 fechados; itens #8 e #9 revertidos com hipóteses pra próxima tentativa; #2/#5/#6/#7 seguem bloqueados pelas razões originais.
 - [`cleanup-fase2b1.md`](./04-decisoes/cleanup-fase2b1.md) — achados do aceite manual da Fase 2b-1. **Todos os 4 itens acionáveis fechados** (1-3 em 2026-04-29, item 2 follow-up + #4 fechados pela 2b-3 em 2026-04-30). Item 5 segue como grupo informacional.
 - [`cleanup-fase2b3.md`](./04-decisoes/cleanup-fase2b3.md) — achados do aceite manual da Fase 2b-3. 1 funcional (pill flicker no Esc rápido — **tentado e revertido na 2c-cleanup**) + 8 polish minor. Revisitar 2026-05-15.
+- [`cleanup-fase2d.md`](./04-decisoes/cleanup-fase2d.md) — backlog de performance da Fase 2d. Turbo entregou só ~8% sobre large-v3; explorar variants quantizadas (`_954MB`, `_632MB`), ditado longo, e `temperatureFallbackCount=0` quando velocidade voltar a ser dor.
 
 ### 05 — [Sistema visual](./05-design/README.md)
 Identidade, tokens, tipografia, cores, copy pt-BR, catálogo de componentes e bundle do Claude Design (`05-design/bundle/`). Fonte da verdade visual.

@@ -42,14 +42,20 @@ Onboarding mostrava 3 radios decorativos (`large-v3`, `medium`, `small`) que ign
 
 ## Bench
 
-Medido via `os_log` no Console.app, filtrando `subsystem:com.tagarela category:Transcribe`. (Bench oficial pendente — atualizar com mediana de 5×3s por modelo após validação manual.)
+Medido em 2026-05-01 via `os_log` no Console.app, filtrando `subsystem:com.tagarela category:Transcribe`. 4 ditados em large-v3 + 5 ditados em turbo, áudio ~3-4s cada.
 
-| Modelo | Wall ms (amostra) | Real-time multiplier |
-|---|---|---|
-| large-v3 | 8305 ms (audio 4.3s) | ~1.9× |
-| large-v3_turbo | 5623 ms (audio 3.4s, momento do swap) | ~1.7× |
+| Modelo | Wall ms (mediana) | Audio mediano | Real-time multiplier | Ganho vs large-v3 |
+|---|---|---|---|---|
+| large-v3 | 8130 ms | 3.6s | ~2.3× | baseline |
+| large-v3_turbo | 7462 ms | 3.5s | ~2.1× | **−8%** |
 
-Números preliminares — turbo demonstrou ganho menor que esperado neste hardware. Bench formal com 5 ditados de ~3s por modelo deve ser registrado aqui após a Tarefa 11 do plan.
+**Ganho real (~8%) ficou bem abaixo dos 5–8× prometidos pela documentação do WhisperKit.** Hipóteses:
+
+1. Whisper sempre processa janela de 30s mesmo em áudio curto. Pra ditado de ~3s, o overhead fixo da window domina.
+2. Turbo reduz só o decoder (32→4 layers); encoder fica igual. Em ditado curto, decoder é fração pequena do wall time.
+3. Estamos baixando variant full-precision. Repo `argmaxinc/whisperkit-coreml` tem variants quantizadas (`_turbo_954MB`, `_turbo_632MB`) que podem render mais — não exploradas nesta fase.
+
+**Decisão:** mergear como está (turbo entrega 8% e a infraestrutura de swap+picker fica pronta pra v2). Investigação de variants quantizadas vai pro backlog (ver `04-decisoes/cleanup-fase2d.md`).
 
 ## Decisões nucleares
 

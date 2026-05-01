@@ -44,19 +44,15 @@ unloaded whisper model
 swap done: large-v3_turbo -> large-v3
 ```
 
-## Bloco 5 — Bench (pendente)
+## Bloco 5 — Bench oficial ✅
 
-Bench oficial com 5 ditados de ~3s por modelo (large-v3 vs large-v3_turbo) ainda não foi executado. Números preliminares disponíveis no log:
+Executado 2026-05-01.
 
-- large-v3: `audio=4.3s wall=8305ms` → ~1.9× tempo real.
-- large-v3_turbo (durante swap, modelo `?`): `audio=3.4s wall=5623ms` → ~1.7× tempo real.
+**large-v3** (4 amostras): 8161, 8283, 7974, 8098 ms → mediana **8130 ms** (audio mediano 3.6s, ~2.3× tempo real).
 
-A diferença entre turbo e large-v3 ficou menor que o esperado neste hardware. Investigação:
-- Ambos rodaram com `prewarm: true` + `computeOptions = (.cpuAndNeuralEngine, .cpuAndNeuralEngine)` ligado.
-- Whisper sempre processa janela de 30s mesmo em áudio curto, então custo fixo da window domina pra ditados curtos.
-- Pode ser que a redução real só apareça em ditados mais longos (10–30s) — investigar antes de declarar a fase como sucesso de velocidade real.
+**large-v3_turbo** (5 amostras): 7539, 7462, 7195, 7572, 5767 ms → mediana **7462 ms** (audio mediano 3.5s, ~2.1× tempo real). Outlier `5767` descartado (provável cache hit).
 
-**Pra completar este bloco:** rodar 5 ditados de ~3s em large-v3, trocar via Preferências pra large-v3_turbo, rodar mais 5 ditados, anotar mediana, atualizar `02-arquitetura/07-modulos-fase2d.md` com os números.
+**Ganho real do turbo: ~8%** — bem abaixo dos 5–8× sugeridos pela doc do WhisperKit. Hipóteses + decisão registrados em [`02-arquitetura/07-modulos-fase2d.md` § Bench](../../02-arquitetura/07-modulos-fase2d.md#bench) e item de backlog pra investigar variants quantizadas em [`04-decisoes/cleanup-fase2d.md`](../../04-decisoes/cleanup-fase2d.md).
 
 ## Bloco 6 — Swap erro + retry ✅
 
