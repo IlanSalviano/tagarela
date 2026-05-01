@@ -5,6 +5,7 @@ protocol Transcribing: AnyObject, Sendable {
     func transcribe(buffer: AudioBuffer,
                     language: String,
                     initialPrompt: String?) async throws -> String
+    func unloadModel()
     var loadedModelName: String? { get }
 }
 

@@ -373,6 +373,7 @@ private final class FakeTranscriber: Transcribing, @unchecked Sendable {
     func transcribe(buffer: AudioBuffer, language: String, initialPrompt: String?) async throws -> String {
         "olá mundo"
     }
+    func unloadModel() { loadedModelName = nil }
 }
 
 private final class FakeInjector: Injecting, @unchecked Sendable {
@@ -422,6 +423,7 @@ private final class FakeTranscriberSlow: Transcribing, @unchecked Sendable {
         try await Task.sleep(nanoseconds: 1_000_000_000) // 1s
         return "olá mundo"
     }
+    func unloadModel() { loadedModelName = nil }
 }
 
 private actor ActorInt {
