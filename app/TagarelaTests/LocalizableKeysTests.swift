@@ -35,6 +35,11 @@ final class LocalizableKeysTests: XCTestCase {
             "preferences.transcription.deletePrevious.keep",
             "preferences.transcription.deletePrevious.delete",
             "onboarding.model.error",
+            "preferences.section.about",
+            "about.tagline",
+            "about.author.header",
+            "about.coauthor.header",
+            "about.coauthor.note",
         ]
         for k in keys {
             let resolved = String(localized: String.LocalizationValue(k))

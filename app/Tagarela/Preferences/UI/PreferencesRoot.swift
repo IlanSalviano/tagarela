@@ -32,6 +32,7 @@ struct PreferencesRoot: View {
                 NavigationLink(value: PrefsSection.historico) { Label(PrefsSection.historico.label, systemImage: "scroll") }
                 NavigationLink(value: PrefsSection.vocabulario) { Label(PrefsSection.vocabulario.label, systemImage: "book") }
                 NavigationLink(value: PrefsSection.atalhos) { Label(PrefsSection.atalhos.label, systemImage: "keyboard") }
+                NavigationLink(value: PrefsSection.about) { Label(PrefsSection.about.label, systemImage: "info.circle") }
             }
             .navigationSplitViewColumnWidth(min: 180, ideal: 200, max: 240)
         } detail: {
@@ -56,6 +57,7 @@ struct PreferencesRoot: View {
             case .historico:     HistoryView(prefs: prefs, historyStore: historyStore, injector: injector)
             case .vocabulario:   VocabularyView(prefs: prefs)
             case .atalhos:       ShortcutsView(prefs: prefs)
+            case .about:         AboutView()
             }
         }
         .frame(minWidth: 600, idealWidth: 720, minHeight: 400, idealHeight: 520)

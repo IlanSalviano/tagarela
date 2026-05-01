@@ -73,6 +73,14 @@ Suíte: 155 → 181 testes verdes (+26).
 - `PreferencesStoreTests` (+2) — default + persistência.
 - `PipelineCoordinatorTests` — refatorado pra `transcriberProvider`.
 
+## Adição posterior: section "Sobre" em Preferências
+
+Adicionada após o merge da fase, antes de iniciar a Fase 3. Pequena UI estática informando autor + coautor + versão do app.
+
+- Novo `case about` em [`PrefsSection.swift`](../../app/Tagarela/Preferences/UI/PrefsSection.swift) (ícone `info.circle`).
+- Nova [`Preferences/UI/Sections/AboutView.swift`](../../app/Tagarela/Preferences/UI/Sections/AboutView.swift) — render estático do título, tagline, versão (lida via `CFBundleShortVersionString`+`CFBundleVersion`), autor (Ilan Salviano + mailto link), coautor (Claude/Anthropic).
+- 6 chaves novas em `pt-BR.lproj/Localizable.strings` (about.tagline, about.version, about.author.header, about.coauthor.header, about.coauthor.note, preferences.section.about).
+
 ## Lição operacional aplicada
 
 Fase 2c-cleanup ensinou que spec compliance + code review estática não substitui aceite runtime. Aplicado durante a 2d:

@@ -11,6 +11,7 @@ enum PrefsSection: String, Hashable, CaseIterable, Identifiable {
     case historico
     case vocabulario
     case atalhos
+    case about
 
     var id: String { rawValue }
 
@@ -26,6 +27,7 @@ enum PrefsSection: String, Hashable, CaseIterable, Identifiable {
         case .historico:     return String(localized: "preferences.section.historico", defaultValue: "Histórico")
         case .vocabulario:   return String(localized: "preferences.section.vocabulario", defaultValue: "Vocabulário")
         case .atalhos:       return String(localized: "preferences.section.atalhos", defaultValue: "Atalhos")
+        case .about:         return String(localized: "preferences.section.about", defaultValue: "Sobre")
         }
     }
 }

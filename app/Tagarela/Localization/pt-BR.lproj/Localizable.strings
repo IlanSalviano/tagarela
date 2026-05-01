@@ -180,3 +180,11 @@
 "preferences.transcription.deletePrevious.keep"     = "Manter";
 "preferences.transcription.deletePrevious.delete"   = "Apagar";
 "onboarding.model.error"                            = "falha: %@ · tentar de novo";
+
+// About
+"preferences.section.about"   = "Sobre";
+"about.tagline"               = "ditado por voz local com pós-processamento por LLM";
+"about.version"               = "Versão %@";
+"about.author.header"         = "AUTOR";
+"about.coauthor.header"       = "COAUTOR";
+"about.coauthor.note"         = "Implementação coautorada via Claude Code.";

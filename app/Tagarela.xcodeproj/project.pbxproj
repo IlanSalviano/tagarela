@@ -103,6 +103,7 @@
 		A723F99CF516D9C1904D9B08 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E67AC40A1677F04D206698D8 /* AppState.swift */; };
 		AAAD37F33F4FCE40D524019D /* WhisperModelCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = D60545C514BFC2CA040002BA /* WhisperModelCatalog.swift */; };
 		B6AC8D77746DD364C1D83E4A /* Wordmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA671BF3E800969A73A8EF5 /* Wordmark.swift */; };
+		B90A0721A1C05FBB3F3581CA /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB4228885B2A266D0FB807EB /* AboutView.swift */; };
 		B921AB0B66E9A5FBEC9EBFD1 /* AppContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1A68A34868B4B17F0CD95D4 /* AppContainer.swift */; };
 		B92A18A74D93A4A5C057A5EF /* HistoryStoreLive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34D03471F0F19E467A741ED6 /* HistoryStoreLive.swift */; };
 		BB8E9F2694D3472B34584760 /* WhisperModelStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 668BCA339AF31B66FA9A9C42 /* WhisperModelStore.swift */; };
@@ -233,6 +234,7 @@
 		A71F1880249798ECC971911D /* OnboardingWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingWindow.swift; sourceTree = "<group>"; };
 		A8CECA9E4C80A61C089E6870 /* InjectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InjectorTests.swift; sourceTree = "<group>"; };
 		A9781872A9FDF110CC55173A /* PreferencesRoot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesRoot.swift; sourceTree = "<group>"; };
+		AB4228885B2A266D0FB807EB /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
 		AC56152B24C02BAFC8827300 /* PipelineCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PipelineCoordinator.swift; sourceTree = "<group>"; };
 		AC6021940DB203F4703C9623 /* ToastKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastKind.swift; sourceTree = "<group>"; };
 		AE01CF98278A4FAD8FD4A51B /* HistoryEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryEntryView.swift; sourceTree = "<group>"; };
@@ -612,6 +614,7 @@
 		C73D819D11B785EE551E3547 /* Sections */ = {
 			isa = PBXGroup;
 			children = (
+				AB4228885B2A266D0FB807EB /* AboutView.swift */,
 				0A79C17F908D069616F31938 /* AudioView.swift */,
 				F536517168E5CD3C9A40C45A /* GeneralView.swift */,
 				511F4D98C36FD5B80FE7CAD7 /* HistoryView.swift */,
@@ -758,6 +761,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B90A0721A1C05FBB3F3581CA /* AboutView.swift in Sources */,
 				B921AB0B66E9A5FBEC9EBFD1 /* AppContainer.swift in Sources */,
 				A723F99CF516D9C1904D9B08 /* AppState.swift in Sources */,
 				0779F6BEB11DF02D3334B344 /* AudioCaptureLive.swift in Sources */,
