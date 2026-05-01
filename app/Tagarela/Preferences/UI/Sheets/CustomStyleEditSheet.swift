@@ -72,7 +72,8 @@ struct CustomStyleEditSheet: View {
             case .create:
                 _ = try await customStore.create(name: trimmedName,
                                                   systemPrompt: trimmedPrompt,
-                                                  appendCodeSwitching: appendCodeSwitching)
+                                                  appendCodeSwitching: appendCodeSwitching,
+                                                  bypassDiscipline: false)  // T6 troca pelo @State
             case .edit(let s):
                 // Trim antes de mutar — store.update não revalida (only create faz).
                 // Mantém edit consistente com create: whitespace-only não passa.

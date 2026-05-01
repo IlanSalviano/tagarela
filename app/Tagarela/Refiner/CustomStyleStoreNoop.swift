@@ -5,7 +5,10 @@ final class CustomStyleStoreNoop: ObservableObject, CustomStyleStore {
     @Published private(set) var styles: [CustomStyle] = []
 
     func reload() async { }
-    func create(name: String, systemPrompt: String, appendCodeSwitching: Bool) async throws -> CustomStyle {
+    func create(name: String,
+                systemPrompt: String,
+                appendCodeSwitching: Bool,
+                bypassDiscipline: Bool) async throws -> CustomStyle {
         throw CustomStyleStoreError.persistenceFailed(NSError(domain: "noop", code: 0))
     }
     func update(_ style: CustomStyle) async throws {

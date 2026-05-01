@@ -4,7 +4,10 @@ import Foundation
 protocol CustomStyleStore: AnyObject {
     var styles: [CustomStyle] { get }
     func reload() async
-    func create(name: String, systemPrompt: String, appendCodeSwitching: Bool) async throws -> CustomStyle
+    func create(name: String,
+                systemPrompt: String,
+                appendCodeSwitching: Bool,
+                bypassDiscipline: Bool) async throws -> CustomStyle
     func update(_ style: CustomStyle) async throws
     func delete(_ style: CustomStyle) async throws
 }
