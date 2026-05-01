@@ -8,13 +8,20 @@ final class OnboardingCoordinator: ObservableObject {
     @Published var permsSnapshot: PermissionsSnapshot
     @Published var modelDownloadProgress: Double = 0
     @Published var modelLoaded: Bool = false
+    @Published var modelLoadError: String?
+    @Published var selectedModel: String = WhisperModelCatalog.all.first(where: { $0.recommended })?.name
+                                          ?? "large-v3-turbo"
 
     let permissionService: PermissionService
     let transcriber: Transcribing
+    private let prefs: PreferencesStore
 
-    init(permissionService: PermissionService, transcriber: Transcribing) {
+    init(permissionService: PermissionService,
+         transcriber: Transcribing,
+         prefs: PreferencesStore) {
         self.permissionService = permissionService
         self.transcriber = transcriber
+        self.prefs = prefs
         self.permsSnapshot = permissionService.snapshot()
         Task { [weak self] in
             guard let self else { return }
@@ -40,17 +47,25 @@ final class OnboardingCoordinator: ObservableObject {
         }
     }
 
-    func loadModel(_ name: String) {
+    func loadSelectedModel() {
+        modelLoaded = false
+        modelDownloadProgress = 0
+        modelLoadError = nil
+        let name = selectedModel
         Task { [weak self] in
             guard let self else { return }
             do {
                 try await transcriber.loadModel(name) { [weak self] p in
                     Task { @MainActor in self?.modelDownloadProgress = p }
                 }
-                await MainActor.run { self.modelLoaded = true }
+                await MainActor.run {
+                    self.modelLoaded = true
+                    self.prefs.whisperModelName = name
+                }
             } catch {
-                // erro de download fica no log; UI fica travada em "baixando".
-                // Tratamento real vem na Fase 2.
+                await MainActor.run {
+                    self.modelLoadError = String(describing: error)
+                }
             }
         }
     }

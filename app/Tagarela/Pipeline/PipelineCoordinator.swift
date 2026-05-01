@@ -4,14 +4,14 @@ import OSLog
 actor PipelineCoordinator {
     private let logger = Logger(subsystem: "com.tagarela", category: "Pipeline")
     private let audio: AudioCapturing
-    private let transcriber: Transcribing
+    private let transcriberProvider: @MainActor @Sendable () -> Transcribing
     private let refinerProvider: @MainActor @Sendable () -> (refiner: TextRefiner, style: Style)
     private let injector: Injecting
     private let historyStore: HistoryStore
     private let historyMaxItemsProvider: @MainActor @Sendable () -> Int
     private let historyMaxDaysProvider: @MainActor @Sendable () -> Int
     private let llmModelNameProvider: @MainActor @Sendable (RefinerKind) -> String?
-    private let whisperModelNameProvider: @Sendable () -> String
+    private let whisperModelNameProvider: @MainActor @Sendable () -> String
     private let language: String
     private let initialPromptProvider: @MainActor @Sendable () -> String?
 
@@ -33,18 +33,18 @@ actor PipelineCoordinator {
     internal private(set) var pipelineTask: Task<Void, Never>?
 
     init(audio: AudioCapturing,
-         transcriber: Transcribing,
+         transcriberProvider: @escaping @MainActor @Sendable () -> Transcribing,
          refinerProvider: @escaping @MainActor @Sendable () -> (refiner: TextRefiner, style: Style),
          injector: Injecting,
          historyStore: HistoryStore,
          historyMaxItemsProvider: @escaping @MainActor @Sendable () -> Int,
          historyMaxDaysProvider: @escaping @MainActor @Sendable () -> Int,
          llmModelNameProvider: @escaping @MainActor @Sendable (RefinerKind) -> String?,
-         whisperModelNameProvider: @escaping @Sendable () -> String,
+         whisperModelNameProvider: @escaping @MainActor @Sendable () -> String,
          language: String = "pt",
          initialPromptProvider: @escaping @MainActor @Sendable () -> String? = { nil }) {
         self.audio = audio
-        self.transcriber = transcriber
+        self.transcriberProvider = transcriberProvider
         self.refinerProvider = refinerProvider
         self.injector = injector
         self.historyStore = historyStore
@@ -186,7 +186,8 @@ actor PipelineCoordinator {
                 setState(.idle); return
             }
             setState(.processing)
-            logger.info("transcribing (model loaded? \(self.transcriber.loadedModelName ?? "NIL", privacy: .public))")
+            let transcriber = await transcriberProvider()
+            logger.info("transcribing (model loaded? \(transcriber.loadedModelName ?? "NIL", privacy: .public))")
             let raw = try await transcriber.transcribe(
                 buffer: buffer,
                 language: language,
@@ -266,7 +267,7 @@ actor PipelineCoordinator {
                         refinedText: refined,
                         refinerKind: actualRefinerKind.rawValue,
                         llmModelName: llmModel,
-                        whisperModelName: whisperModelNameProvider(),
+                        whisperModelName: await whisperModelNameProvider(),
                         styleName: style.name,
                         frontmostAppBundleID: frontApp),
                     maxItems: maxItems,

@@ -2,6 +2,7 @@ import Foundation
 
 enum PrefsSection: String, Hashable, CaseIterable, Identifiable {
     case geral
+    case transcricao
     case refinerGeral
     case refinerOllama
     case refinerOpenAI
@@ -16,6 +17,7 @@ enum PrefsSection: String, Hashable, CaseIterable, Identifiable {
     var label: String {
         switch self {
         case .geral:         return String(localized: "preferences.section.geral", defaultValue: "Geral")
+        case .transcricao:   return String(localized: "preferences.section.transcricao", defaultValue: "Transcrição")
         case .refinerGeral:  return String(localized: "preferences.section.refiner.geral", defaultValue: "Geral")
         case .refinerOllama: return String(localized: "preferences.section.refiner.ollama", defaultValue: "Ollama")
         case .refinerOpenAI: return String(localized: "preferences.section.refiner.openai", defaultValue: "OpenAI")
