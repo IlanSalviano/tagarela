@@ -60,7 +60,6 @@ struct IndicatorPill: View, IndicatorView {
         .padding(.vertical, 10)
         .background(DS.Color.paper, in: Capsule())
         .overlay(Capsule().stroke(DS.Color.hairlineStrong, lineWidth: 0.5))
-        .dsShadowPop()
         .contentShape(Capsule())
         .onTapGesture { onCancel() }
     }

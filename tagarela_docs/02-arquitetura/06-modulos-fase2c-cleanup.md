@@ -50,3 +50,17 @@ Spec compliance + code review estática **não substituiu** aceite runtime nesta
 ## Testes
 
 - Suíte: 155 testes verdes (baseline da `main` pré-2c). Os 5 testes do `IndicatorViewModelTests` foram embora junto com o vm na revert.
+
+## Fix posterior (2026-05-01): sombra dos indicators removida
+
+Após o cleanup, aceite manual em fundo claro mostrou um "frame retangular bege" em volta de todos os indicators (Pill, Orb, Vertical, HUD). Diagnóstico iterativo (panel pintado de vermelho confirmou que o panel estava no tamanho correto; usuário notou que o frame só aparecia em fundo claro, não em fundo preto) isolou a causa: a sombra `dsShadowPop` (black 28% / radius 24 / y+8 do `DesignSystem`) cria halo escuro suficientemente forte pra parecer borda em fundos claros.
+
+Fix:
+- [`app/Tagarela/UI/Indicator/IndicatorPill.swift`](../../app/Tagarela/UI/Indicator/IndicatorPill.swift) — `.dsShadowPop()` removido.
+- [`app/Tagarela/UI/Indicator/IndicatorOrb.swift`](../../app/Tagarela/UI/Indicator/IndicatorOrb.swift) — `.dsShadowPop()` removido.
+- [`app/Tagarela/UI/Indicator/IndicatorVertical.swift`](../../app/Tagarela/UI/Indicator/IndicatorVertical.swift) — `.dsShadowPop()` removido.
+- [`app/Tagarela/UI/Indicator/IndicatorHUD.swift`](../../app/Tagarela/UI/Indicator/IndicatorHUD.swift) — `.shadow(color: .black.opacity(0.4), radius: 12, y: 4)` próprio removido.
+
+`ToastView` mantém `dsShadowPop` (não pediu pra remover; toasts aparecem por tempo curto e o halo é parte da estética intencional). `DS.Shadow.pop` continua disponível no Design System pra outros usos.
+
+Aceite manual confirmou em fundo claro: 4 indicators sem frame.

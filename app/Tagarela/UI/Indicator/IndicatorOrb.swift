@@ -50,7 +50,6 @@ struct IndicatorOrb: View, IndicatorView {
             .frame(width: 92, height: 92)
             .background(DS.Color.paper, in: Circle())
             .overlay(Circle().stroke(DS.Color.hairlineStrong, lineWidth: 0.5))
-            .dsShadowPop()
             Text(formatted)
                 .font(DS.Font.mono(10))
                 .monospacedDigit()

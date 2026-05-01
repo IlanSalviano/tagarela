@@ -63,7 +63,6 @@ struct IndicatorVertical: View, IndicatorView {
         .padding(.vertical, 12)
         .background(DS.Color.paper, in: RoundedRectangle(cornerRadius: 12))
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(DS.Color.hairlineStrong, lineWidth: 0.5))
-        .dsShadowPop()
         .frame(width: 32, height: 160)
         .contentShape(Rectangle())
         .onTapGesture { onCancel() }
