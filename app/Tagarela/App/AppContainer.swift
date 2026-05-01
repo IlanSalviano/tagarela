@@ -32,6 +32,13 @@ final class AppContainer: ObservableObject {
     let keyPromptWindow: OpenAIKeyPromptWindow
     let preferencesWindow = PreferencesWindow()
     let toastCenter = ToastCenter()
+    /// Stub na T8 (UI-only): T9 substitui `swapActive` por troca real do
+    /// ponteiro do transcriber ativo neste container. Por enquanto retorna o
+    /// próprio staging — chamada não acontece em runtime porque a UI da T8
+    /// não dispara swap real (apenas valida que a section aparece e que o
+    /// picker estático é renderizado).
+    let swapCoordinator: WhisperModelSwapCoordinator
+    let modelStore: WhisperModelStore = WhisperModelStoreLive()
     private var cancellables: Set<AnyCancellable> = []
 
     @Published var showOnboarding: Bool
@@ -105,6 +112,14 @@ final class AppContainer: ObservableObject {
 
         let keyPromptWindow = OpenAIKeyPromptWindow(keychain: keychain)
         let recentsProvider = RecentTranscriptionsProvider(store: historyStore, limit: 5)
+
+        // Stub T8 UI-only (será reescrito na T9 com troca real do ponteiro do
+        // transcriber ativo no container).
+        self.swapCoordinator = WhisperModelSwapCoordinator(
+            initialActive: prefs.whisperModelName,
+            stagingFactory: { WhisperKitTranscriber() },
+            swapActive: { newActive in newActive }
+        )
 
         self.permissions = permissions
         self.transcriber = transcriber
@@ -252,7 +267,9 @@ final class AppContainer: ObservableObject {
             indicatorPanel: indicatorPanel,
             keychain: keychain,
             historyStore: historyStore,
-            injector: injector)
+            injector: injector,
+            swapCoordinator: swapCoordinator,
+            modelStore: modelStore)
         preferencesWindow.show(content: { AnyView(view) })
     }
 

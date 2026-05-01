@@ -113,6 +113,7 @@
 		CC5EB3434258E1D09236170E /* HistoryListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67CBE51F17D5FD50F1087DE4 /* HistoryListView.swift */; };
 		CD66B2474777413B2261DF12 /* IndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BDA8305F7FB0B1951CEEE0 /* IndicatorView.swift */; };
 		CE4AAD082C51712AA9D3CD4A /* RefinerOpenAIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79FC0A41CA3D1963B33D77BF /* RefinerOpenAIView.swift */; };
+		CEBBB2A1998467B6702B1557 /* SwapErrorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 506CF4F201A9C85672D0DA86 /* SwapErrorSheet.swift */; };
 		D01132A4843AAD504C18AC1A /* CustomStyleStoreLive.swift in Sources */ = {isa = PBXBuildFile; fileRef = E229AB7DD897353C67D3F49E /* CustomStyleStoreLive.swift */; };
 		D17082E0C1E2EE94E2E10C20 /* RefinerGeneralView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81CFABCF169C821D63F99C15 /* RefinerGeneralView.swift */; };
 		D184234EF281996B98B43E86 /* RefinerErrorMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA50651B0097577FB6353079 /* RefinerErrorMapperTests.swift */; };
@@ -136,6 +137,7 @@
 		EFA552262CE858E2BA967417 /* ToastCenterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16D36018E93C09CC0C61C99B /* ToastCenterTests.swift */; };
 		EFAA73358DCF48C1C1037FD8 /* IndicatorPill.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E6F51C94A5B358ED2DB0CBD /* IndicatorPill.swift */; };
 		F11CF8F05C71CAC179EAEA5D /* RemoteRefinerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = C658A1FA765D0031A186BB22 /* RemoteRefinerConfig.swift */; };
+		F206D528CC394878508277D4 /* TranscriptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA6C40A17D3EDFC9DE72126E /* TranscriptionView.swift */; };
 		F4CFA2E3B88D0CFA2DA1A068 /* CustomStyleStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD31E2B52177A74935D9866F /* CustomStyleStore.swift */; };
 		F8FBCE0B00B117991617F4EB /* Glyph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64EB8767875513C5CBD96EB7 /* Glyph.swift */; };
 /* End PBXBuildFile section */
@@ -180,6 +182,7 @@
 		4BEFD414690FBE88FE9E33AF /* RefinerError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefinerError.swift; sourceTree = "<group>"; };
 		4CA8407C5F4A3FCEEA500C5B /* ToastCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastCenter.swift; sourceTree = "<group>"; };
 		4DB6FB551445042E1DC287A5 /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
+		506CF4F201A9C85672D0DA86 /* SwapErrorSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapErrorSheet.swift; sourceTree = "<group>"; };
 		511F4D98C36FD5B80FE7CAD7 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
 		546B9E9134BAAF0569059D02 /* HotkeyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyTests.swift; sourceTree = "<group>"; };
 		5ECDA19A878F5C9B2C87A95C /* Injecting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Injecting.swift; sourceTree = "<group>"; };
@@ -241,6 +244,7 @@
 		B7EE7BDADD8367D1D4A485DA /* WhisperModelStoreLive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperModelStoreLive.swift; sourceTree = "<group>"; };
 		B9A728C5C1F5DFB5F4DD303F /* RefinerOllamaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefinerOllamaView.swift; sourceTree = "<group>"; };
 		BA1407C7FFAE0C7B809DE608 /* WhisperModelSwapCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperModelSwapCoordinator.swift; sourceTree = "<group>"; };
+		BA6C40A17D3EDFC9DE72126E /* TranscriptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionView.swift; sourceTree = "<group>"; };
 		BDC3A4DA1D84200F9B613E3F /* PrefsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrefsSection.swift; sourceTree = "<group>"; };
 		BDC8ADE91AFA6BD9D11E690E /* DefaultVocabulary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultVocabulary.swift; sourceTree = "<group>"; };
 		BDEA894F73814D4A6AA45078 /* CustomStyleEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomStyleEditSheet.swift; sourceTree = "<group>"; };
@@ -364,6 +368,7 @@
 			isa = PBXGroup;
 			children = (
 				BDEA894F73814D4A6AA45078 /* CustomStyleEditSheet.swift */,
+				506CF4F201A9C85672D0DA86 /* SwapErrorSheet.swift */,
 			);
 			path = Sheets;
 			sourceTree = "<group>";
@@ -616,6 +621,7 @@
 				79FC0A41CA3D1963B33D77BF /* RefinerOpenAIView.swift */,
 				0F959F346FC72FDBA5B0A3C0 /* ShortcutsView.swift */,
 				940E761FB8E1DC02E2A12840 /* StylesView.swift */,
+				BA6C40A17D3EDFC9DE72126E /* TranscriptionView.swift */,
 				620E904B00271823AADE56B9 /* VocabularyView.swift */,
 			);
 			path = Sections;
@@ -830,6 +836,7 @@
 				D1A93967CD63EEA29E690078 /* StyleProvider.swift in Sources */,
 				3B18FD726E3947F06D8D1F30 /* StyleSubmenu.swift in Sources */,
 				2FA05A3DC8AD89F7ADC2BB22 /* StylesView.swift in Sources */,
+				CEBBB2A1998467B6702B1557 /* SwapErrorSheet.swift in Sources */,
 				8DB6F64CD8DA02B106FCAB21 /* TagarelaApp.swift in Sources */,
 				5F893074B312F218A17C07D7 /* TextRefiner.swift in Sources */,
 				1ACA4D266E12D45EDAB6DE18 /* Toast.swift in Sources */,
@@ -839,6 +846,7 @@
 				3A8FDD7D2A62358C77D79CD5 /* TokenCounter.swift in Sources */,
 				7CFB0DDDA053BAAF6A2A90F6 /* Transcribing.swift in Sources */,
 				7E89DE5BC85C3CA9311DFDDD /* Transcription.swift in Sources */,
+				F206D528CC394878508277D4 /* TranscriptionView.swift in Sources */,
 				EEF5EEA71C7F9BE724013700 /* VocabularyView.swift in Sources */,
 				E9170EE724922DBBB50D166D /* WaveBars.swift in Sources */,
 				C089BEDAD880AE8AE873E943 /* WhisperKitTranscriber.swift in Sources */,

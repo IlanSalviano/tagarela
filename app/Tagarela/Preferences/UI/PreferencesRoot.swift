@@ -10,6 +10,8 @@ struct PreferencesRoot: View {
     let keychain: KeychainService
     let historyStore: HistoryStore
     let injector: Injecting
+    let swapCoordinator: WhisperModelSwapCoordinator
+    let modelStore: WhisperModelStore
 
     @State private var selection: PrefsSection = .geral
 
@@ -17,6 +19,7 @@ struct PreferencesRoot: View {
         NavigationSplitView {
             List(selection: $selection) {
                 NavigationLink(value: PrefsSection.geral) { Label(PrefsSection.geral.label, systemImage: "gearshape") }
+                NavigationLink(value: PrefsSection.transcricao) { Label(PrefsSection.transcricao.label, systemImage: "mic.and.signal.meter") }
 
                 Section(header: Text(String(localized: "preferences.section.refiner.group", defaultValue: "Refiner"))) {
                     NavigationLink(value: PrefsSection.refinerGeral) { Text(PrefsSection.refinerGeral.label) }
@@ -34,6 +37,10 @@ struct PreferencesRoot: View {
         } detail: {
             switch selection {
             case .geral:         GeneralView(prefs: prefs, indicatorPanel: indicatorPanel)
+            case .transcricao:
+                TranscriptionView(prefs: prefs,
+                                  swapCoordinator: swapCoordinator,
+                                  modelStore: modelStore)
             case .refinerGeral:  RefinerGeneralView(prefs: prefs)
             case .refinerOllama: RefinerOllamaView(prefs: prefs, modelLister: ollamaModelLister)
             case .refinerOpenAI: RefinerOpenAIView(prefs: prefs, keychain: keychain, openAIKeyEditor: openAIKeyEditor)
