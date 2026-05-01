@@ -23,6 +23,9 @@ Package.pins
 tagarela_docs/.obsidian/workspace*
 tagarela_docs/.obsidian/cache
 
+# Claude Code (local settings + scheduled tasks lock)
+.claude/
+
 # Sensitive
 *.p12
 *.cer
