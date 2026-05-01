@@ -32,6 +32,7 @@
 		2FA05A3DC8AD89F7ADC2BB22 /* StylesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 940E761FB8E1DC02E2A12840 /* StylesView.swift */; };
 		305B2F27198873224FF54CDD /* OllamaModelLister.swift in Sources */ = {isa = PBXBuildFile; fileRef = 845129F4E9D16A1A7E620CF0 /* OllamaModelLister.swift */; };
 		30E5095922CB2BEA75A2B9D5 /* IndicatorOrb.swift in Sources */ = {isa = PBXBuildFile; fileRef = D894F0B01F61EDB4629B66F6 /* IndicatorOrb.swift */; };
+		312FF9A7B63810D5F8DB0258 /* WhisperModelStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 341DA869FF0FDCE7BA7CE4B5 /* WhisperModelStoreTests.swift */; };
 		325F4003CED9799250EB2986 /* Hotkey.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF97A9FF6E8F2B8D5CF07039 /* Hotkey.swift */; };
 		327A5BAAF5D214FF4EE829B2 /* OnboardPerms.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0623A21CF9D908E558777F2 /* OnboardPerms.swift */; };
 		3299D0D234F2D399EF5F990F /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = D38647B7FE551CF75D0C0D04 /* Localizable.strings */; };
@@ -49,6 +50,7 @@
 		49B0A36CF4734B4B42AD0B42 /* StyleProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85CFBE0BCC471B3A68F474EC /* StyleProviderTests.swift */; };
 		4EF650A9698551F6B9D9497D /* RefinerFallbackReasonTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000437DA8749B2E09CBA9DC3 /* RefinerFallbackReasonTests.swift */; };
 		4EF88190CF8123AF3D9D9BF6 /* CustomStyleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D09C9789A9548B488C652FF9 /* CustomStyleTests.swift */; };
+		4F1C65FC15944B060F2E6656 /* WhisperModelStoreLive.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7EE7BDADD8367D1D4A485DA /* WhisperModelStoreLive.swift */; };
 		4F9D601711CA76ED279BC01C /* GeneralView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F536517168E5CD3C9A40C45A /* GeneralView.swift */; };
 		50C6384D0A9534712D2DF346 /* PermissionServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38D1EC0BE929E9255E6D405 /* PermissionServiceTests.swift */; };
 		51A8AB80127108D2D3F8A704 /* OllamaHealthChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4139BFBDBEB25C8A6F0E730 /* OllamaHealthChecker.swift */; };
@@ -101,6 +103,7 @@
 		B6AC8D77746DD364C1D83E4A /* Wordmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA671BF3E800969A73A8EF5 /* Wordmark.swift */; };
 		B921AB0B66E9A5FBEC9EBFD1 /* AppContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1A68A34868B4B17F0CD95D4 /* AppContainer.swift */; };
 		B92A18A74D93A4A5C057A5EF /* HistoryStoreLive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34D03471F0F19E467A741ED6 /* HistoryStoreLive.swift */; };
+		BB8E9F2694D3472B34584760 /* WhisperModelStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 668BCA339AF31B66FA9A9C42 /* WhisperModelStore.swift */; };
 		BD64F87722132F46B9A177A1 /* RefinerFactoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08409FB81EE882100E04E4CF /* RefinerFactoryTests.swift */; };
 		C089BEDAD880AE8AE873E943 /* WhisperKitTranscriber.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4BE45043CF12FBE67AE1DBD /* WhisperKitTranscriber.swift */; };
 		C92FA6C50DD3D346C24C940A /* PermissionServiceLive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 827CCE37EBEA134265121AF8 /* PermissionServiceLive.swift */; };
@@ -162,6 +165,7 @@
 		265CDA7DE0CCADB7E45F98EA /* FloatingIndicatorPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingIndicatorPanel.swift; sourceTree = "<group>"; };
 		2FC6EF683588FB78503E090B /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		33F19FE89DB89426AFE260B8 /* WaveBars.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveBars.swift; sourceTree = "<group>"; };
+		341DA869FF0FDCE7BA7CE4B5 /* WhisperModelStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperModelStoreTests.swift; sourceTree = "<group>"; };
 		34D03471F0F19E467A741ED6 /* HistoryStoreLive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryStoreLive.swift; sourceTree = "<group>"; };
 		3B24E50595A03018A6EACB7C /* ToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastView.swift; sourceTree = "<group>"; };
 		3ED9DDFE385D1F49BF9DC9B6 /* TokenCounterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenCounterTests.swift; sourceTree = "<group>"; };
@@ -179,6 +183,7 @@
 		62EFB96895497806042A4427 /* PermissionStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionStatus.swift; sourceTree = "<group>"; };
 		63E0CA135AF061EB8FA4E4A2 /* OpenAIRefinerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIRefinerTests.swift; sourceTree = "<group>"; };
 		64EB8767875513C5CBD96EB7 /* Glyph.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Glyph.swift; sourceTree = "<group>"; };
+		668BCA339AF31B66FA9A9C42 /* WhisperModelStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperModelStore.swift; sourceTree = "<group>"; };
 		67CBE51F17D5FD50F1087DE4 /* HistoryListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryListView.swift; sourceTree = "<group>"; };
 		6AA232DBB32229FCAA0AC660 /* TagarelaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagarelaApp.swift; sourceTree = "<group>"; };
 		6D403F8BAFCB53E3F2460AF6 /* TokenCounter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenCounter.swift; sourceTree = "<group>"; };
@@ -228,6 +233,7 @@
 		AF4E1ACFB5000E98F5B03733 /* PreferencesStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesStore.swift; sourceTree = "<group>"; };
 		B38D1EC0BE929E9255E6D405 /* PermissionServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionServiceTests.swift; sourceTree = "<group>"; };
 		B78197C597CBF6A59ECEEA76 /* OllamaRefinerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OllamaRefinerTests.swift; sourceTree = "<group>"; };
+		B7EE7BDADD8367D1D4A485DA /* WhisperModelStoreLive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperModelStoreLive.swift; sourceTree = "<group>"; };
 		B9A728C5C1F5DFB5F4DD303F /* RefinerOllamaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefinerOllamaView.swift; sourceTree = "<group>"; };
 		BDC3A4DA1D84200F9B613E3F /* PrefsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrefsSection.swift; sourceTree = "<group>"; };
 		BDC8ADE91AFA6BD9D11E690E /* DefaultVocabulary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultVocabulary.swift; sourceTree = "<group>"; };
@@ -363,6 +369,8 @@
 				82624846B13D44387F031C84 /* Transcribing.swift */,
 				E4BE45043CF12FBE67AE1DBD /* WhisperKitTranscriber.swift */,
 				D60545C514BFC2CA040002BA /* WhisperModelCatalog.swift */,
+				668BCA339AF31B66FA9A9C42 /* WhisperModelStore.swift */,
+				B7EE7BDADD8367D1D4A485DA /* WhisperModelStoreLive.swift */,
 			);
 			path = Transcription;
 			sourceTree = "<group>";
@@ -429,6 +437,7 @@
 				D6F94E64AE4AEE7F0E13BD05 /* ToastKindTests.swift */,
 				3ED9DDFE385D1F49BF9DC9B6 /* TokenCounterTests.swift */,
 				CE732C1C80786269CA0A2641 /* WhisperModelCatalogTests.swift */,
+				341DA869FF0FDCE7BA7CE4B5 /* WhisperModelStoreTests.swift */,
 			);
 			path = TagarelaTests;
 			sourceTree = "<group>";
@@ -817,6 +826,8 @@
 				E9170EE724922DBBB50D166D /* WaveBars.swift in Sources */,
 				C089BEDAD880AE8AE873E943 /* WhisperKitTranscriber.swift in Sources */,
 				AAAD37F33F4FCE40D524019D /* WhisperModelCatalog.swift in Sources */,
+				BB8E9F2694D3472B34584760 /* WhisperModelStore.swift in Sources */,
+				4F1C65FC15944B060F2E6656 /* WhisperModelStoreLive.swift in Sources */,
 				B6AC8D77746DD364C1D83E4A /* Wordmark.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -854,6 +865,7 @@
 				8B5B76C613FDAAFC9743785F /* ToastKindTests.swift in Sources */,
 				9D3DBD5FA1E5D9A56E91B893 /* TokenCounterTests.swift in Sources */,
 				6F081A9564F53AF2A0065CF6 /* WhisperModelCatalogTests.swift in Sources */,
+				312FF9A7B63810D5F8DB0258 /* WhisperModelStoreTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
