@@ -161,3 +161,22 @@
 "styles.edit.discipline.toggle"  = "Modo refinador (recomendado)";
 "styles.edit.discipline.help"    = "Refinador prefixa proteção contra o LLM responder à fala em vez de transcrever.";
 "styles.edit.discipline.warning" = "Modo livre: sem proteção. O LLM pode responder à fala em vez de transcrever.";
+
+// Fase 2d — Transcription / model picker
+"transcription.picker.badge.recommended"            = "RECOM.";
+"preferences.section.transcricao"                   = "Transcrição";
+"preferences.transcription.activeModel"             = "Modelo ativo: %@";
+"preferences.transcription.swapConfirm.title"       = "Trocar pra %@?";
+"preferences.transcription.swapConfirm.body"        = "Vai baixar %@. Você pode continuar usando o app durante o download.";
+"preferences.transcription.swapConfirm.proceed"     = "Trocar";
+"preferences.transcription.swap.downloading"        = "Baixando %@ — %d%%";
+"preferences.transcription.swap.swapping"           = "Trocando pra %@…";
+"preferences.transcription.swap.error.title"        = "Falha ao trocar";
+"preferences.transcription.swap.error.body"         = "Não consegui mudar pra %@.\n\n%@";
+"preferences.transcription.swap.error.retry"        = "Tentar de novo";
+"preferences.transcription.swap.error.close"        = "Fechar";
+"preferences.transcription.deletePrevious.title"    = "Apagar %@?";
+"preferences.transcription.deletePrevious.body"     = "Libera %@ de espaço.";
+"preferences.transcription.deletePrevious.keep"     = "Manter";
+"preferences.transcription.deletePrevious.delete"   = "Apagar";
+"onboarding.model.error"                            = "falha: %@ · tentar de novo";
