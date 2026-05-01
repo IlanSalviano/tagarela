@@ -11,14 +11,14 @@ final class WhisperModelSwapCoordinatorTests: XCTestCase {
     }
 
     func test_requestSwap_sameModel_noop() {
-        let coord = makeCoord(initialActive: "large-v3-turbo", stagingBehavior: .immediateSuccess)
-        coord.requestSwap(target: "large-v3-turbo")
-        XCTAssertEqual(coord.state, .idle(active: "large-v3-turbo"))
+        let coord = makeCoord(initialActive: "large-v3_turbo", stagingBehavior: .immediateSuccess)
+        coord.requestSwap(target: "large-v3_turbo")
+        XCTAssertEqual(coord.state, .idle(active: "large-v3_turbo"))
     }
 
     func test_requestSwap_happyPath_endsInIdleAtTarget() async {
         let oldT = FakeT(name: "large-v3")
-        let newT = FakeT(name: "large-v3-turbo")
+        let newT = FakeT(name: "large-v3_turbo")
         var swappedFrom: String?
         let coord = WhisperModelSwapCoordinator(
             initialActive: "large-v3",
@@ -28,23 +28,23 @@ final class WhisperModelSwapCoordinatorTests: XCTestCase {
                 return oldT
             }
         )
-        coord.requestSwap(target: "large-v3-turbo")
+        coord.requestSwap(target: "large-v3_turbo")
         await Task.yield()
-        await waitFor { coord.state == .idle(active: "large-v3-turbo") }
+        await waitFor { coord.state == .idle(active: "large-v3_turbo") }
         XCTAssertEqual(swappedFrom, "large-v3")
         XCTAssertNil(oldT.loadedModelName)  // unloadModel foi chamado
     }
 
     func test_requestSwap_downloadFails_endsInFailedDownloadFailed() async {
         let oldT = FakeT(name: "large-v3")
-        let newT = FakeT(name: "large-v3-turbo")
+        let newT = FakeT(name: "large-v3_turbo")
         newT.loadError = TranscribeError.modelDownloadFailed("network err")
         let coord = WhisperModelSwapCoordinator(
             initialActive: "large-v3",
             stagingFactory: { newT },
             swapActive: { _ in oldT }
         )
-        coord.requestSwap(target: "large-v3-turbo")
+        coord.requestSwap(target: "large-v3_turbo")
         await waitFor {
             if case .failed(_, _, let err) = coord.state {
                 return err == .downloadFailed("network err")
@@ -55,7 +55,7 @@ final class WhisperModelSwapCoordinatorTests: XCTestCase {
 
     func test_retry_afterFailure_reentersDownloading() async {
         let oldT = FakeT(name: "large-v3")
-        let newT = FakeT(name: "large-v3-turbo")
+        let newT = FakeT(name: "large-v3_turbo")
         newT.loadError = TranscribeError.modelDownloadFailed("network")
         var produced = 0
         let coord = WhisperModelSwapCoordinator(
@@ -63,7 +63,7 @@ final class WhisperModelSwapCoordinatorTests: XCTestCase {
             stagingFactory: { produced += 1; return newT },
             swapActive: { _ in oldT }
         )
-        coord.requestSwap(target: "large-v3-turbo")
+        coord.requestSwap(target: "large-v3_turbo")
         await waitFor {
             if case .failed = coord.state { return true }
             return false
@@ -71,20 +71,20 @@ final class WhisperModelSwapCoordinatorTests: XCTestCase {
         // Limpar erro pra retry passar
         newT.loadError = nil
         coord.retry()
-        await waitFor { coord.state == .idle(active: "large-v3-turbo") }
+        await waitFor { coord.state == .idle(active: "large-v3_turbo") }
         XCTAssertEqual(produced, 2, "stagingFactory é invocada por tentativa (uma no requestSwap inicial + uma no retry); se mudar pra reusar, ajustar este teste")
     }
 
     func test_cancel_duringDownload_returnsToIdleWithOldActive() async {
         let oldT = FakeT(name: "large-v3")
-        let newT = FakeT(name: "large-v3-turbo")
+        let newT = FakeT(name: "large-v3_turbo")
         newT.loadDelayNs = 500_000_000  // 0.5s — tempo pra cancelar antes
         let coord = WhisperModelSwapCoordinator(
             initialActive: "large-v3",
             stagingFactory: { newT },
             swapActive: { _ in oldT }
         )
-        coord.requestSwap(target: "large-v3-turbo")
+        coord.requestSwap(target: "large-v3_turbo")
         try? await Task.sleep(nanoseconds: 50_000_000)
         coord.cancel()
         await waitFor { coord.state == .idle(active: "large-v3") }
@@ -97,7 +97,7 @@ final class WhisperModelSwapCoordinatorTests: XCTestCase {
         // Hoje WhisperKitTranscriber NÃO faz esse rewrap (T5 review C1 fix), mas
         // este teste documenta o contrato pra evitar regressão silenciosa.
         let oldT = FakeT(name: "large-v3")
-        let newT = FakeT(name: "large-v3-turbo")
+        let newT = FakeT(name: "large-v3_turbo")
         newT.loadDelayNs = 500_000_000
         newT.loadErrorIfTaskCancelled = TranscribeError.modelDownloadFailed("cancelled")
         let coord = WhisperModelSwapCoordinator(
@@ -105,7 +105,7 @@ final class WhisperModelSwapCoordinatorTests: XCTestCase {
             stagingFactory: { newT },
             swapActive: { _ in oldT }
         )
-        coord.requestSwap(target: "large-v3-turbo")
+        coord.requestSwap(target: "large-v3_turbo")
         try? await Task.sleep(nanoseconds: 50_000_000)
         coord.cancel()
         // Allow time for state to settle
@@ -124,14 +124,14 @@ final class WhisperModelSwapCoordinatorTests: XCTestCase {
 
     func test_dismissError_fromFailed_returnsToIdle() async {
         let oldT = FakeT(name: "large-v3")
-        let newT = FakeT(name: "large-v3-turbo")
+        let newT = FakeT(name: "large-v3_turbo")
         newT.loadError = TranscribeError.modelDownloadFailed("err")
         let coord = WhisperModelSwapCoordinator(
             initialActive: "large-v3",
             stagingFactory: { newT },
             swapActive: { _ in oldT }
         )
-        coord.requestSwap(target: "large-v3-turbo")
+        coord.requestSwap(target: "large-v3_turbo")
         await waitFor {
             if case .failed = coord.state { return true }
             return false
@@ -142,7 +142,7 @@ final class WhisperModelSwapCoordinatorTests: XCTestCase {
 
     func test_requestSwap_fromFailed_switchesTarget() async {
         let oldT = FakeT(name: "large-v3")
-        let newTurbo = FakeT(name: "large-v3-turbo")
+        let newTurbo = FakeT(name: "large-v3_turbo")
         let newMedium = FakeT(name: "medium")
         newTurbo.loadError = TranscribeError.modelDownloadFailed("err")
         var pickedFactory = 0
@@ -154,7 +154,7 @@ final class WhisperModelSwapCoordinatorTests: XCTestCase {
             },
             swapActive: { _ in oldT }
         )
-        coord.requestSwap(target: "large-v3-turbo")
+        coord.requestSwap(target: "large-v3_turbo")
         await waitFor {
             if case .failed = coord.state { return true }
             return false

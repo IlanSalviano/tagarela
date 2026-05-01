@@ -34,5 +34,5 @@ enum PreferencesDefaults {
         provider: .official,
         baseURL: OpenAIEndpointDefaults.defaultURL(for: .official)!)
     static let indicatorVariant: IndicatorVariant = .pill
-    static let whisperModelName: String   = "large-v3-turbo"
+    static let whisperModelName: String   = "large-v3_turbo"
 }

@@ -8,7 +8,7 @@ final class WhisperModelCatalogTests: XCTestCase {
     }
 
     func test_all_includes_largeV3Turbo_as_recommended_default() {
-        let turbo = WhisperModelCatalog.all.first { $0.name == "large-v3-turbo" }
+        let turbo = WhisperModelCatalog.all.first { $0.name == "large-v3_turbo" }
         XCTAssertNotNil(turbo)
         XCTAssertTrue(turbo?.recommended == true)
     }
@@ -28,9 +28,9 @@ final class WhisperModelCatalogTests: XCTestCase {
     }
 
     func test_info_lookup_by_name_returns_match() {
-        let info = WhisperModelCatalog.info(for: "large-v3-turbo")
-        XCTAssertEqual(info?.name, "large-v3-turbo")
-        XCTAssertEqual(info?.displaySize, "815 MB")
+        let info = WhisperModelCatalog.info(for: "large-v3_turbo")
+        XCTAssertEqual(info?.name, "large-v3_turbo")
+        XCTAssertEqual(info?.displaySize, "~1.6 GB")
     }
 
     func test_info_lookup_unknown_returns_nil() {

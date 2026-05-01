@@ -23,14 +23,20 @@ struct OnboardingWindow: View {
                 )
             case .model:
                 OnboardModel(
+                    selected: $coordinator.selectedModel,
                     downloadProgress: coordinator.modelDownloadProgress,
                     loaded: coordinator.modelLoaded,
+                    errorMessage: coordinator.modelLoadError,
+                    onRetry: { coordinator.loadSelectedModel() },
                     onStart: {
                         onFinish()
                         dismissWindow(id: "onboarding")
                     }
                 )
-                .onAppear { coordinator.loadModel("large-v3") }
+                .onAppear { coordinator.loadSelectedModel() }
+                .onChange(of: coordinator.selectedModel) { _, _ in
+                    coordinator.loadSelectedModel()
+                }
             }
         }
     }

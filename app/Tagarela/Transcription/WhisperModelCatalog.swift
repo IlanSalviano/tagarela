@@ -1,9 +1,14 @@
 import Foundation
 
 /// Metadata estática de um modelo Whisper exibido no picker.
+///
+/// Nomes técnicos seguem a convenção do `argmaxinc/whisperkit-coreml` no Hugging
+/// Face: `large-v3_turbo` (underscore), `large-v3` (hífen sem suffix), `medium`.
+/// Tamanhos display são aproximações pro picker; cleanup prompt usa
+/// `WhisperModelStore.sizeOnDisk` real.
 struct WhisperModelInfo: Equatable, Hashable, Identifiable {
-    let name: String          // "large-v3-turbo" — nome técnico passado pro WhisperKit
-    let displaySize: String   // "815 MB" — pra UI
+    let name: String          // "large-v3_turbo" — nome técnico passado pro WhisperKit
+    let displaySize: String   // "~1.6 GB" — pra UI
     let displayRAM: String    // "≥ 4 GB" — pra UI
     let approxBytes: Int64    // pra cálculo de "libera X MB" no cleanup prompt
     let recommended: Bool     // badge "recom." na UI
@@ -16,10 +21,10 @@ struct WhisperModelInfo: Equatable, Hashable, Identifiable {
 enum WhisperModelCatalog {
     static let all: [WhisperModelInfo] = [
         WhisperModelInfo(
-            name: "large-v3-turbo",
-            displaySize: "815 MB",
+            name: "large-v3_turbo",
+            displaySize: "~1.6 GB",
             displayRAM: "≥ 4 GB",
-            approxBytes: 815 * 1024 * 1024,
+            approxBytes: 1_600 * 1024 * 1024,
             recommended: true
         ),
         WhisperModelInfo(

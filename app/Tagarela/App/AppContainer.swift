@@ -145,7 +145,7 @@ final class AppContainer: ObservableObject {
             }
         )
         self.onboarding = OnboardingCoordinator(
-            permissionService: permissions, transcriber: transcriber
+            permissionService: permissions, transcriber: transcriber, prefs: prefs
         )
         self.showOnboarding = !UserDefaults.standard.bool(forKey: "onboardingCompleted")
 
