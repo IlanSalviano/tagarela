@@ -13,6 +13,7 @@ enum PreferencesKey {
     static let audioBoostMaxGain    = "com.tagarela.preferences.audioBoostMaxGain"
     static let openAIEndpoint       = "com.tagarela.preferences.openAIEndpoint"
     static let indicatorVariant     = "com.tagarela.preferences.indicatorVariant"
+    static let whisperModelName     = "com.tagarela.preferences.whisperModelName"
 }
 
 enum PreferencesDefaults {
@@ -33,4 +34,5 @@ enum PreferencesDefaults {
         provider: .official,
         baseURL: OpenAIEndpointDefaults.defaultURL(for: .official)!)
     static let indicatorVariant: IndicatorVariant = .pill
+    static let whisperModelName: String   = "large-v3-turbo"
 }

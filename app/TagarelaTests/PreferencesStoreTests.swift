@@ -30,6 +30,7 @@ final class PreferencesStoreTests: XCTestCase {
         XCTAssertEqual(store.audioBoostMaxGain, 20.0)
         XCTAssertEqual(store.openAIEndpoint, PreferencesDefaults.openAIEndpoint)
         XCTAssertEqual(store.indicatorVariant, .pill)
+        XCTAssertEqual(store.whisperModelName, "large-v3-turbo")
     }
 
     func test_setRefinerKind_persistsAcrossInit() {
@@ -113,5 +114,17 @@ final class PreferencesStoreTests: XCTestCase {
         s1.indicatorVariant = .hud
         let s2 = PreferencesStore(defaults: defaults, defaultStyleID: dummyStyleID)
         XCTAssertEqual(s2.indicatorVariant, .hud)
+    }
+
+    func test_whisperModelName_defaultsToTurbo_whenAbsent() {
+        let store = PreferencesStore(defaults: defaults, defaultStyleID: dummyStyleID)
+        XCTAssertEqual(store.whisperModelName, "large-v3-turbo")
+    }
+
+    func test_whisperModelName_persistsAcrossInits() {
+        let s1 = PreferencesStore(defaults: defaults, defaultStyleID: dummyStyleID)
+        s1.whisperModelName = "large-v3"
+        let s2 = PreferencesStore(defaults: defaults, defaultStyleID: dummyStyleID)
+        XCTAssertEqual(s2.whisperModelName, "large-v3")
     }
 }

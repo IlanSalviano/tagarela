@@ -54,6 +54,9 @@ final class PreferencesStore: ObservableObject {
             defaults.set(indicatorVariant.rawValue, forKey: PreferencesKey.indicatorVariant)
         }
     }
+    @Published var whisperModelName: String {
+        didSet { defaults.set(whisperModelName, forKey: PreferencesKey.whisperModelName) }
+    }
 
     init(defaults: UserDefaults = .standard,
          defaultStyleID: UUID) {
@@ -101,6 +104,9 @@ final class PreferencesStore: ObservableObject {
             ?? PreferencesDefaults.indicatorVariant.rawValue
         self.indicatorVariant = IndicatorVariant(rawValue: variantRaw)
             ?? PreferencesDefaults.indicatorVariant
+
+        self.whisperModelName = defaults.string(forKey: PreferencesKey.whisperModelName)
+            ?? PreferencesDefaults.whisperModelName
     }
 
     /// Setter que clampa pro range válido [1, 50] antes de publicar.
