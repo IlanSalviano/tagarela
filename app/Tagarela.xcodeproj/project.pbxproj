@@ -38,6 +38,7 @@
 		3299D0D234F2D399EF5F990F /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = D38647B7FE551CF75D0C0D04 /* Localizable.strings */; };
 		32C9E0DC25051DCB371D8041 /* DefaultVocabulary.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDC8ADE91AFA6BD9D11E690E /* DefaultVocabulary.swift */; };
 		33A946A20B32ADDDD2037F0E /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DB6FB551445042E1DC287A5 /* KeychainService.swift */; };
+		373D66C0384D64D2D66C76A7 /* WhisperModelSwapCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04FC3209B0C0DC0F2562BD38 /* WhisperModelSwapCoordinatorTests.swift */; };
 		3A8FDD7D2A62358C77D79CD5 /* TokenCounter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D403F8BAFCB53E3F2460AF6 /* TokenCounter.swift */; };
 		3B18FD726E3947F06D8D1F30 /* StyleSubmenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8E2E64D535690D689AED8FC /* StyleSubmenu.swift */; };
 		3CF0EFD18A8C1833C0F2C68F /* OpenAIRefiner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F54A24A7539461F01EA2BC7 /* OpenAIRefiner.swift */; };
@@ -80,6 +81,7 @@
 		84F54E14BCFD60F0E854ECB3 /* RefinerError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BEFD414690FBE88FE9E33AF /* RefinerError.swift */; };
 		87DC949110EC521E9AB71D47 /* PrefsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDC3A4DA1D84200F9B613E3F /* PrefsSection.swift */; };
 		89A04ABA6F671B1B26204D1E /* IdentityRefinerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C746B068BBCF245665858B64 /* IdentityRefinerTests.swift */; };
+		89CBDC9D8BF76FECE7C635CF /* WhisperModelSwapCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA1407C7FFAE0C7B809DE608 /* WhisperModelSwapCoordinator.swift */; };
 		8B0B10CDA4F9126640A2FDD3 /* IndicatorPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB8069AEA1AC9A31B315909C /* IndicatorPicker.swift */; };
 		8B5B76C613FDAAFC9743785F /* ToastKindTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6F94E64AE4AEE7F0E13BD05 /* ToastKindTests.swift */; };
 		8BFAF3788331C033B5F8EC16 /* RefinerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8642522EEA745BE571EDCCC5 /* RefinerFactory.swift */; };
@@ -149,6 +151,7 @@
 
 /* Begin PBXFileReference section */
 		000437DA8749B2E09CBA9DC3 /* RefinerFallbackReasonTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefinerFallbackReasonTests.swift; sourceTree = "<group>"; };
+		04FC3209B0C0DC0F2562BD38 /* WhisperModelSwapCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperModelSwapCoordinatorTests.swift; sourceTree = "<group>"; };
 		063767F145310C13CC9F3BD3 /* IndicatorVariantTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndicatorVariantTests.swift; sourceTree = "<group>"; };
 		08409FB81EE882100E04E4CF /* RefinerFactoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefinerFactoryTests.swift; sourceTree = "<group>"; };
 		09A9046134AA822B8003E250 /* PreferencesStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesStoreTests.swift; sourceTree = "<group>"; };
@@ -235,6 +238,7 @@
 		B78197C597CBF6A59ECEEA76 /* OllamaRefinerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OllamaRefinerTests.swift; sourceTree = "<group>"; };
 		B7EE7BDADD8367D1D4A485DA /* WhisperModelStoreLive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperModelStoreLive.swift; sourceTree = "<group>"; };
 		B9A728C5C1F5DFB5F4DD303F /* RefinerOllamaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefinerOllamaView.swift; sourceTree = "<group>"; };
+		BA1407C7FFAE0C7B809DE608 /* WhisperModelSwapCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperModelSwapCoordinator.swift; sourceTree = "<group>"; };
 		BDC3A4DA1D84200F9B613E3F /* PrefsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrefsSection.swift; sourceTree = "<group>"; };
 		BDC8ADE91AFA6BD9D11E690E /* DefaultVocabulary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultVocabulary.swift; sourceTree = "<group>"; };
 		BDEA894F73814D4A6AA45078 /* CustomStyleEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomStyleEditSheet.swift; sourceTree = "<group>"; };
@@ -371,6 +375,7 @@
 				D60545C514BFC2CA040002BA /* WhisperModelCatalog.swift */,
 				668BCA339AF31B66FA9A9C42 /* WhisperModelStore.swift */,
 				B7EE7BDADD8367D1D4A485DA /* WhisperModelStoreLive.swift */,
+				BA1407C7FFAE0C7B809DE608 /* WhisperModelSwapCoordinator.swift */,
 			);
 			path = Transcription;
 			sourceTree = "<group>";
@@ -438,6 +443,7 @@
 				3ED9DDFE385D1F49BF9DC9B6 /* TokenCounterTests.swift */,
 				CE732C1C80786269CA0A2641 /* WhisperModelCatalogTests.swift */,
 				341DA869FF0FDCE7BA7CE4B5 /* WhisperModelStoreTests.swift */,
+				04FC3209B0C0DC0F2562BD38 /* WhisperModelSwapCoordinatorTests.swift */,
 			);
 			path = TagarelaTests;
 			sourceTree = "<group>";
@@ -828,6 +834,7 @@
 				AAAD37F33F4FCE40D524019D /* WhisperModelCatalog.swift in Sources */,
 				BB8E9F2694D3472B34584760 /* WhisperModelStore.swift in Sources */,
 				4F1C65FC15944B060F2E6656 /* WhisperModelStoreLive.swift in Sources */,
+				89CBDC9D8BF76FECE7C635CF /* WhisperModelSwapCoordinator.swift in Sources */,
 				B6AC8D77746DD364C1D83E4A /* Wordmark.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -866,6 +873,7 @@
 				9D3DBD5FA1E5D9A56E91B893 /* TokenCounterTests.swift in Sources */,
 				6F081A9564F53AF2A0065CF6 /* WhisperModelCatalogTests.swift in Sources */,
 				312FF9A7B63810D5F8DB0258 /* WhisperModelStoreTests.swift in Sources */,
+				373D66C0384D64D2D66C76A7 /* WhisperModelSwapCoordinatorTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
