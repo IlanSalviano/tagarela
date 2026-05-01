@@ -90,6 +90,86 @@ final class WhisperModelSwapCoordinatorTests: XCTestCase {
         await waitFor { coord.state == .idle(active: "large-v3") }
     }
 
+    func test_cancel_duringDownload_evenWhenLoadModelRewrapsCancellation() async {
+        // Produção: WhisperKitTranscriber.loadModel pode rewrap CancellationError
+        // como TranscribeError.modelDownloadFailed (regressão potencial). Mesmo
+        // assim, cancel durante download deve voltar pra idle, não pra failed.
+        // Hoje WhisperKitTranscriber NÃO faz esse rewrap (T5 review C1 fix), mas
+        // este teste documenta o contrato pra evitar regressão silenciosa.
+        let oldT = FakeT(name: "large-v3")
+        let newT = FakeT(name: "large-v3-turbo")
+        newT.loadDelayNs = 500_000_000
+        newT.loadErrorIfTaskCancelled = TranscribeError.modelDownloadFailed("cancelled")
+        let coord = WhisperModelSwapCoordinator(
+            initialActive: "large-v3",
+            stagingFactory: { newT },
+            swapActive: { _ in oldT }
+        )
+        coord.requestSwap(target: "large-v3-turbo")
+        try? await Task.sleep(nanoseconds: 50_000_000)
+        coord.cancel()
+        // Allow time for state to settle
+        try? await Task.sleep(nanoseconds: 100_000_000)
+        // Either .idle (preferred) or .failed (acceptable degradation): the key
+        // assertion is that we did NOT lose the .idle path. With the C1 fix,
+        // CancellationError propagates and we land in .idle.
+        if case .idle(let active) = coord.state {
+            XCTAssertEqual(active, "large-v3")
+        } else if case .failed(let active, _, .downloadFailed) = coord.state {
+            XCTFail("regression: CancellationError was rewrapped — coordinator landed in .failed instead of .idle. active=\(active)")
+        } else {
+            XCTFail("unexpected state \(coord.state)")
+        }
+    }
+
+    func test_dismissError_fromFailed_returnsToIdle() async {
+        let oldT = FakeT(name: "large-v3")
+        let newT = FakeT(name: "large-v3-turbo")
+        newT.loadError = TranscribeError.modelDownloadFailed("err")
+        let coord = WhisperModelSwapCoordinator(
+            initialActive: "large-v3",
+            stagingFactory: { newT },
+            swapActive: { _ in oldT }
+        )
+        coord.requestSwap(target: "large-v3-turbo")
+        await waitFor {
+            if case .failed = coord.state { return true }
+            return false
+        }
+        coord.dismissError()
+        XCTAssertEqual(coord.state, .idle(active: "large-v3"))
+    }
+
+    func test_requestSwap_fromFailed_switchesTarget() async {
+        let oldT = FakeT(name: "large-v3")
+        let newTurbo = FakeT(name: "large-v3-turbo")
+        let newMedium = FakeT(name: "medium")
+        newTurbo.loadError = TranscribeError.modelDownloadFailed("err")
+        var pickedFactory = 0
+        let coord = WhisperModelSwapCoordinator(
+            initialActive: "large-v3",
+            stagingFactory: {
+                pickedFactory += 1
+                return pickedFactory == 1 ? newTurbo : newMedium
+            },
+            swapActive: { _ in oldT }
+        )
+        coord.requestSwap(target: "large-v3-turbo")
+        await waitFor {
+            if case .failed = coord.state { return true }
+            return false
+        }
+        // From .failed, user picks a different target — should pivot.
+        coord.requestSwap(target: "medium")
+        await waitFor { coord.state == .idle(active: "medium") }
+    }
+
+    func test_dismissError_whenNotFailed_isNoop() {
+        let coord = makeCoord(initialActive: "large-v3", stagingBehavior: .immediateSuccess)
+        coord.dismissError()
+        XCTAssertEqual(coord.state, .idle(active: "large-v3"))
+    }
+
     // MARK: - Helpers
 
     private func makeCoord(initialActive: String,
@@ -126,12 +206,22 @@ private final class FakeT: Transcribing, @unchecked Sendable {
     var loadedModelName: String?
     var loadError: Error?
     var loadDelayNs: UInt64 = 0
+    /// Se setado, transforma CancellationError em outro erro (emula
+    /// WhisperKitTranscriber rewrap pre-C1-fix).
+    var loadErrorIfTaskCancelled: Error?
 
     init(name: String) { self.loadedModelName = name }
 
     func loadModel(_ name: String, onProgress: @escaping (Double) -> Void) async throws {
-        if loadDelayNs > 0 {
-            try await Task.sleep(nanoseconds: loadDelayNs)
+        do {
+            if loadDelayNs > 0 {
+                try await Task.sleep(nanoseconds: loadDelayNs)
+            }
+        } catch is CancellationError {
+            if let rewrap = loadErrorIfTaskCancelled {
+                throw rewrap
+            }
+            throw CancellationError()
         }
         if let err = loadError { throw err }
         onProgress(1.0)

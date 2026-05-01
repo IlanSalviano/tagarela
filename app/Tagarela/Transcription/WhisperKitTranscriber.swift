@@ -31,6 +31,8 @@ final class WhisperKitTranscriber: Transcribing, @unchecked Sendable {
             self.pipe = pipe
             self.loadedModelName = name
             logger.notice("loaded whisper model: \(name, privacy: .public)")
+        } catch is CancellationError {
+            throw CancellationError()
         } catch {
             throw TranscribeError.modelDownloadFailed(String(describing: error))
         }
@@ -84,6 +86,8 @@ final class WhisperKitTranscriber: Transcribing, @unchecked Sendable {
 
             let text = results.map(\.text).joined(separator: " ")
             return text.trimmingCharacters(in: .whitespacesAndNewlines)
+        } catch is CancellationError {
+            throw CancellationError()
         } catch {
             throw TranscribeError.transcriptionFailed(String(describing: error))
         }

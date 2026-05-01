@@ -54,8 +54,20 @@ final class WhisperModelSwapCoordinator: ObservableObject {
 
     /// Pede troca pro target. Se já está em `.downloading` ou `.swapping`, no-op.
     func requestSwap(target: String) {
-        guard case .idle(let active) = state, active != target else {
-            logger.info("requestSwap ignored (state=\(String(describing: self.state), privacy: .public))")
+        let active: String
+        switch state {
+        case .idle(let a):
+            guard a != target else {
+                logger.info("requestSwap ignored (already active=\(a, privacy: .public))")
+                return
+            }
+            active = a
+        case .failed(let a, _, _):
+            // user picks a different target via picker after seeing error sheet —
+            // pivot directly without going through dismissError().
+            active = a
+        case .downloading, .swapping:
+            logger.info("requestSwap ignored (busy state=\(String(describing: self.state), privacy: .public))")
             return
         }
         startSwap(from: active, to: target)
@@ -71,6 +83,14 @@ final class WhisperModelSwapCoordinator: ObservableObject {
     /// Cancela download em curso. Volta pra `.idle(active: <original>)`.
     func cancel() {
         swapTask?.cancel()
+    }
+
+    /// Sai do estado `.failed` voltando pra `.idle(active: <antigo>)`. Chamado
+    /// pelo botão "Fechar" da SwapErrorSheet (ver design doc §175-181). No-op
+    /// se state não for `.failed`.
+    func dismissError() {
+        guard case .failed(let active, _, _) = state else { return }
+        state = .idle(active: active)
     }
 
     private func startSwap(from active: String, to target: String) {
@@ -99,13 +119,24 @@ final class WhisperModelSwapCoordinator: ObservableObject {
             } catch is CancellationError {
                 self.state = .idle(active: active)
             } catch let TranscribeError.modelDownloadFailed(reason) {
-                self.state = .failed(active: active, target: target,
-                                     error: .downloadFailed(reason))
-                self.logger.error("swap downloadFailed: \(reason, privacy: .public)")
+                // Defesa: se cancel() chegou primeiro, Task.isCancelled é true
+                // mesmo que o caller tenha rewrap-ado CancellationError em outro
+                // tipo de erro. Tratamos como cancelamento. (T5 review C1)
+                if Task.isCancelled {
+                    self.state = .idle(active: active)
+                } else {
+                    self.state = .failed(active: active, target: target,
+                                         error: .downloadFailed(reason))
+                    self.logger.error("swap downloadFailed: \(reason, privacy: .public)")
+                }
             } catch {
-                self.state = .failed(active: active, target: target,
-                                     error: .loadFailed(String(describing: error)))
-                self.logger.error("swap loadFailed: \(String(describing: error), privacy: .public)")
+                if Task.isCancelled {
+                    self.state = .idle(active: active)
+                } else {
+                    self.state = .failed(active: active, target: target,
+                                         error: .loadFailed(String(describing: error)))
+                    self.logger.error("swap loadFailed: \(String(describing: error), privacy: .public)")
+                }
             }
         }
     }

@@ -111,10 +111,13 @@ enum SwapError {
 ```
 
 API pública:
-- `requestSwap(target: String) async`
-- `retry() async`
-- `cancel()`
+- `requestSwap(target: String)` — aceita `.idle` (troca normal) e `.failed` (pivot direto pra outro target após erro, sem precisar dismissError + nova chamada).
+- `retry()` — reinicia swap após `.failed` mantendo o mesmo target.
+- `cancel()` — cancela download/load em curso. Volta pra `.idle(active: <antigo>)`.
+- `dismissError()` — sai de `.failed` voltando pra `.idle(active: <antigo>)`. Chamado pelo botão "Fechar" da SwapErrorSheet.
 - `@Published var state: SwapState`
+
+**Robustez de cancelamento:** se o transcriber rewrap-ar `CancellationError` em outro tipo (regressão potencial em `WhisperKit`), o coordinator detecta `Task.isCancelled` nos `catch` de `modelDownloadFailed`/erro genérico e ainda volta pra `.idle` (não `.failed`). `WhisperKitTranscriber` também propaga `CancellationError` limpo (não rewrap-a) — defesa em profundidade.
 
 Coordinator instancia um `WhisperKitTranscriber` separado pro download/load do target. Após sucesso, troca o ponteiro `transcriber` no AppContainer atomicamente via callback `@MainActor`.
 
