@@ -1,9 +1,9 @@
 ---
-data: pendente
-status: pendente
+data: 2026-04-30
+status: ok-com-achados
 fase: 2b-3
-testado_em: pendente
-build: pendente
+testado_em: 2026-04-30
+build: e109747
 ---
 
 # Aceite manual — Fase 2b-3
@@ -134,8 +134,18 @@ Checklist do aceite manual da Fase 2b-3. Conduzido bloco-a-bloco conforme [memor
 
 ## Conclusão
 
-- [ ] Todos os 8 blocos passaram **OU** achados não-bloqueantes documentados em `tagarela_docs/04-decisoes/cleanup-fase2b3.md`.
-- [ ] Atualizar frontmatter desta nota: `status: ok` ou `status: ok-com-achados`.
-- [ ] `testado_em: 2026-04-XX` e `build: <hash do commit>`.
+- [x] Todos os 8 blocos passaram (Bloco 7 com ressalva — sem dado pré-existente).
+- [x] 1 achado não-bloqueante documentado em [`cleanup-fase2b3.md`](../../04-decisoes/cleanup-fase2b3.md): pill flicker quando Esc é apertado < 100ms após pill virar amarelo (`.refining`).
+- [x] Frontmatter atualizado: `status: ok-com-achados`, `testado_em: 2026-04-30`, `build: e109747`.
 
-Após aceite ✅, prosseguir com Tarefa 8 (doc closeout).
+Marcações de blocos:
+- Bloco 1 ✅ (achado de flicker no Esc rápido)
+- Bloco 2 ✅ (Ollama gemma4:e4b)
+- Bloco 3 ✅ (mesmo flicker do Bloco 1 quando Esc é rápido)
+- Bloco 4 ✅ (regression `99d174e` preservada)
+- Bloco 5 ✅ (modo refinador transcreve, não responde)
+- Bloco 6 ✅ (modo livre + warning laranja inline)
+- Bloco 7 ✅ ok-com-ressalva (sem custom style pré-2b-3 no store; app abriu sem crash + Bloco 5 criou novo style ok; lightweight migration aprovada implicitamente, Plano B não acionado)
+- Bloco 8 ✅ (toggle persiste OFF após reabrir Preferências)
+
+Aceite ✅. Prosseguir com Tarefa 8 (doc closeout).

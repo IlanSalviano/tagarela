@@ -1,9 +1,9 @@
 ---
 data: 2026-04-30
-status: planejado
+status: implementado
 fase: 2b-3 de 3 sub-fases da Fase 2b
 goal: cancel HTTP em vôo + UX modo refinador/livre pros custom styles
-implementado_em: pendente
+implementado_em: 2026-04-30 (branch fase-2b3, 8 commits, 155 testes verdes)
 ---
 
 # tagarela v1 — Fase 2b-3: Implementation Plan
