@@ -5,6 +5,8 @@ import OSLog
 /// `<rootDirectory>/openai_whisper-<name>/`.
 /// `rootDirectory` default = `~/Documents/huggingface/models/argmaxinc/whisperkit-coreml`,
 /// que é onde o WhisperKit 0.9.x baixa por padrão.
+// @unchecked Sendable: stored properties são todas `let`. `FileManager.default` é
+// documentado thread-safe; instâncias custom são responsabilidade do caller.
 final class WhisperModelStoreLive: WhisperModelStore, @unchecked Sendable {
     private let logger = Logger(subsystem: "com.tagarela", category: "ModelStore")
     private let root: URL
@@ -53,12 +55,18 @@ final class WhisperModelStoreLive: WhisperModelStore, @unchecked Sendable {
         guard fm.fileExists(atPath: dir.path) else {
             throw WhisperModelStoreError.notFound
         }
-        do {
-            try fm.removeItem(at: dir)
-            logger.info("deleted model: \(name, privacy: .public)")
-        } catch {
-            throw WhisperModelStoreError.ioFailure(String(describing: error))
-        }
+        // removeItem é síncrono. Em diretórios grandes (modelos multi-GB) pode
+        // demorar centenas de ms a segundos — fora do MainActor pra não travar UI.
+        let logger = self.logger
+        let fm = self.fm
+        try await Task.detached(priority: .userInitiated) {
+            do {
+                try fm.removeItem(at: dir)
+                logger.info("deleted model: \(name, privacy: .public)")
+            } catch {
+                throw WhisperModelStoreError.ioFailure(String(describing: error))
+            }
+        }.value
     }
 
     private func modelDir(for name: String) -> URL {

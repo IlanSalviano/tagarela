@@ -35,6 +35,17 @@ final class WhisperModelStoreTests: XCTestCase {
         XCTAssertEqual(store.sizeOnDisk("medium"), 1024 + 2048)
     }
 
+    func test_sizeOnDisk_recursesIntoSubdirectories() throws {
+        // WhisperKit layout real tem subdirs (*.mlmodelc/coremldata.bin etc.).
+        // Locks the enumerator's recursion behavior contra refator silencioso.
+        let modelDir = tempDir.appendingPathComponent("openai_whisper-large-v3")
+        let nested = modelDir.appendingPathComponent("AudioEncoder.mlmodelc")
+        try FileManager.default.createDirectory(at: nested, withIntermediateDirectories: true)
+        try Data(repeating: 0, count: 512).write(to: modelDir.appendingPathComponent("config.json"))
+        try Data(repeating: 0, count: 1024).write(to: nested.appendingPathComponent("coremldata.bin"))
+        XCTAssertEqual(store.sizeOnDisk("large-v3"), 512 + 1024)
+    }
+
     func test_sizeOnDisk_returnsNilWhenAbsent() {
         XCTAssertNil(store.sizeOnDisk("large-v3"))
     }
