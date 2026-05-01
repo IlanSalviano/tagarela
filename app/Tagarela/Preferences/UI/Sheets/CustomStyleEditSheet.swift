@@ -10,6 +10,7 @@ struct CustomStyleEditSheet: View {
     @State private var name: String = ""
     @State private var systemPrompt: String = ""
     @State private var appendCodeSwitching: Bool = true
+    @State private var bypassDiscipline: Bool = false
     @State private var saveError: String?
 
     var body: some View {
@@ -21,12 +22,30 @@ struct CustomStyleEditSheet: View {
                 }
                 Text(String(localized: "styles.edit.prompt", defaultValue: "System prompt")).font(.caption)
                 TextEditor(text: $systemPrompt)
-                    .frame(minHeight: 160)
+                    .frame(minHeight: 140)
                     .font(.system(.body, design: .monospaced))
                     .border(Color.secondary.opacity(0.3))
                 Toggle(String(localized: "styles.edit.codeswitch",
                                defaultValue: "Anexar cláusula de code-switching"),
                        isOn: $appendCodeSwitching)
+                Toggle(String(localized: "styles.edit.discipline.toggle",
+                               defaultValue: "Modo refinador (recomendado)"),
+                       isOn: Binding(get: { !bypassDiscipline },
+                                     set: { bypassDiscipline = !$0 }))
+                Text(String(localized: "styles.edit.discipline.help",
+                            defaultValue: "Refinador prefixa proteção contra o LLM responder à fala em vez de transcrever."))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                if bypassDiscipline {
+                    HStack(alignment: .top, spacing: 6) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.orange)
+                        Text(String(localized: "styles.edit.discipline.warning",
+                                    defaultValue: "Modo livre: sem proteção. O LLM pode responder à fala em vez de transcrever."))
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                    }
+                }
             }
             if let err = saveError {
                 Text(err).foregroundStyle(.red).font(.caption)
@@ -40,7 +59,7 @@ struct CustomStyleEditSheet: View {
             }
         }
         .padding(20)
-        .frame(width: 520, height: 420)
+        .frame(width: 520, height: 460)
         .onAppear { populate() }
     }
 
@@ -63,6 +82,7 @@ struct CustomStyleEditSheet: View {
             name = s.name
             systemPrompt = s.systemPrompt
             appendCodeSwitching = s.appendCodeSwitching
+            bypassDiscipline = s.bypassDiscipline
         }
     }
 
@@ -73,13 +93,14 @@ struct CustomStyleEditSheet: View {
                 _ = try await customStore.create(name: trimmedName,
                                                   systemPrompt: trimmedPrompt,
                                                   appendCodeSwitching: appendCodeSwitching,
-                                                  bypassDiscipline: false)  // T6 troca pelo @State
+                                                  bypassDiscipline: bypassDiscipline)
             case .edit(let s):
                 // Trim antes de mutar — store.update não revalida (only create faz).
                 // Mantém edit consistente com create: whitespace-only não passa.
                 s.name = trimmedName
                 s.systemPrompt = trimmedPrompt
                 s.appendCodeSwitching = appendCodeSwitching
+                s.bypassDiscipline = bypassDiscipline
                 try await customStore.update(s)
             }
             onClose()
