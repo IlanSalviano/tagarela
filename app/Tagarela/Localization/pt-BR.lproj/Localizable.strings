@@ -158,3 +158,6 @@
 "styles.edit.title.create"   = "Novo estilo custom";
 "styles.edit.title.edit"     = "Editar estilo";
 "styles.edit.save.failed"    = "Não foi possível salvar: ";
+"styles.edit.discipline.toggle"  = "Modo refinador (recomendado)";
+"styles.edit.discipline.help"    = "Refinador prefixa proteção contra o LLM responder à fala em vez de transcrever.";
+"styles.edit.discipline.warning" = "Modo livre: sem proteção. O LLM pode responder à fala em vez de transcrever.";
