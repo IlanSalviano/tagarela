@@ -30,7 +30,7 @@ final class WhisperKitTranscriber: Transcribing, @unchecked Sendable {
             let pipe = try await WhisperKit(config)
             self.pipe = pipe
             self.loadedModelName = name
-            logger.info("loaded whisper model: \(name, privacy: .public)")
+            logger.notice("loaded whisper model: \(name, privacy: .public)")
         } catch {
             throw TranscribeError.modelDownloadFailed(String(describing: error))
         }
@@ -39,7 +39,7 @@ final class WhisperKitTranscriber: Transcribing, @unchecked Sendable {
     func unloadModel() {
         pipe = nil
         loadedModelName = nil
-        logger.info("unloaded whisper model")
+        logger.notice("unloaded whisper model")
     }
 
     func transcribe(buffer: AudioBuffer,
@@ -70,12 +70,14 @@ final class WhisperKitTranscriber: Transcribing, @unchecked Sendable {
         )
 
         do {
-            let start = Date()
+            let start = ContinuousClock.now
             let results: [TranscriptionResult] = try await pipe.transcribe(
                 audioArray: buffer.samples,
                 decodeOptions: opts
             )
-            let wallMs = Int(Date().timeIntervalSince(start) * 1000)
+            let elapsed = start.duration(to: .now)
+            let wallMs = Int(Double(elapsed.components.seconds) * 1000
+                             + Double(elapsed.components.attoseconds) / 1e15)
             let audioSec = String(format: "%.1f", buffer.durationSeconds)
             let modelName = self.loadedModelName ?? "?"
             logger.notice("transcribe model=\(modelName, privacy: .public) audio=\(audioSec, privacy: .public)s wall=\(wallMs, privacy: .public)ms")
