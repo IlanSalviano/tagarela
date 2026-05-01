@@ -97,7 +97,7 @@ final class PipelineCoordinatorTests: XCTestCase {
         let counted = CountingRefiner(kind: .openai)
         let p = PipelineCoordinator(
             audio: FakeAudio(),
-            transcriber: slowTranscriber,
+            transcriberProvider: { slowTranscriber },
             refinerProvider: { @MainActor in (counted, BuiltInStyles.conversaInformal) },
             injector: FakeInjector(),
             historyStore: FakeHistoryStore(),
@@ -150,7 +150,7 @@ final class PipelineCoordinatorTests: XCTestCase {
         // passaria também se pipelineTask nunca fosse atribuído.
         let p = PipelineCoordinator(
             audio: FakeAudio(),
-            transcriber: FakeTranscriberSlow(),
+            transcriberProvider: { FakeTranscriberSlow() },
             refinerProvider: { @MainActor in (IdentityRefiner(), BuiltInStyles.conversaInformal) },
             injector: FakeInjector(),
             historyStore: FakeHistoryStore(),
@@ -200,7 +200,7 @@ final class PipelineCoordinatorTests: XCTestCase {
                                  history: FakeHistoryStore = FakeHistoryStore()) -> PipelineCoordinator {
         PipelineCoordinator(
             audio: audio,
-            transcriber: FakeTranscriber(),
+            transcriberProvider: { FakeTranscriber() },
             refinerProvider: { @MainActor in (refiner, style) },
             injector: injector,
             historyStore: history,

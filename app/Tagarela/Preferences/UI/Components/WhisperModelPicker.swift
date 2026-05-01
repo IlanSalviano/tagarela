@@ -52,6 +52,7 @@ struct WhisperModelPicker: View {
                         in: RoundedRectangle(cornerRadius: 6))
             .overlay(RoundedRectangle(cornerRadius: 6)
                 .stroke(isSelected ? DS.Color.ink : DS.Color.hairlineStrong, lineWidth: 0.5))
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .disabled(!enabled)

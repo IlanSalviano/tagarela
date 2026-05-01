@@ -9,7 +9,7 @@ import SwiftData
 final class AppContainer: ObservableObject {
     let appState = AppState()
     let permissions: PermissionService
-    let transcriber: Transcribing
+    var transcriber: Transcribing
     let audio: AudioCapturing
     let injector: Injecting
     let prefs: PreferencesStore
@@ -32,12 +32,11 @@ final class AppContainer: ObservableObject {
     let keyPromptWindow: OpenAIKeyPromptWindow
     let preferencesWindow = PreferencesWindow()
     let toastCenter = ToastCenter()
-    /// Stub na T8 (UI-only): T9 substitui `swapActive` por troca real do
-    /// ponteiro do transcriber ativo neste container. Por enquanto retorna o
-    /// próprio staging — chamada não acontece em runtime porque a UI da T8
-    /// não dispara swap real (apenas valida que a section aparece e que o
-    /// picker estático é renderizado).
-    let swapCoordinator: WhisperModelSwapCoordinator
+    /// T9: `swapActive` troca o ponteiro real do transcriber neste container
+    /// (e atualiza o `TranscriberRef` compartilhado com o pipeline). Inicializado
+    /// em duas fases no init: stub primeiro (pra satisfazer ordem de init),
+    /// depois reescrito com o coordinator real que captura `[weak self]`.
+    var swapCoordinator: WhisperModelSwapCoordinator
     let modelStore: WhisperModelStore = WhisperModelStoreLive()
     private var cancellables: Set<AnyCancellable> = []
 
@@ -48,6 +47,23 @@ final class AppContainer: ObservableObject {
         let transcriber = WhisperKitTranscriber()
         let injector = InjectorLive()
         let hotkeyService = HotkeyServiceLive()
+
+        // Migration (T9): se whisperModelName ainda não existe em UserDefaults
+        // E tem modelo já em disco, preserva o que está em disco. Evita download
+        // surpresa em users existentes que vinham do hardcoded "large-v3".
+        // Novo install: chave ausente + nada em disco → default
+        // PreferencesDefaults.whisperModelName ("large-v3_turbo") aplica.
+        let migrationStore = WhisperModelStoreLive()
+        let userDefaults = UserDefaults.standard
+        if userDefaults.string(forKey: PreferencesKey.whisperModelName) == nil {
+            for candidate in ["large-v3", "medium", "small", "large-v3-turbo", "large-v3_turbo"] {
+                if migrationStore.isDownloaded(candidate) {
+                    userDefaults.set(candidate, forKey: PreferencesKey.whisperModelName)
+                    Logger.tagarela.notice("migration: preserved existing model on disk: \(candidate, privacy: .public)")
+                    break
+                }
+            }
+        }
 
         let prefs = PreferencesStore(defaults: .standard, defaultStyleID: BuiltInStyles.defaultStyleID)
         let audio = AudioCaptureLive(
@@ -113,14 +129,6 @@ final class AppContainer: ObservableObject {
         let keyPromptWindow = OpenAIKeyPromptWindow(keychain: keychain)
         let recentsProvider = RecentTranscriptionsProvider(store: historyStore, limit: 5)
 
-        // Stub T8 UI-only (será reescrito na T9 com troca real do ponteiro do
-        // transcriber ativo no container).
-        self.swapCoordinator = WhisperModelSwapCoordinator(
-            initialActive: prefs.whisperModelName,
-            stagingFactory: { WhisperKitTranscriber() },
-            swapActive: { newActive in newActive }
-        )
-
         self.permissions = permissions
         self.transcriber = transcriber
         self.audio = audio
@@ -136,9 +144,28 @@ final class AppContainer: ObservableObject {
         self.styleProvider = styleProvider
         self.recentsProvider = recentsProvider
         self.keyPromptWindow = keyPromptWindow
+        // Stub temporário pra satisfazer o init — a referência real (com swapActive
+        // capturando [weak self]) é instalada logo abaixo, antes de qualquer
+        // wiring que use swapCoordinator.
+        self.swapCoordinator = WhisperModelSwapCoordinator(
+            initialActive: prefs.whisperModelName,
+            stagingFactory: { WhisperKitTranscriber() },
+            swapActive: { newActive in newActive }
+        )
+        self.onboarding = OnboardingCoordinator(
+            permissionService: permissions, transcriber: transcriber, prefs: prefs
+        )
+        self.showOnboarding = !UserDefaults.standard.bool(forKey: "onboardingCompleted")
+
+        // T9: TranscriberRef é compartilhado entre AppContainer (que mantém
+        // `self.transcriber` em sincronia pra onboarding/finishOnboarding e UI)
+        // e o pipeline + swap coordinator. Pipeline lê o ponteiro atual via
+        // ref.current (resolve em runtime, vê o swap). Swap coordinator
+        // escreve em ref.current via swapActive (mais o `self.transcriber`).
+        let transcriberRef = TranscriberRef(transcriber)
         self.pipeline = PipelineCoordinator(
             audio: audio,
-            transcriber: transcriber,
+            transcriberProvider: { transcriberRef.current },
             refinerProvider: { factory.current() },
             injector: injector,
             historyStore: historyStore,
@@ -151,18 +178,31 @@ final class AppContainer: ObservableObject {
                 case .none:   return nil
                 }
             },
-            whisperModelNameProvider: { [weak transcriber] in
-                transcriber?.loadedModelName ?? "<unknown>"
+            whisperModelNameProvider: {
+                transcriberRef.current.loadedModelName ?? "<unknown>"
             },
             initialPromptProvider: { [weak prefs] in
                 guard let prefs, !prefs.technicalVocabulary.isEmpty else { return nil }
                 return InitialPromptBuilder.build(vocab: prefs.technicalVocabulary)
             }
         )
-        self.onboarding = OnboardingCoordinator(
-            permissionService: permissions, transcriber: transcriber, prefs: prefs
+
+        // T9: instala o coordinator real, com swapActive que troca o ponteiro
+        // `self.transcriber` em runtime. Substitui o stub criado acima. Coordinator
+        // é @MainActor — serializa essa troca em relação às chamadas de
+        // `transcribe()` que vêm do pipeline (que rodam na main actor via wiring).
+        self.swapCoordinator = WhisperModelSwapCoordinator(
+            initialActive: prefs.whisperModelName,
+            stagingFactory: { WhisperKitTranscriber() },
+            swapActive: { [weak self] newActive in
+                guard let self else { return newActive }
+                let old = self.transcriber
+                self.transcriber = newActive
+                transcriberRef.current = newActive
+                Logger.tagarela.notice("AppContainer.transcriber swapped (old=\(old.loadedModelName ?? "nil", privacy: .public) → new=\(newActive.loadedModelName ?? "nil", privacy: .public))")
+                return old
+            }
         )
-        self.showOnboarding = !UserDefaults.standard.bool(forKey: "onboardingCompleted")
 
         wireHotkeyToPipeline()
         wirePipelineToAppState()
@@ -189,7 +229,7 @@ final class AppContainer: ObservableObject {
         if !showOnboarding {
             ensureMicPermission()
             startHotkeyServiceLogging()
-            loadModelLogging("large-v3")
+            loadModelLogging(prefs.whisperModelName)
         }
     }
 
@@ -281,7 +321,7 @@ final class AppContainer: ObservableObject {
         // mas se algo deu errado lá (ex: usuário pulou o passo), garantimos
         // que tenta de novo aqui se ainda não está carregado.
         if transcriber.loadedModelName == nil {
-            loadModelLogging("large-v3")
+            loadModelLogging(prefs.whisperModelName)
         }
     }
 
@@ -312,9 +352,14 @@ final class AppContainer: ObservableObject {
     private func wireHotkeyToPipeline() {
         let stream = hotkeyService.events
         let pipeline = self.pipeline
+        let coord = self.swapCoordinator
         Task {
             for await event in stream {
                 Logger.tagarela.info("hotkey event recebido: \(String(describing: event), privacy: .public)")
+                if case .swapping = await coord.state {
+                    Logger.tagarela.info("hotkey ignored: swap in progress")
+                    continue
+                }
                 let pipelineEvent: PipelineEvent = (event == .toggle) ? .toggle : .cancel
                 await pipeline.handle(pipelineEvent)
             }
@@ -385,4 +430,15 @@ final class AppContainer: ObservableObject {
 
 extension Logger {
     static let tagarela = Logger(subsystem: "com.tagarela", category: "App")
+}
+
+/// Holder mutável compartilhado entre AppContainer e PipelineCoordinator.
+/// Necessário porque PipelineCoordinator é construído DURANTE o init do
+/// AppContainer (antes de `self` poder ser capturado em closures), mas precisa
+/// resolver a referência atual do transcriber em runtime — que pode mudar
+/// depois de um swap. Acessado apenas na MainActor.
+@MainActor
+final class TranscriberRef {
+    var current: Transcribing
+    init(_ initial: Transcribing) { self.current = initial }
 }
