@@ -14,6 +14,9 @@ final class LocalizableKeysTests: XCTestCase {
             "styles.add",
             "common.cancel",
             "common.save",
+            "styles.edit.discipline.toggle",
+            "styles.edit.discipline.help",
+            "styles.edit.discipline.warning",
         ]
         for k in keys {
             let resolved = String(localized: String.LocalizationValue(k))

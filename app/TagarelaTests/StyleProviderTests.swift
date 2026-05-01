@@ -7,7 +7,7 @@ final class StyleProviderTests: XCTestCase {
         var styles: [CustomStyle]
         init(styles: [CustomStyle] = []) { self.styles = styles }
         func reload() async {}
-        func create(name: String, systemPrompt: String, appendCodeSwitching: Bool) async throws -> CustomStyle {
+        func create(name: String, systemPrompt: String, appendCodeSwitching: Bool, bypassDiscipline: Bool) async throws -> CustomStyle {
             fatalError()
         }
         func update(_ style: CustomStyle) async throws { fatalError() }

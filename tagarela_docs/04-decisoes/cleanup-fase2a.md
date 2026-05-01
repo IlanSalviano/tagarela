@@ -1,15 +1,15 @@
 ---
 data: 2026-04-28
-status: parcialmente fechado
-revisitar_em: 2026-05-12
-fechados_em: 2026-04-29 (itens 1, 2, 3 e 4)
+status: fechado
+revisitar_em: n/a
+fechados_em: 2026-04-29 (1, 2, 3, 4) + 2026-04-30 (5)
 ---
 
 # Cleanup pós-Fase 2a
 
 Achados levantados durante o aceite manual da Fase 2a (ver [`fase2a-manual.md`](../03-funcionalidades/checklists/fase2a-manual.md)). Não bloqueiam o fechamento da fase — código está funcional. Bloqueiam a sensação de "limpo" antes da Fase 2b.
 
-**Status (2026-04-29):** itens 1, 2, 3 e 4 fechados (item 2 fechado na Fase 2b-2; suíte de 145 testes verde). Item 5 segue aberto — empurrado pra 2b-3.
+**Status (2026-04-30):** todos os 5 itens fechados. Itens 1, 2, 3, 4 fechados em 2026-04-29 (item 2 pela 2b-2). Item 5 fechado em 2026-04-30 pela 2b-3. Suíte 155 testes verde ao fim da fase.
 
 > Quando voltar (sugerido **2026-05-12**), rodar `xcodebuild -project app/Tagarela.xcodeproj -scheme Tagarela test` antes/depois de cada item.
 
@@ -64,10 +64,14 @@ Vários logs estão em `FileHandle.standardError.write(...)` em vez de `os_log`/
 
 **Fix aplicado (2026-04-29):** todos os `FileHandle.standardError.write(...)` substituídos por `Logger(subsystem: "com.tagarela", category: …)` nos 4 arquivos. `Console.app` filtrando por `subsystem:com.tagarela` agora mostra todo o trace do pipeline sem `sudo`. Categorias: `Pipeline`, `Audio`, `Hotkey`, `App`. Suíte de 81 testes continua verde.
 
-## 5. Cancelamento durante refiner não interrompe a request HTTP
+## 5. Cancelamento durante refiner não interrompe a request HTTP — ✅ FECHADO 2026-04-30
 
 **Arquivo:** [`app/Tagarela/Pipeline/PipelineCoordinator.swift`](../../app/Tagarela/Pipeline/PipelineCoordinator.swift).
 
 O fix da Fase 2a usa uma flag `cancelled` checada após cada `await`. Funciona pro lado do app (não inject, não save), mas a request HTTP pro OpenAI/Ollama continua rolando até completar (gastando tokens / segurando recurso).
 
-**Proposta:** envolver `runTranscribeAndInject` numa `Task` armazenada e usar `Task.cancel()` no `handleCancel`. URLSession honra cancellation. WhisperKit pode não — mas pelo menos a parte de network seria cancelada.
+**Fix aplicado (2026-04-30, Fase 2b-3):** `PipelineCoordinator` agora envolve `runTranscribeAndInject` numa `pipelineTask: Task<Void, Never>?` armazenada (`internal private(set)` pra acesso em tests via `@testable`). `handleCancel` em `.processing/.refining` chama `pipelineTask?.cancel()` além de setar a flag `cancelled = true`. URLSession honra cancellation nativamente — Esc durante refine remoto aborta o request HTTP em vôo. WhisperKit é best-effort: se honrar `Task.isCancelled`, transcribe aborta junto; se não, novo helper `aborted() -> Bool { cancelled || Task.isCancelled }` consolidado nos 3 checkpoints internos impede progressão.
+
+Lógica `catch RefinerError.cancelled where cancelled` (commit `99d174e`, distinguindo user-cancel real de network-drop disfarçado) preservada — flag `cancelled` continua existindo paralela ao `Task.isCancelled`. Tarefas 1+2 do plano da 2b-3 + 5 testes novos (`test_cancelDuringRefining_cancelsRefinerTask`, `_doesNotInject`, `_doesNotSaveHistory`, `test_cancelDuringProcessing_doesNotCallRefiner`, `test_pipelineTask_clearedAfterCompletion`).
+
+**Critério de aceite (validado em 2026-04-30):** Blocos 1, 2, 3 do aceite manual da 2b-3. Bloco 1 com OpenAI: state idle < 200ms após Esc, nada injetado. Bloco 2 com Ollama: processo cai pra ocioso em ~1s (GPU/CPU não ficam em loop processando). Bloco 4 (regression): network-drop sem flag cai em fallback Identity normalmente. Commits `5593e7d`, `e9da254`, `6d26f0b`.

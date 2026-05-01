@@ -25,6 +25,12 @@ actor PipelineCoordinator {
     /// Sinaliza que o usuário cancelou durante .processing/.refining.
     /// `runTranscribeAndInject` checa após cada await pra abortar antes de inject/save.
     private var cancelled = false
+    /// Task que envolve `runTranscribeAndInject` durante .processing/.refining.
+    /// `handleCancel` chama `cancel()` aqui pra abortar URLSession em vôo
+    /// (URLSession honra Task cancellation nativamente). Lazy: só populada
+    /// na transição .recording → .processing.
+    /// `internal private(set)` pra permitir verificação em tests via @testable.
+    internal private(set) var pipelineTask: Task<Void, Never>?
 
     init(audio: AudioCapturing,
          transcriber: Transcribing,
@@ -91,7 +97,10 @@ actor PipelineCoordinator {
             }
         case .recording:
             cancelRecordingTasks()
-            await runTranscribeAndInject()
+            pipelineTask = Task { [weak self] in
+                await self?.runTranscribeAndInject()
+                await self?.clearPipelineTask()
+            }
         case .processing, .refining, .error:
             // Ignorado — apenas .cancel é aceito durante esses estados
             break
@@ -106,9 +115,15 @@ actor PipelineCoordinator {
             _ = try? await audio.stop()
             setState(.idle)
         case .processing, .refining:
-            // Sem cancel real do whisper/refiner na v1 — sinalizamos via flag e
-            // `runTranscribeAndInject` aborta antes de inject/save no próximo await.
+            // Sinaliza cancel pra runTranscribeAndInject (via flag — checkpoints
+            // pós-await) E propaga Task.cancel() pra abortar URLSession em vôo.
+            // URLSession honra cancellation nativamente; WhisperKit é best-effort.
+            // A flag `cancelled` é setada ANTES do cancel() pra que, quando
+            // RefinerError.cancelled chegar no catch do refine, o `where cancelled`
+            // case (PipelineCoordinator.swift:184-205) distinga user-cancel real
+            // de network-drop disfarçado (commit 99d174e).
             cancelled = true
+            pipelineTask?.cancel()
             setState(.idle)
         case .idle, .error:
             break
@@ -148,6 +163,18 @@ actor PipelineCoordinator {
         setState(.recording(elapsedSeconds: elapsed, audioLevel: currentLevel))
     }
 
+    /// Agrega user-cancel via flag (Esc durante .processing/.refining) e
+    /// cancellation cooperativa da Task (Task.cancel() propagado externamente).
+    /// Substitui as checagens isoladas de `if cancelled` nos checkpoints
+    /// internos do `runTranscribeAndInject`.
+    private func aborted() -> Bool {
+        cancelled || Task.isCancelled
+    }
+
+    private func clearPipelineTask() {
+        pipelineTask = nil
+    }
+
     private func runTranscribeAndInject() async {
         cancelled = false
         do {
@@ -165,7 +192,7 @@ actor PipelineCoordinator {
                 language: language,
                 initialPrompt: await initialPromptProvider()
             )
-            if cancelled { logger.info("cancelled after transcribe"); setState(.idle); return }
+            if aborted() { logger.info("cancelled after transcribe"); setState(.idle); return }
             logger.info("transcribed: '\(raw, privacy: .public)'")
             let (refiner, style) = await refinerProvider()
             let actualRefinerKind: RefinerKind
@@ -211,7 +238,7 @@ actor PipelineCoordinator {
                     actualRefinerKind = identityFallback.kind
                 }
             }
-            if cancelled { logger.info("cancelled after refine"); setState(.idle); return }
+            if aborted() { logger.info("cancelled after refine"); setState(.idle); return }
             logger.info("injecting (kind=\(actualRefinerKind.rawValue, privacy: .public))")
             let frontApp: String?
             do {
@@ -226,7 +253,7 @@ actor PipelineCoordinator {
                 setState(.idle)
                 return
             }
-            if cancelled { logger.info("cancelled after inject"); setState(.idle); return }
+            if aborted() { logger.info("cancelled after inject"); setState(.idle); return }
             logger.info("injected to \(frontApp ?? "?", privacy: .public)")
             do {
                 let maxItems = await historyMaxItemsProvider()

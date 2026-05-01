@@ -31,7 +31,10 @@ final class CustomStyleStoreLive: ObservableObject, CustomStyleStore {
         }
     }
 
-    func create(name: String, systemPrompt: String, appendCodeSwitching: Bool) async throws -> CustomStyle {
+    func create(name: String,
+                systemPrompt: String,
+                appendCodeSwitching: Bool,
+                bypassDiscipline: Bool) async throws -> CustomStyle {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedPrompt = systemPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else { throw CustomStyleStoreError.invalidInput("nome vazio") }
@@ -40,7 +43,8 @@ final class CustomStyleStoreLive: ObservableObject, CustomStyleStore {
         }
         let style = CustomStyle(name: trimmedName,
                                  systemPrompt: trimmedPrompt,
-                                 appendCodeSwitching: appendCodeSwitching)
+                                 appendCodeSwitching: appendCodeSwitching,
+                                 bypassDiscipline: bypassDiscipline)
         context.insert(style)
         do {
             try context.save()

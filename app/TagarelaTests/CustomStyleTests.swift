@@ -42,4 +42,36 @@ final class CustomStyleTests: XCTestCase {
         XCTAssertTrue(s1.asStyle().systemPrompt.hasPrefix("Você é um pós-processador"))
         XCTAssertTrue(s2.asStyle().systemPrompt.hasPrefix("Você é um pós-processador"))
     }
+
+    func test_init_bypassDisciplineDefaultsToFalse() {
+        let s = CustomStyle(name: "x", systemPrompt: "y", appendCodeSwitching: false)
+        XCTAssertFalse(s.bypassDiscipline,
+                       "Init padrão (sem o novo param) deve manter bypassDiscipline=false (modo refinador)")
+    }
+
+    func test_asStyle_freeMode_omitsDiscipline() {
+        let s = CustomStyle(name: "x",
+                             systemPrompt: "Reescreva como mensagem de commit.",
+                             appendCodeSwitching: false,
+                             bypassDiscipline: true)
+        let prompt = s.asStyle().systemPrompt
+        XCTAssertFalse(prompt.contains("NÃO responda"),
+                       "Modo livre não deve prefixar rewriterDiscipline")
+        XCTAssertEqual(prompt, "Reescreva como mensagem de commit.",
+                       "Modo livre + sem code-switching = systemPrompt puro")
+    }
+
+    func test_asStyle_freeMode_withCodeSwitching_appendsClause() {
+        let s = CustomStyle(name: "x",
+                             systemPrompt: "Reescreva.",
+                             appendCodeSwitching: true,
+                             bypassDiscipline: true)
+        let prompt = s.asStyle().systemPrompt
+        XCTAssertFalse(prompt.contains("NÃO responda"),
+                       "Modo livre + code-switching: ainda sem rewriterDiscipline")
+        XCTAssertTrue(prompt.contains("Reescreva."),
+                      "Modo livre: systemPrompt do user vem inteiro")
+        XCTAssertTrue(prompt.contains("termos técnicos"),
+                      "code-switching clause anexada normalmente")
+    }
 }

@@ -10,7 +10,7 @@ final class RefinerFactoryTests: XCTestCase {
     private final class FakeCustomStore: CustomStyleStore, ObservableObject {
         var styles: [CustomStyle] = []
         func reload() async {}
-        func create(name: String, systemPrompt: String, appendCodeSwitching: Bool) async throws -> CustomStyle { fatalError() }
+        func create(name: String, systemPrompt: String, appendCodeSwitching: Bool, bypassDiscipline: Bool) async throws -> CustomStyle { fatalError() }
         func update(_ style: CustomStyle) async throws { fatalError() }
         func delete(_ style: CustomStyle) async throws { fatalError() }
     }

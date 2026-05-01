@@ -16,7 +16,7 @@ final class CustomStyleStoreTests: XCTestCase {
     func test_create_emptyName_throws() async throws {
         let store = makeStore(try makeContainer())
         do {
-            _ = try await store.create(name: "  ", systemPrompt: "p", appendCodeSwitching: false)
+            _ = try await store.create(name: "  ", systemPrompt: "p", appendCodeSwitching: false, bypassDiscipline: false)
             XCTFail("expected throw")
         } catch CustomStyleStoreError.invalidInput {} catch { XCTFail("wrong: \(error)") }
     }
@@ -24,14 +24,14 @@ final class CustomStyleStoreTests: XCTestCase {
     func test_create_emptyPrompt_throws() async throws {
         let store = makeStore(try makeContainer())
         do {
-            _ = try await store.create(name: "n", systemPrompt: "", appendCodeSwitching: false)
+            _ = try await store.create(name: "n", systemPrompt: "", appendCodeSwitching: false, bypassDiscipline: false)
             XCTFail("expected throw")
         } catch CustomStyleStoreError.invalidInput {} catch { XCTFail("wrong: \(error)") }
     }
 
     func test_create_persists() async throws {
         let store = makeStore(try makeContainer())
-        let s = try await store.create(name: "commits", systemPrompt: "...", appendCodeSwitching: true)
+        let s = try await store.create(name: "commits", systemPrompt: "...", appendCodeSwitching: true, bypassDiscipline: false)
         await store.reload()
         XCTAssertEqual(store.styles.count, 1)
         XCTAssertEqual(store.styles.first?.id, s.id)
@@ -39,7 +39,7 @@ final class CustomStyleStoreTests: XCTestCase {
 
     func test_update_changesUpdatedAt() async throws {
         let store = makeStore(try makeContainer())
-        let s = try await store.create(name: "x", systemPrompt: "y", appendCodeSwitching: true)
+        let s = try await store.create(name: "x", systemPrompt: "y", appendCodeSwitching: true, bypassDiscipline: false)
         let original = s.updatedAt
         try await Task.sleep(nanoseconds: 50_000_000)
         s.name = "x updated"
@@ -56,7 +56,7 @@ final class CustomStyleStoreTests: XCTestCase {
         let store = CustomStyleStoreLive(container: container) { id in
             capturedID = id
         }
-        let s = try await store.create(name: "x", systemPrompt: "y", appendCodeSwitching: true)
+        let s = try await store.create(name: "x", systemPrompt: "y", appendCodeSwitching: true, bypassDiscipline: false)
         let originalID = s.id
         try await store.delete(s)
         XCTAssertEqual(capturedID, originalID)
@@ -69,7 +69,7 @@ final class CustomStyleStoreTests: XCTestCase {
         await store.reload()
         XCTAssertEqual(store.styles.count, 0)
         do {
-            _ = try await store.create(name: "x", systemPrompt: "y", appendCodeSwitching: false)
+            _ = try await store.create(name: "x", systemPrompt: "y", appendCodeSwitching: false, bypassDiscipline: false)
             XCTFail("expected throw")
         } catch {}
     }
@@ -94,7 +94,8 @@ final class CustomStyleStoreTests: XCTestCase {
             maxItems: 100, maxDays: 30)
         _ = try await custom.create(name: "commits",
                                      systemPrompt: "p",
-                                     appendCodeSwitching: false)
+                                     appendCodeSwitching: false,
+                                     bypassDiscipline: false)
 
         // Cada store vê só os seus
         let recents = try await history.recent(limit: 10)
@@ -104,5 +105,31 @@ final class CustomStyleStoreTests: XCTestCase {
         await custom.reload()
         XCTAssertEqual(custom.styles.count, 1)
         XCTAssertEqual(custom.styles.first?.name, "commits")
+    }
+
+    func test_create_persistsBypassDiscipline() async throws {
+        let store = makeStore(try makeContainer())
+        let s = try await store.create(name: "livre",
+                                        systemPrompt: "responda livre",
+                                        appendCodeSwitching: false,
+                                        bypassDiscipline: true)
+        XCTAssertTrue(s.bypassDiscipline)
+        await store.reload()
+        XCTAssertEqual(store.styles.first?.bypassDiscipline, true,
+                       "bypassDiscipline deve persistir após reload")
+    }
+
+    func test_update_togglesBypassDiscipline() async throws {
+        let store = makeStore(try makeContainer())
+        let s = try await store.create(name: "x",
+                                        systemPrompt: "y",
+                                        appendCodeSwitching: false,
+                                        bypassDiscipline: false)
+        XCTAssertFalse(s.bypassDiscipline)
+        s.bypassDiscipline = true
+        try await store.update(s)
+        await store.reload()
+        XCTAssertEqual(store.styles.first?.bypassDiscipline, true,
+                       "update deve persistir bypassDiscipline=true após reload")
     }
 }

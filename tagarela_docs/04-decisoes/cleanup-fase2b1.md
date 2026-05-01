@@ -1,15 +1,15 @@
 ---
 data: 2026-04-29
-status: parcialmente fechado
-revisitar_em: 2026-05-13
-fechados_em: 2026-04-29 (itens 1, 2 e 3 — item 3 fechado pela Fase 2b-2)
+status: fechado
+revisitar_em: n/a
+fechados_em: 2026-04-29 (1, 2, 3) + 2026-04-30 (2 follow-up, 4)
 ---
 
 # Cleanup pós-Fase 2b-1
 
 Achados levantados durante o aceite manual da Fase 2b-1 (ver [`fase2b1-manual.md`](../03-funcionalidades/checklists/fase2b1-manual.md)). 1 fix aplicado durante o aceite, 2 achados conhecidos do roadmap, 1 follow-up de UX pra Fase 2b-3.
 
-**Status (2026-04-29):** itens 1, 2, 3 fechados; item 4 segue empurrado pra 2b-3; item 5 = grupo informacional.
+**Status (2026-04-30):** todos os 4 itens acionáveis fechados. Itens 1, 2, 3 fechados em 2026-04-29 (item 3 pela 2b-2). Item 2 follow-up + item 4 fechados em 2026-04-30 pela 2b-3. Item 5 segue como grupo informacional (achados pra fases futuras).
 
 ## 1. Janela de Preferências abria atrás do popover do MenuBarExtra — ✅ FECHADO 2026-04-29
 
@@ -35,7 +35,7 @@ User criou um custom style com prompt direto (estilo "reescreva como mensagem de
 
 3 testes adaptados/criados em `CustomStyleTests`. Verificado em runtime durante o aceite (mesmo custom style passou a transcrever em vez de responder).
 
-**Follow-up pra Fase 2b-3:** decidir UX dedicada — talvez toggle "modo refinador" na sheet de edição (igual ao toggle de code-switching), com explicação do que cada modo faz. Ou: deixar a discipline sempre on e adicionar campo "tom do output" pra usuário customizar comportamento. Combinar com tuning fino dos prompts dos built-in styles que já está no escopo da 2b-3.
+**Follow-up fechado na Fase 2b-3 (2026-04-30):** `CustomStyleEditSheet` ganha Toggle "Modo refinador (recomendado)" (default ON, paralelo ao toggle de code-switching) + caption help text explicativo + warning inline laranja (`exclamationmark.triangle.fill`) condicional ao modo livre. Persistência via novo campo `bypassDiscipline: Bool` (default `false`) em `@Model CustomStyle`. `asStyle()` consulta o campo pra decidir se prefixa `rewriterDiscipline`. Protocol `CustomStyleStore.create(...)` ganha o param sem default no protocol (call sites passam explícito — F2b3-7). 3 chaves Localizable em `styles.edit.discipline.*`. SwiftData lightweight migration validada implicitamente no aceite (Bloco 7 ok-com-ressalva — sem dado pré-existente, mas store da 2b-2 abriu sem crash). Plano B (`Bool?` opcional) não foi necessário. Verificado nos Blocos 5, 6, 8 do aceite manual da 2b-3. Commits `923395b`, `5dd57e2`, `32232c7`, `e109747`. Tuning fino dos built-ins foi explicitamente excluído do escopo da 2b-3 pelo user — segue como item futuro sem fase definida.
 
 ## 3. Visualizador de histórico não existe ainda — ✅ FECHADO 2026-04-29 (Fase 2b-2)
 
@@ -43,13 +43,11 @@ User criou um custom style com prompt direto (estilo "reescreva como mensagem de
 
 **Fix aplicado (Fase 2b-2):** `HistoryListView` + `HistoryEntryView` em `Preferences/UI/History/`, embutidos na seção `HistoryView` (Preferências > Histórico) — paginação observa `historyMaxItems`, cada entry mostra timestamp/raw/refined com kind badge, botão "Limpar tudo" com confirm. Plus: `RecentTranscriptionsSubmenu` (status bar) com últimos 5 entries que re-injetam no app de foco ao clicar. Verificado no aceite manual da 2b-2 (Bloco 7 + Bloco 8).
 
-## 4. Esc não cancela injeção HTTP em vôo — referência ao cleanup #5 da Fase 2a
+## 4. Esc não cancela injeção HTTP em vôo — ✅ FECHADO 2026-04-30 (Fase 2b-3)
 
 **Sintoma observado:** capturar com OpenAI/Ollama, falar uma frase, apertar `Esc` antes da resposta. App volta pra idle, mas quando o request HTTP completa, a injeção acontece.
 
-**Why aberto:** este é exatamente o [cleanup #5 da Fase 2a](./cleanup-fase2a.md#5-cancelamento-durante-refiner-não-interrompe-a-request-http). Empurrado pra **Fase 2b-3** (refactor pra `Task.cancel()` envolvendo `runTranscribeAndInject`).
-
-**How to apply:** se virar dor antes da 2b-3, adiantar como sub-fase técnica isolada.
+**Fix aplicado (2026-04-30, Fase 2b-3):** mesmo fix do [cleanup #5 da Fase 2a](./cleanup-fase2a.md#5-cancelamento-durante-refiner-não-interrompe-a-request-http--fechado-2026-04-30). Ver lá pros detalhes técnicos. Verificado nos Blocos 1 e 2 do aceite manual da 2b-3.
 
 ## 5. Achados secundários do code review do branch (informacional)
 
