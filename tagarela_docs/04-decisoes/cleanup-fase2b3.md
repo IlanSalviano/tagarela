@@ -8,7 +8,11 @@ revisitar_em: 2026-05-15
 
 Achados levantados durante o aceite manual da Fase 2b-3 (ver [`fase2b3-manual.md`](../03-funcionalidades/checklists/fase2b3-manual.md)). Não bloqueiam o fechamento da fase — código está funcional. São polish.
 
-## 1. Pill flicker quando Esc é apertado muito rápido após `.refining`
+## 1. Pill flicker quando Esc é apertado muito rápido após `.refining` — segue aberto
+
+**Status (2026-05-01, Fase 2c-cleanup):** ⚠️ tentativa de fix revertida junto com cleanup #8 da Fase 1 (mesmo root cause comum, mesma refatoração). Ver detalhes em [`cleanup-fase1.md` item #8](./cleanup-fase1.md#8-indicatorpill-recria-nshostingcontroller-a-cada-level-update--segue-aberto).
+
+
 
 **Arquivo:** [`app/Tagarela/UI/Indicator/FloatingIndicatorPanel.swift`](../../app/Tagarela/UI/Indicator/FloatingIndicatorPanel.swift) (provavelmente; não confirmado).
 

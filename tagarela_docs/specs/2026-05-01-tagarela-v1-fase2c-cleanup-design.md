@@ -1,9 +1,18 @@
 ---
 data: 2026-05-01
 fase: 2c-cleanup
-status: design
+status: parcialmente implementado (2 de 4 itens — Itens 1 e 4 revertidos em runtime)
 predecessor: ../04-decisoes/cleanup-fase1.md, ../04-decisoes/cleanup-fase2b3.md
 ---
+
+> **Status real (2026-05-01):**
+> - **Item 1 (refactor `FloatingIndicatorPanel` → ViewModel):** ❌ implementado, revertido. Build verde + 160 testes verde + spec/code review aprovaram, mas regressão runtime detectada no aceite manual (pílula não transita pra `.refining`, texto não injeta). Commits `15b4630`, `1d90915`, `ba25fd9` revertidos. Cleanups #8 da Fase 1 e #1 da 2b-3 seguem abertos.
+> - **Item 2 (cleanup #3 fechado retroativo):** ✅ atualizado em `cleanup-fase1.md`.
+> - **Item 3 (validação L/R Option):** ✅ Bloco E passou; TODO removido em `HotkeyServiceLive.swift:99`, commit `51c0d00`. Cleanup #1 fechado.
+> - **Item 4 (WhisperKit `downloadBase`):** ❌ implementado, revertido. Build verde + 160 testes verde + spec/code review aprovaram, mas no aceite (Bloco D) o diretório foi criado vazio e o download não rolou (mesma sintomatologia do Item 1). Commit `37a9552` revertido em `d4ff1e7`. Cleanup #9 segue aberto.
+>
+> **Lição:** spec compliance + code review sem aceite runtime ANTES do merge não cobre regressão funcional. Próximas sessões com refactor de UI ou IO devem fazer aceite manual em build local **entre** o commit e o merge, não depois.
+
 
 # Fase 2c-cleanup — design
 

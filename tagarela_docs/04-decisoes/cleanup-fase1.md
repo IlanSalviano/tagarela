@@ -10,13 +10,15 @@ Lista de TODOs deixados durante a implementação da Fase 1 que merecem ser revi
 
 > Quando voltar aqui (sugerido em **2026-05-11**), rodar `xcodebuild -project app/Tagarela.xcodeproj -scheme Tagarela test` antes e depois de cada item pra garantir que nada regrediu.
 
-## 1. Detecção L/R do Option no `HotkeyServiceLive`
+## 1. ✅ Detecção L/R do Option no `HotkeyServiceLive` — fechado 2026-05-01
 
 **Arquivo:** [`app/Tagarela/Hotkey/HotkeyServiceLive.swift`](../../app/Tagarela/Hotkey/HotkeyServiceLive.swift) (TODO inline na seção `.flagsChanged`).
 
 **Status (2026-04-27, sessão de stress test):** filtro por `keyCode == 0x3D` parece já estar restringindo só ao Option direito na prática (logs mostraram só keyCode=61 quando user apertou direito). Validar empiricamente que `⌥` esquerdo não dispara, e se confirmado, fechar este item sem código novo.
 
 **Critério de aceite:** sessão de teste com Left Option apertado várias vezes — nenhum log `[hotkey] flagsChanged keyCode=61 (Right Option)` aparece. Se confirmado, fechar; senão, distinguir bits no flag.
+
+**Status (2026-05-01, Fase 2c-cleanup, Bloco E):** ✅ validado empiricamente. Right Option 10× → pílula apareceu, hotkey toggle disparou. Left Option 10× → nada (sem toggle, sem entry no log). Confirma que `keyCode == 0x3D (61)` é exclusivo do Right Option no macOS atual. Comentário TODO em `HotkeyServiceLive.swift:99` substituído por nota explicativa (commit `51c0d00`).
 
 ## 2. `initialPrompt` → `promptTokens` no `WhisperKitTranscriber`
 
@@ -32,9 +34,11 @@ Antes de virar tokens:
 
 **Status (2026-04-27, Tarefa 8 da Fase 2a):** `promptTokens` agora é populado via `WhisperKit.tokenizer.encode(prompt)` quando vocab não-vazio e env var `TAGARELA_DISABLE_PROMPT` ≠ "1". Critério de aceite (b) parcialmente atendido — falta validar empiricamente via [`fase2-validacao-prompt.md`](../03-funcionalidades/checklists/fase2-validacao-prompt.md). ADR-0002 documenta decisão final após o A/B.
 
-## 3. Stderr instrumentation deve virar `Logger.tagarela.info`
+## 3. ✅ Stderr instrumentation deve virar `Logger.tagarela.info` — fechado 2026-05-01 (retroativo)
 
-**Arquivos com `FileHandle.standardError.write` em produção:**
+**Status (2026-05-01, Fase 2c-cleanup):** ✅ verificado retroativamente. `grep -rn "FileHandle.standardError" app/Tagarela/` retorna zero ocorrências. Migração pra `Logger(subsystem: "com.tagarela", category: …)` aconteceu durante a Fase 2b-1 quando logs ganharam Logger por categoria (per achado #4 da 2a fechado em 2026-04-29). Esta nota é só registro retroativo — sem código novo.
+
+**Arquivos com `FileHandle.standardError.write` em produção (histórico):**
 - [`app/Tagarela/Hotkey/HotkeyServiceLive.swift`](../../app/Tagarela/Hotkey/HotkeyServiceLive.swift)
 - [`app/Tagarela/Audio/AudioCaptureLive.swift`](../../app/Tagarela/Audio/AudioCaptureLive.swift)
 - [`app/Tagarela/Pipeline/PipelineCoordinator.swift`](../../app/Tagarela/Pipeline/PipelineCoordinator.swift)
@@ -112,7 +116,11 @@ Itens implementados sem inspeção visual lado-a-lado:
 
 **Critério de aceite:** doc [`02-arquitetura/01-modulos-fase1.md`](../02-arquitetura/01-modulos-fase1.md) lista qualquer divergência aceita; PR de correção pra divergências não aceitas.
 
-## 8. `IndicatorPill` recria `NSHostingController` a cada level update
+## 8. `IndicatorPill` recria `NSHostingController` a cada level update — segue aberto
+
+**Status (2026-05-01, Fase 2c-cleanup):** ⚠️ tentativa de fix revertida. Refactor via `IndicatorViewModel: ObservableObject` + `IndicatorRootView` + `FloatingIndicatorPanel.ensurePanel()` instanciando hostingController 1× foi implementado e mergeado em commits `15b4630`, `1d90915`, `ba25fd9` da branch `fase-2c-cleanup`. Build verde, suíte 160 testes verde, spec/code review aprovaram. Mas em runtime, o aceite manual (Bloco A do checklist da 2c) detectou regressão grave: pílula não transitou pra `.refining` (cor laranja não apareceu) **e** texto não foi injetado no app alvo. Os 3 commits foram revertidos. Root cause **não diagnosticado** — hipóteses não testadas: (a) `NSHostingController` + `@ObservedObject` + `@MainActor`-isolated `ObservableObject` interagem mal em runtime; (b) panel sizing fica preso ao tamanho do primeiro estado renderizado (`.idle`); (c) main actor saturado por re-renders sincronos cascateados. Investigação requer instrumentação via `Logger.tagarela.info` em `wirePipelineToAppState` + `refreshIndicator` + `show()` rodando do Xcode (Cmd+R) com stderr visível.
+
+**Item segue aberto.** Próxima tentativa precisa: (1) instrumentar antes de codar, (2) validar runtime com aceite manual em build local antes de merge, (3) considerar abordagem alternativa (atualizar `host.rootView` in-place sem ObservableObject, ou outra arquitetura).
 
 **Arquivos:**
 - [`app/Tagarela/App/AppContainer.swift`](../../app/Tagarela/App/AppContainer.swift) (`refreshIndicator`)
@@ -124,7 +132,13 @@ Itens implementados sem inspeção visual lado-a-lado:
 
 **Critério de aceite:** após gravar 30s, contagem de `NSHostingController` lifecycles permanece em 1 (medir via Instruments/Allocations). Sem flicker visível.
 
-## 9. Documents Folder permission injetada inadvertidamente
+## 9. Documents Folder permission injetada inadvertidamente — segue aberto
+
+**Status (2026-05-01, Fase 2c-cleanup):** ⚠️ tentativa de fix revertida. Implementação `WhisperKit.download(variant:downloadBase:)` apontando pra `~/Library/Application Support/com.tagarela.Tagarela/Models/` foi feita no commit `37a9552` da branch `fase-2c-cleanup`. Build verde, 160 testes verde, spec/code review aprovaram. Mas no aceite manual (Bloco D), apenas a estrutura de diretório foi criada (vazia) — o download dos arquivos do modelo não rolou. Cold start subsequente da app: pílula não transitou pra `.refining` e texto não foi injetado (mesma sintomatologia do cleanup #8 acima). Commit `37a9552` foi revertido. Root cause **não diagnosticado** — hipóteses não testadas: (a) `HubApi(downloadBase:...)` espera estrutura de path diferente da passada; (b) pré-criação do diretório via `FileManager.createDirectory` interfere com a lógica de cache do HubApi; (c) algum flag/permission a mais é necessário pro download em Application Support.
+
+**Item segue aberto.** Próxima tentativa precisa: (1) ler o código do HubApi do WhisperKit pra entender a semântica exata do `downloadBase`; (2) testar a fix em build local com cold start fresh **antes** de mergear; (3) considerar não pré-criar o diretório, deixar o HubApi criar.
+
+
 
 **Contexto:** durante o stress test inicial, antes de descobrir o caminho do TCC manual, alguma chamada de file API do Tagarela disparou um popup nativo de "Documents folder access" (provavelmente `WhisperKit.download(...)` baixando o modelo pra `~/Documents/huggingface/...`). User aceitou. Isso virou a única entry TCC do Tagarela antes da injeção manual e ainda existe.
 

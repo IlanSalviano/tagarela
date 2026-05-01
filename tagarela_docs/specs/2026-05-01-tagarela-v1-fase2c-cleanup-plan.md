@@ -1,5 +1,7 @@
 # Fase 2c-cleanup Implementation Plan
 
+> **Status pós-execução (2026-05-01):** plano executado parcialmente. Ver design doc ([`2026-05-01-tagarela-v1-fase2c-cleanup-design.md`](./2026-05-01-tagarela-v1-fase2c-cleanup-design.md)) pro status real de cada item. Tasks 1, 2, 3 (refactor) e Task 5 (downloadBase) foram revertidas após regressão runtime detectada no aceite manual. Tasks 4 (checklist), 6 (L/R Option), 7 (cleanup docs) e 8 (snapshot) entregues. Esta seção do plano permanece como histórico do que foi tentado, mas **não reflete o estado final da branch**.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Fechar 5 itens de cleanup pendentes pós-Fase 2b: refatoração `FloatingIndicatorPanel` → `IndicatorViewModel` (root cause comum do flicker da 2b-3 e do `NSHostingController` recriado da Fase 1), atualização retroativa do cleanup #3 da Fase 1, validação manual L/R Option e WhisperKit `downloadBase`.

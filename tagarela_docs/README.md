@@ -20,11 +20,13 @@ _(a preencher)_ — análise do Wispr Flow, alternativas, decisões de paridade.
 - [`03-modulos-fase2b1.md`](./02-arquitetura/03-modulos-fase2b1.md) — snapshot pós-Fase 2b-1: módulos novos (Preferências UI, custom styles, endpoints custom OpenAI), modificados (factory consulta StyleProvider, container SwiftData compartilhado), cleanups da 2a fechados (#1, #3, #4) e abertos (#2, #5).
 - [`04-modulos-fase2b2.md`](./02-arquitetura/04-modulos-fase2b2.md) — snapshot pós-Fase 2b-2: toasts (`ToastCenter`), 3 novas variações de indicator (Orb/Vertical/HUD) com picker visual, visualizador de histórico embutido em Preferências, submenu "Recentes" na status bar, novos `PipelineEvent` (refinerFellBack/injectionFailed/historySaveFailed/permissionDenied). Fecha cleanup #2 da 2a e cleanup #3 da 2b-1.
 - [`05-modulos-fase2b3.md`](./02-arquitetura/05-modulos-fase2b3.md) — snapshot pós-Fase 2b-3 (encerra a Fase 2b): `PipelineCoordinator` com `pipelineTask` Task armazenada + helper `aborted()` (cancel HTTP em vôo via `Task.cancel()`), `CustomStyle` com campo `bypassDiscipline` + `asStyle()` condicional, `CustomStyleEditSheet` com toggle "Modo refinador" + warning inline. Fecha cleanup #5 da 2a e cleanups #2 follow-up + #4 da 2b-1.
+- [`06-modulos-fase2c-cleanup.md`](./02-arquitetura/06-modulos-fase2c-cleanup.md) — snapshot pós-Fase 2c-cleanup. Tentou 4 itens; só 2 entregaram código líquido (cleanup #1 da Fase 1 fechado, #3 retroativo). Refactor `IndicatorViewModel` (cleanups #8 da Fase 1 + #1 da 2b-3) e WhisperKit `downloadBase` (cleanup #9 da Fase 1) revertidos após regressão runtime detectada no aceite manual. Lição: spec compliance + code review não cobre regressão funcional — rodar aceite em build local **antes** do merge.
 
 ### 03 — Funcionalidades
 - [`checklists/fase1-manual.md`](./03-funcionalidades/checklists/fase1-manual.md) — checklist manual de aceite da Fase 1 (onboarding, status bar, pipeline, apps de injeção, edge cases, performance).
 - [`checklists/fase2-diagnostico-asr.md`](./03-funcionalidades/checklists/fase2-diagnostico-asr.md) — diagnóstico ASR pré-Fase 2: dump WAV+TXT por captura, 5 frases-teste pra isolar inversão de sentido (sinal vs modelo vs prompt).
 - [`checklists/fase2a-manual.md`](./03-funcionalidades/checklists/fase2a-manual.md) — aceite manual da Fase 2a (backend submenu, style submenu, modal API key, fallback Identity, retenção do history, injeção em apps reais).
+- [`checklists/fase2c-cleanup-manual.md`](./03-funcionalidades/checklists/fase2c-cleanup-manual.md) — aceite manual da Fase 2c-cleanup (apenas Blocos D + E após reverts). Status `ok-com-achados`: Bloco E (L/R Option) ✅, Bloco D (downloadBase) ❌.
 
 ### 04 — Decisões (ADRs)
 - [`ADR-0001-sistema-visual.md`](./04-decisoes/ADR-0001-sistema-visual.md) — sistema visual, identidade, indicador default da v1, mudanças de escopo aceitas/recusadas. **Revisado parcialmente pelo ADR-0004** (histórico viewer entra na 2b-2).
@@ -32,8 +34,9 @@ _(a preencher)_ — análise do Wispr Flow, alternativas, decisões de paridade.
 - [`ADR-0004-historico-em-preferencias.md`](./04-decisoes/ADR-0004-historico-em-preferencias.md) — histórico viewer mora dentro de Preferências > Histórico (revisa ADR-0001).
 - [`cleanup-fase1.md`](./04-decisoes/cleanup-fase1.md) — TODOs deixados na Fase 1 (L/R Option, promptTokens, drift visual). Revisitar em 2026-05-11.
 - [`cleanup-fase2a.md`](./04-decisoes/cleanup-fase2a.md) — achados do aceite manual da Fase 2a. **Todos os 5 itens fechados** (1-4 em 2026-04-29, item 5 fechado pela 2b-3 em 2026-04-30).
+- [`cleanup-fase1.md`](./04-decisoes/cleanup-fase1.md) — atualizado pela 2c-cleanup em 2026-05-01: itens #1 e #3 fechados; itens #8 e #9 revertidos com hipóteses pra próxima tentativa; #2/#5/#6/#7 seguem bloqueados pelas razões originais.
 - [`cleanup-fase2b1.md`](./04-decisoes/cleanup-fase2b1.md) — achados do aceite manual da Fase 2b-1. **Todos os 4 itens acionáveis fechados** (1-3 em 2026-04-29, item 2 follow-up + #4 fechados pela 2b-3 em 2026-04-30). Item 5 segue como grupo informacional.
-- [`cleanup-fase2b3.md`](./04-decisoes/cleanup-fase2b3.md) — achados do aceite manual da Fase 2b-3. 1 funcional (pill flicker no Esc rápido) + 8 polish minor. Revisitar 2026-05-15.
+- [`cleanup-fase2b3.md`](./04-decisoes/cleanup-fase2b3.md) — achados do aceite manual da Fase 2b-3. 1 funcional (pill flicker no Esc rápido — **tentado e revertido na 2c-cleanup**) + 8 polish minor. Revisitar 2026-05-15.
 
 ### 05 — [Sistema visual](./05-design/README.md)
 Identidade, tokens, tipografia, cores, copy pt-BR, catálogo de componentes e bundle do Claude Design (`05-design/bundle/`). Fonte da verdade visual.
@@ -49,6 +52,8 @@ Identidade, tokens, tipografia, cores, copy pt-BR, catálogo de componentes e bu
 - [`2026-04-29-tagarela-v1-fase2b2-plan.md`](./specs/2026-04-29-tagarela-v1-fase2b2-plan.md) — plano executado da Fase 2b-2 (16 tarefas, +30 testes, suíte 145).
 - [`2026-04-30-tagarela-v1-fase2b3-design.md`](./specs/2026-04-30-tagarela-v1-fase2b3-design.md) — design da Fase 2b-3 (cancel HTTP em vôo via `Task.cancel()` + UX modo refinador/livre pros custom styles). **Status: implementado** (branch `fase-2b3`, 8 commits, 155 testes verdes, aceite manual ok-com-achados). Fecha cleanup #5 da 2a e cleanups #2 (follow-up) e #4 da 2b-1.
 - [`2026-04-30-tagarela-v1-fase2b3-plan.md`](./specs/2026-04-30-tagarela-v1-fase2b3-plan.md) — plano executado da Fase 2b-3 (8 tarefas, +10 testes, suíte 155).
+- [`2026-05-01-tagarela-v1-fase2c-cleanup-design.md`](./specs/2026-05-01-tagarela-v1-fase2c-cleanup-design.md) — design da Fase 2c-cleanup (bundle de manutenção pós-Fase 2b). **Status: parcialmente implementado** — Itens 1 (refactor `IndicatorViewModel`) e 4 (WhisperKit `downloadBase`) revertidos após regressão runtime; Itens 2 (cleanup #3 retroativo) e 3 (validação L/R Option) entregues.
+- [`2026-05-01-tagarela-v1-fase2c-cleanup-plan.md`](./specs/2026-05-01-tagarela-v1-fase2c-cleanup-plan.md) — plano da Fase 2c-cleanup. Histórico do que foi tentado; ver design pro status real.
 
 ---
 

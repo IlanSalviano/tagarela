@@ -96,10 +96,9 @@ final class HotkeyServiceLive: HotkeyService, @unchecked Sendable {
             if keyCode == me.hotkey.virtualKeyCode {
                 me.logger.info("flagsChanged keyCode=\(keyCode, privacy: .public) (Right Option)")
                 let flags = event.flags
-                // TODO Fase 2: distinguir L/R do Option olhando bits específicos do flag.
-                // Por enquanto, o filtro pelo keyCode (0x3D = Right Option) já restringe
-                // ao Option direito; .maskAlternate só serve pra ignorar o evento de
-                // release (quando flag é desligado).
+                // keyCode 0x3D (61) é exclusivo do Right Option no macOS — validado
+                // empiricamente em 2026-05-01. Left Option dispara keyCode diferente,
+                // que cai fora deste bloco. .maskAlternate ignora release events.
                 if flags.contains(.maskAlternate) {
                     me.continuation?.yield(.toggle)
                 }
