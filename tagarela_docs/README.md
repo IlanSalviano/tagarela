@@ -54,6 +54,7 @@ Identidade, tokens, tipografia, cores, copy pt-BR, catálogo de componentes e bu
 - [`2026-04-30-tagarela-v1-fase2b3-plan.md`](./specs/2026-04-30-tagarela-v1-fase2b3-plan.md) — plano executado da Fase 2b-3 (8 tarefas, +10 testes, suíte 155).
 - [`2026-05-01-tagarela-v1-fase2c-cleanup-design.md`](./specs/2026-05-01-tagarela-v1-fase2c-cleanup-design.md) — design da Fase 2c-cleanup (bundle de manutenção pós-Fase 2b). **Status: parcialmente implementado** — Itens 1 (refactor `IndicatorViewModel`) e 4 (WhisperKit `downloadBase`) revertidos após regressão runtime; Itens 2 (cleanup #3 retroativo) e 3 (validação L/R Option) entregues.
 - [`2026-05-01-tagarela-v1-fase2c-cleanup-plan.md`](./specs/2026-05-01-tagarela-v1-fase2c-cleanup-plan.md) — plano da Fase 2c-cleanup. Histórico do que foi tentado; ver design pro status real.
+- [`2026-05-01-tagarela-v1-fase2d-velocidade-transcribe-design.md`](./specs/2026-05-01-tagarela-v1-fase2d-velocidade-transcribe-design.md) — design da Fase 2d (velocidade da transcrição: trocar default pra `large-v3-turbo`, picker funcional em Onboarding/Preferências, knobs ANE+prewarm, instrumentação de timing). **Status: design.**
 
 ---
 
