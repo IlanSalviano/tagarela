@@ -715,7 +715,6 @@
 						ProvisioningStyle = Manual;
 					};
 					715677D834111BC04FF17146 = {
-						DevelopmentTeam = BCM26K6YNA;
 						ProvisioningStyle = Manual;
 					};
 				};
@@ -1011,10 +1010,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Tagarela/Resources/Tagarela.entitlements;
-				CODE_SIGN_IDENTITY = 78C7C6375957D553AD632832D0821B446F53D0F3;
+				CODE_SIGN_IDENTITY = E42EE72295E4853378FBEF2E589FBC7D609884EB;
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = BCM26K6YNA;
+				DEVELOPMENT_TEAM = 22CZXFP6W7;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Tagarela/Resources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
