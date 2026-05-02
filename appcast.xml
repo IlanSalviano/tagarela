@@ -5,5 +5,16 @@
     <description>Updates do tagarela</description>
     <language>pt-BR</language>
     <!-- Items adicionados por scripts/appcast.sh a cada release -->
+    <item>
+      <title>Versão 1.0.0</title>
+      <pubDate>Sat, 02 May 2026 02:33:01 +0000</pubDate>
+      <sparkle:version>1.0.0</sparkle:version>
+      <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
+      <enclosure
+        url="https://github.com/IlanSalviano/tagarela/releases/download/v1.0.0/Tagarela-1.0.0.dmg"
+        sparkle:edSignature="gmS17n2qbKfMByxIjyoc8S42qzgLK6y8EsEgH6zAKrHRIGOHvXtoNq/JGvRAUboj5D8ObNzNqayvOJxnDzTlAg=="
+        length="7158087"
+        type="application/octet-stream" />
+    </item>
   </channel>
 </rss>
