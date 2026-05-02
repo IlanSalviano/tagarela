@@ -49,16 +49,14 @@ version=$(echo "$DMG_NAME" | sed -E 's/Tagarela-([0-9.]+)\.dmg/\1/')
 length=$(stat -f %z "$DMG_PATH")
 
 # Localizar sign_update (binário do Sparkle SPM)
-SPARKLE_ARTIFACTS=$(find ~/Library/Developer/Xcode/DerivedData/Tagarela-*/SourcePackages/artifacts -type d -name "Sparkle" 2>/dev/null | head -1)
-SIGN_UPDATE=""
-for candidate in "$SPARKLE_ARTIFACTS/bin/sign_update" "$SPARKLE_ARTIFACTS/Sparkle/bin/sign_update"; do
-    if [ -x "$candidate" ]; then
-        SIGN_UPDATE="$candidate"
-        break
-    fi
-done
-if [ -z "$SIGN_UPDATE" ]; then
-    echo "erro: sign_update não encontrado em $SPARKLE_ARTIFACTS/{bin,Sparkle/bin}"
+# Find direto evita adivinhar estrutura intermediária do SPM artifact dir.
+# Filtra `old_dsa_scripts/` (legacy DSA) — queremos a EdDSA do Sparkle 2.x.
+SIGN_UPDATE=$(find ~/Library/Developer/Xcode/DerivedData/Tagarela-*/SourcePackages/artifacts \
+    -type f -name "sign_update" -perm +111 2>/dev/null \
+    | grep -v old_dsa_scripts | head -1)
+if [ -z "$SIGN_UPDATE" ] || [ ! -x "$SIGN_UPDATE" ]; then
+    echo "erro: sign_update (EdDSA) não encontrado em SourcePackages/artifacts."
+    echo "      builda pelo menos uma vez via xcodebuild pra resolver SPM."
     exit 1
 fi
 
