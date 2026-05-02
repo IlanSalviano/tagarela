@@ -40,6 +40,10 @@ final class LocalizableKeysTests: XCTestCase {
             "about.author.header",
             "about.coauthor.header",
             "about.coauthor.note",
+            // Fase 3
+            "about.logs.header",
+            "about.logs.open",
+            "about.logs.help",
         ]
         for k in keys {
             let resolved = String(localized: String.LocalizationValue(k))
