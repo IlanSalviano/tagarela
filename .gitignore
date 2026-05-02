@@ -31,3 +31,9 @@ tagarela_docs/.obsidian/cache
 *.cer
 *.mobileprovision
 .superpowers/
+
+# Fase 3 — release pipeline
+build/release/
+*.dmg
+.tagarela-release.env
+CertificateSigningRequest.certSigningRequest

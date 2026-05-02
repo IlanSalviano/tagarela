@@ -27,6 +27,9 @@ packages:
   WhisperKit:
     url: https://github.com/argmaxinc/WhisperKit
     from: 0.9.0
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: 2.6.0
 
 targets:
   Tagarela:
@@ -63,6 +66,7 @@ targets:
           DEVELOPMENT_TEAM: 22CZXFP6W7
     dependencies:
       - package: WhisperKit
+      - package: Sparkle
 
   TagarelaTests:
     type: bundle.unit-test

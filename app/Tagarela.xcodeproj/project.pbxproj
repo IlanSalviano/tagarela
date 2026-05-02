@@ -69,6 +69,7 @@
 		6C2A5C8479021CA37009A06F /* OllamaModelListerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C0042114A72579FA30507A0 /* OllamaModelListerTests.swift */; };
 		6F081A9564F53AF2A0065CF6 /* WhisperModelCatalogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE732C1C80786269CA0A2641 /* WhisperModelCatalogTests.swift */; };
 		758D7A361EA11C3E32E36E8A /* AudioCapturing.swift in Sources */ = {isa = PBXBuildFile; fileRef = D935115B6E9C71348D73E53F /* AudioCapturing.swift */; };
+		75F3052A2C840581F5EE402E /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 2F4FED6926CEEB51090A5933 /* Sparkle */; };
 		762BF631DAB5A7E717F0401E /* PipelineEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA2A3341042C032C2AD90B62 /* PipelineEvent.swift */; };
 		7906156A7FDCB39A8CD1EEF2 /* HotkeyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48A38EEE3C74B26A58569FDF /* HotkeyService.swift */; };
 		7CFB0DDDA053BAAF6A2A90F6 /* Transcribing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82624846B13D44387F031C84 /* Transcribing.swift */; };
@@ -297,6 +298,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0964F026A977BF3A0908601E /* WhisperKit in Frameworks */,
+				75F3052A2C840581F5EE402E /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -696,6 +698,7 @@
 			name = Tagarela;
 			packageProductDependencies = (
 				8D6A99642A3EA77F647F3C1E /* WhisperKit */,
+				2F4FED6926CEEB51090A5933 /* Sparkle */,
 			);
 			productName = Tagarela;
 			productReference = 885C3426FB83B9F0218878A7 /* Tagarela.app */;
@@ -729,6 +732,7 @@
 			mainGroup = 74B774DA6C4E46BF70A58CD2;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				C3468B6FC9A7637BD3FD2B48 /* XCRemoteSwiftPackageReference "Sparkle" */,
 				9C120ED6D13C558C16BCAE12 /* XCRemoteSwiftPackageReference "WhisperKit" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -1172,9 +1176,22 @@
 				minimumVersion = 0.9.0;
 			};
 		};
+		C3468B6FC9A7637BD3FD2B48 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.6.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		2F4FED6926CEEB51090A5933 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C3468B6FC9A7637BD3FD2B48 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
 		8D6A99642A3EA77F647F3C1E /* WhisperKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 9C120ED6D13C558C16BCAE12 /* XCRemoteSwiftPackageReference "WhisperKit" */;
