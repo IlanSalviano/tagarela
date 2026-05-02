@@ -82,7 +82,7 @@ Workaround atual: tap acumula um array de samples por canal (`channelBuffers: [[
 
 ## 6. Permissões TCC injetadas manualmente via SQLite
 
-**Status (2026-05-01):** validação executada na Fase 3 — ver Bloco C do checklist [`tagarela_docs/03-funcionalidades/checklists/fase3-manual.md`](../03-funcionalidades/checklists/fase3-manual.md). Setup atualizado em [`tagarela_docs/02-arquitetura/00-setup-dev.md`](../02-arquitetura/00-setup-dev.md). Texto definitivo (fechado ou anomalia) entra após T14 do plan.
+**Status (2026-05-01): ✅ fechado.** Validação Bloco B/C da Fase 3 — popup TCC nativo de Microphone apareceu na primeira execução do app empacotado (Developer ID + notarized) baixado do GitHub Release. Workaround SQL não é mais necessário; setup atualizado em [`00-setup-dev.md`](../02-arquitetura/00-setup-dev.md). Accessibility e Input Monitoring continuam exigindo adição manual via System Settings — comportamento padrão do macOS (sem popup nativo pra esses TCCs), documentado no setup-dev.
 
 **Contexto:** durante stress test, o popup nativo do macOS pedindo Microphone NUNCA apareceu pra Tagarela (mesmo com signing estável Apple Development, mesmo com `LSUIElement` desligado temporariamente, mesmo após reboot, mesmo com `AVCaptureSession` real). Foi necessário **injetar entries diretamente** no `~/Library/Application Support/com.apple.TCC/TCC.db` (via SQL clonando o `csreq` BLOB de uma entry existente):
 
