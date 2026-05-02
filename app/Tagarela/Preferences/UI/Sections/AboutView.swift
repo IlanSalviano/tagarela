@@ -58,9 +58,39 @@ struct AboutView: View {
                         .foregroundStyle(DS.Color.ink2)
                 }
 
+                Divider().padding(.vertical, 4)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(String(localized: "about.logs.header", defaultValue: "LOGS"))
+                        .font(DS.Font.mono(10))
+                        .tracking(1.4)
+                        .foregroundStyle(DS.Color.ink3)
+                    Button(action: openLogsInConsole) {
+                        Text(String(localized: "about.logs.open",
+                                     defaultValue: "Abrir logs no Console"))
+                            .font(DS.Font.mono(11))
+                            .foregroundStyle(DS.Color.paper)
+                            .padding(.horizontal, 12).padding(.vertical, 6)
+                            .background(DS.Color.ink, in: RoundedRectangle(cornerRadius: 6))
+                    }
+                    .buttonStyle(.plain)
+                    Text(String(localized: "about.logs.help",
+                                 defaultValue: "Filtre por subsystem == com.tagarela na barra de busca."))
+                        .font(DS.Font.mono(10))
+                        .foregroundStyle(DS.Color.ink3)
+                }
+
                 Spacer(minLength: 0)
             }
             .padding(20)
         }
+    }
+
+    private func openLogsInConsole() {
+        let task = Process()
+        task.launchPath = "/usr/bin/open"
+        task.arguments = ["-a", "Console.app", "--args",
+                          "--predicate", "subsystem == 'com.tagarela'"]
+        try? task.run()
     }
 }

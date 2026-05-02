@@ -4,6 +4,7 @@ import AVFoundation
 import Combine
 import OSLog
 import SwiftData
+import Sparkle
 
 @MainActor
 final class AppContainer: ObservableObject {
@@ -32,6 +33,7 @@ final class AppContainer: ObservableObject {
     let keyPromptWindow: OpenAIKeyPromptWindow
     let preferencesWindow = PreferencesWindow()
     let toastCenter = ToastCenter()
+    let updaterController: SPUStandardUpdaterController
     /// T9: `swapActive` troca o ponteiro real do transcriber neste container
     /// (e atualiza o `TranscriberRef` compartilhado com o pipeline). Inicializado
     /// em duas fases no init: stub primeiro (pra satisfazer ordem de init),
@@ -185,6 +187,18 @@ final class AppContainer: ObservableObject {
                 guard let prefs, !prefs.technicalVocabulary.isEmpty else { return nil }
                 return InitialPromptBuilder.build(vocab: prefs.technicalVocabulary)
             }
+        )
+
+        // Sparkle minimal: auto-check no launch + a cada SUScheduledCheckInterval (24h).
+        // Sheet nativa de update aparece quando feed lista versão > atual.
+        // Sem UI manual de "Verificar atualizações" nesta fase.
+        // Inicializado aqui (antes do reassign de swapCoordinator com [weak self])
+        // pra que todas as stored properties estejam atribuídas antes de qualquer
+        // closure capturar `self`.
+        self.updaterController = SPUStandardUpdaterController(
+            startingUpdater: true,
+            updaterDelegate: nil,
+            userDriverDelegate: nil
         )
 
         // T9: instala o coordinator real, com swapActive que troca o ponteiro

@@ -188,3 +188,8 @@
 "about.author.header"         = "AUTOR";
 "about.coauthor.header"       = "COAUTOR";
 "about.coauthor.note"         = "Implementação coautorada via Claude Code.";
+
+// Fase 3 — Sobre logs
+"about.logs.header" = "LOGS";
+"about.logs.open"   = "Abrir logs no Console";
+"about.logs.help"   = "Filtre por subsystem == com.tagarela na barra de busca.";

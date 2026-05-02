@@ -15,6 +15,7 @@ _(a preencher)_ — objetivos, escopo, não-objetivos, persona alvo.
 _(a preencher)_ — análise do Wispr Flow, alternativas, decisões de paridade.
 
 ### 02 — Arquitetura
+- [`00-setup-dev.md`](./02-arquitetura/00-setup-dev.md) — onboard de um Mac novo pra dev: builds Debug, permissões TCC, build pipeline de release.
 - [`01-modulos-fase1.md`](./02-arquitetura/01-modulos-fase1.md) — snapshot dos módulos implementados na Fase 1, divergências do plano, cobertura de testes, escopo das próximas fases.
 - [`02-stack-tecnica.md`](./02-arquitetura/02-stack-tecnica.md) — versões reais (Xcode/Swift/macOS), uso de xcodegen como fonte da verdade do projeto, dependências SPM (WhisperKit), fontes empacotadas, capabilities.
 - [`03-modulos-fase2b1.md`](./02-arquitetura/03-modulos-fase2b1.md) — snapshot pós-Fase 2b-1: módulos novos (Preferências UI, custom styles, endpoints custom OpenAI), modificados (factory consulta StyleProvider, container SwiftData compartilhado), cleanups da 2a fechados (#1, #3, #4) e abertos (#2, #5).
