@@ -83,8 +83,13 @@ DMG_PATH="$REPO_ROOT/build/release/Tagarela-$version.dmg"
 echo "===== 7/7 tag + push + gh release ====="
 git tag "v$version"
 
-# Push commits + tags
-git push --follow-tags
+# Push commits + tags. Fall back pra --set-upstream se branch atual
+# ainda não tem tracking remoto (primeiro push após gh repo create).
+if ! git push --follow-tags 2>/dev/null; then
+    echo "release.sh: setando upstream + push"
+    git push --set-upstream origin "$current_branch"
+    git push origin "v$version"
+fi
 
 # gh release create
 gh release create "v$version" "$DMG_PATH" \
