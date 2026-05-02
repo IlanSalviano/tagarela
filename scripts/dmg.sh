@@ -65,6 +65,22 @@ codesign \
     --timestamp \
     "$DMG_PATH"
 
+# Carrega secrets pra notarytool (DMG precisa ser notarizado separado do .app
+# pra poder ser stapled — ticket é por arquivo).
+for var in APPLE_ID APPLE_TEAM_ID APPLE_APP_SPECIFIC_PASSWORD; do
+    if [ -z "${!var:-}" ]; then
+        echo "erro: $var não setado em $ENV_FILE"
+        exit 1
+    fi
+done
+
+echo "dmg.sh: notarizando DMG (pode levar 1-5 minutos)"
+xcrun notarytool submit "$DMG_PATH" \
+    --apple-id "$APPLE_ID" \
+    --team-id "$APPLE_TEAM_ID" \
+    --password "$APPLE_APP_SPECIFIC_PASSWORD" \
+    --wait
+
 echo "dmg.sh: staplando ticket no DMG"
 xcrun stapler staple "$DMG_PATH"
 
