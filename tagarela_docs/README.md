@@ -47,6 +47,7 @@ _(a preencher)_ — análise do Wispr Flow, alternativas, decisões de paridade.
 - [`cleanup-fase2b1.md`](./04-decisoes/cleanup-fase2b1.md) — achados do aceite manual da Fase 2b-1. **Todos os 4 itens acionáveis fechados** (1-3 em 2026-04-29, item 2 follow-up + #4 fechados pela 2b-3 em 2026-04-30). Item 5 segue como grupo informacional.
 - [`cleanup-fase2b3.md`](./04-decisoes/cleanup-fase2b3.md) — achados do aceite manual da Fase 2b-3. 1 funcional (pill flicker no Esc rápido — **tentado e revertido na 2c-cleanup**) + 8 polish minor. Revisitar 2026-05-15.
 - [`cleanup-fase2d.md`](./04-decisoes/cleanup-fase2d.md) — backlog de performance da Fase 2d. Turbo entregou só ~8% sobre large-v3; explorar variants quantizadas (`_954MB`, `_632MB`), ditado longo, e `temperatureFallbackCount=0` quando velocidade voltar a ser dor.
+- [`cleanup-fase3.md`](./04-decisoes/cleanup-fase3.md) — TCC zumbi por coexistência de builds locais + release Sparkle. Item 1 remediado em 2026-05-02 (`tccutil reset` revelou 4 registros stale por serviço). Follow-up de código opcional: banner Accessibility ausente + detector de duplicatas no startup.
 
 ### 05 — [Sistema visual](./05-design/README.md)
 Identidade, tokens, tipografia, cores, copy pt-BR, catálogo de componentes e bundle do Claude Design (`05-design/bundle/`). Fonte da verdade visual.

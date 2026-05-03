@@ -16,13 +16,21 @@ Onboard de um novo Mac pra trabalhar no tagarela. Pra usar o app empacotado, bas
 
 ## Permissões TCC (primeira execução)
 
-1. Buildar e abrir Tagarela.app a partir de `~/Applications` (NÃO direto do Xcode build; o popup TCC nativo pode falhar).
+1. Buildar e abrir Tagarela.app a partir de `/Applications` (NÃO direto do Xcode build; o popup TCC nativo pode falhar).
 2. Disparar hotkey (Right Option) — popup nativo de Microphone aparece. Aceitar.
 3. System Settings → Privacy & Security → Accessibility, adicionar Tagarela.app manualmente (clicar `+`).
 4. System Settings → Privacy & Security → Input Monitoring, adicionar Tagarela.app manualmente.
 5. Reabrir o app. Hotkey deve transcrever + injetar texto em outro app.
 
 > **Nota:** o cleanup #6 da Fase 1 documentava workaround via SQL no TCC.db pra esses popups não aparecerem antes do Developer ID. Pós-Fase 3, o esperado é que popups nativos voltem — workaround SQL não seria mais necessário. Validação no Bloco C do `fase3-manual.md`.
+
+## ⚠️ Coexistência de builds — NÃO FAZER
+
+**Nunca abrir builds locais (`build/release/*`, `app/build/`, DerivedData) enquanto a release oficial estiver em `/Applications/Tagarela.app`.** Mesmo bundle id (`com.tagarela.Tagarela`) com Designated Requirements distintos (Apple Development vs Developer ID, ou re-assinaturas diferentes) cria registros TCC fantasma. Sintoma: a cada launch o macOS pede mic + Documents de novo, e Accessibility é revogada (paste para de funcionar).
+
+Se acontecer, ver remediação completa em [`../04-decisoes/cleanup-fase3.md`](../04-decisoes/cleanup-fase3.md): `tccutil reset All com.tagarela.Tagarela` + `lsregister -u <path>` por cada cópia rival + reabrir só a `/Applications/Tagarela.app` + reconceder Accessibility/Input Monitoring.
+
+Regra prática: depois de rodar `scripts/build.sh` ou `scripts/release.sh`, **não dar `open` no .app gerado** — copiar pra `/Applications/` e abrir de lá, ou apagar os artifacts locais (`rm -rf build/ app/build/`).
 
 ## Builds Release (gerar DMG distribuível)
 
