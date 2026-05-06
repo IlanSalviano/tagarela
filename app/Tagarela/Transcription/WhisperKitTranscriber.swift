@@ -50,17 +50,12 @@ final class WhisperKitTranscriber: Transcribing, @unchecked Sendable {
         guard let pipe else { throw TranscribeError.modelNotLoaded }
         guard buffer.durationSeconds >= 0.5 else { throw TranscribeError.bufferTooShort }
 
-        let promptTokens: [Int]?
-        if ProcessInfo.processInfo.environment["TAGARELA_DISABLE_PROMPT"] == "1" {
-            promptTokens = nil
-            logger.info("promptTokens desabilitado via env var TAGARELA_DISABLE_PROMPT=1")
-        } else if let prompt = initialPrompt, !prompt.isEmpty,
-                  let tokenizer = pipe.tokenizer {
-            let encoded = tokenizer.encode(text: prompt)
-            promptTokens = encoded.isEmpty ? nil : encoded
-        } else {
-            promptTokens = nil
-        }
+        // promptTokens (vocab biasing) está desabilitado: qualquer prompt
+        // envenena o prefill, decoder bail e gera só `<|endoftext|>`. Quebra
+        // independente de tamanho (72 tokens) e de chunked decode (16s
+        // single-chunk). Ver ADR-0005. Param `initialPrompt` mantido no
+        // protocolo pra futura reintrodução com fix robusto.
+        _ = initialPrompt
 
         let opts = DecodingOptions(
             verbose: false,
@@ -68,7 +63,8 @@ final class WhisperKitTranscriber: Transcribing, @unchecked Sendable {
             language: language,
             usePrefillPrompt: true,
             withoutTimestamps: true,
-            promptTokens: promptTokens
+            promptTokens: nil,
+            noSpeechThreshold: nil
         )
 
         do {

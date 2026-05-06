@@ -15,10 +15,17 @@ final class InitialPromptBuilderTests: XCTestCase {
         XCTAssertTrue(s.contains("Kubernetes"))
     }
 
-    func test_truncatesVocabAtTokenLimit() {
+    func test_truncatesVocabAtCharFallback() {
         let huge = (0..<500).map { "termo\($0)" }
         let s = InitialPromptBuilder.build(vocab: huge)
-        // Whisper aceita ~224 tokens; cortamos antes disso.
-        XCTAssertLessThan(s.count, 1500)
+        // Sem tokenCount, fallback char-based (pessimista 3 chars/token).
+        XCTAssertLessThanOrEqual(s.count, InitialPromptBuilder.maxChars)
+    }
+
+    func test_truncatesVocabWithTokenCounter() {
+        let huge = (0..<500).map { "termo\($0)" }
+        // Tokenizer fake: 1 token a cada 3 chars (pessimista).
+        let s = InitialPromptBuilder.build(vocab: huge, tokenCount: { $0.count / 3 })
+        XCTAssertLessThanOrEqual(s.count / 3, InitialPromptBuilder.maxTokens)
     }
 }
