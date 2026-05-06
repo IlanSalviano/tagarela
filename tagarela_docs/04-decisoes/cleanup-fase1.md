@@ -34,6 +34,8 @@ Antes de virar tokens:
 
 **Status (2026-04-27, Tarefa 8 da Fase 2a):** `promptTokens` agora é populado via `WhisperKit.tokenizer.encode(prompt)` quando vocab não-vazio e env var `TAGARELA_DISABLE_PROMPT` ≠ "1". Critério de aceite (b) parcialmente atendido — falta validar empiricamente via [`fase2-validacao-prompt.md`](../03-funcionalidades/checklists/fase2-validacao-prompt.md). ADR-0002 documenta decisão final após o A/B.
 
+**Status (2026-05-06, investigação ditado-longo): drop confirmado por bug crítico.** `promptTokens` foi desabilitado em [`WhisperKitTranscriber.swift`](../../app/Tagarela/Transcription/WhisperKitTranscriber.swift) (sempre `nil`). Qualquer prompt — mesmo 72 tokens, mesmo audio curto de 16s single-chunk — envenenava o prefill: decoder bail e emitia só `<|endoftext|>` (`transcribed: ''`). Causa-raiz não identificada (suspeita: interação `usePrefillPrompt: true` + `withoutTimestamps: true` + `promptTokens`). Ver [`ADR-0005-vocab-biasing-desabilitado.md`](./ADR-0005-vocab-biasing-desabilitado.md). Item segue **aberto** até reintrodução robusta do vocab biasing; escopo do critério (b) precisa ser revisitado.
+
 ## 3. ✅ Stderr instrumentation deve virar `Logger.tagarela.info` — fechado 2026-05-01 (retroativo)
 
 **Status (2026-05-01, Fase 2c-cleanup):** ✅ verificado retroativamente. `grep -rn "FileHandle.standardError" app/Tagarela/` retorna zero ocorrências. Migração pra `Logger(subsystem: "com.tagarela", category: …)` aconteceu durante a Fase 2b-1 quando logs ganharam Logger por categoria (per achado #4 da 2a fechado em 2026-04-29). Esta nota é só registro retroativo — sem código novo.
