@@ -6,7 +6,7 @@ status: implementado
 
 # Snapshot pós-Fase 3
 
-A Fase 3 entregou o pipeline de release: cert Developer ID Application, entitlements completos, notarization, DMG, Sparkle minimal. Sem refactor de código de produto. v1.0.0 e v1.0.1 publicadas em GitHub Releases via `scripts/release.sh`.
+A Fase 3 entregou o pipeline de release: cert Developer ID Application, entitlements completos, notarization, DMG, Sparkle minimal. Sem refactor de código de produto. v1.0.0, v1.0.1 e v1.0.2 publicadas em GitHub Releases via `scripts/release.sh`.
 
 ## Mudanças no app
 
@@ -61,14 +61,16 @@ Workaround SQL no `TCC.db` não é mais necessário. Pós-Developer ID + notariz
 |---|---|---|
 | v1.0.0 | https://github.com/IlanSalviano/tagarela/releases/tag/v1.0.0 | Accepted |
 | v1.0.1 | https://github.com/IlanSalviano/tagarela/releases/tag/v1.0.1 | Accepted |
+| v1.0.2 | https://github.com/IlanSalviano/tagarela/releases/tag/v1.0.2 | Accepted |
 
-v1.0.1 é uma "version bump only" — release pra validar o caminho `release.sh patch` + Sparkle update no aceite Bloco D.
+v1.0.1 é uma "version bump only" — release pra validar o caminho `release.sh patch` + Sparkle update no aceite Bloco D. v1.0.2 carrega o fix do prefill poisoning do Whisper (drop de `promptTokens` — ver [ADR-0005](../04-decisoes/ADR-0005-vocab-biasing-desabilitado.md) e commit `3b31ac8`).
 
 ## Bugs do pipeline encontrados durante aceite (todos fechados)
 
 1. `dmg.sh` original tentava staple sem notarização separada do DMG → erro 65. Fix: notarizar DMG antes do staple.
 2. `appcast.sh` find adivinhava estrutura SPM (`extract/sparkle/...`). Fix: find direto por nome do binário, filtrando `old_dsa_scripts/` legacy.
 3. `release.sh` push falhava sem upstream tracking. Fix: fallback pra `--set-upstream` + push da tag separado.
+4. `release.sh` criava tag **lightweight** com `git tag "v$version"`, mas `git push --follow-tags` só empurra tags **anotadas** — commits subiam, tag ficava local, `gh release create` quebrava. Pego no release v1.0.2. Fix: `git tag -a "v$version" -m "tagarela $version"`.
 
 ## Lição operacional aplicada
 

@@ -79,11 +79,11 @@ echo "===== 6/7 appcast ====="
 version=$(grep -E '^\s*MARKETING_VERSION:' "$REPO_ROOT/app/project.yml" | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
 DMG_PATH="$REPO_ROOT/build/release/Tagarela-$version.dmg"
 
-# Cria git tag
+# Cria git tag anotada (lightweight não é pegada por --follow-tags)
 echo "===== 7/7 tag + push + gh release ====="
-git tag "v$version"
+git tag -a "v$version" -m "tagarela $version"
 
-# Push commits + tags. Fall back pra --set-upstream se branch atual
+# Push commits + tag. Fall back pra --set-upstream se branch atual
 # ainda não tem tracking remoto (primeiro push após gh repo create).
 if ! git push --follow-tags 2>/dev/null; then
     echo "release.sh: setando upstream + push"
