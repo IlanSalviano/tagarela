@@ -179,6 +179,11 @@
 "preferences.transcription.deletePrevious.body"     = "Libera %@ de espaço.";
 "preferences.transcription.deletePrevious.keep"     = "Manter";
 "preferences.transcription.deletePrevious.delete"   = "Apagar";
+"transcription.language.header"                     = "IDIOMA";
+"transcription.language.hint"                       = "Automático detecta o idioma falado. Vale na próxima transcrição.";
+"transcription.language.auto"                       = "Automático";
+"transcription.language.pt"                         = "Português";
+"transcription.language.en"                         = "English";
 "onboarding.model.error"                            = "falha: %@ · tentar de novo";
 
 // About

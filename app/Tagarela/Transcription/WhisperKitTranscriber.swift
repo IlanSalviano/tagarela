@@ -45,7 +45,7 @@ final class WhisperKitTranscriber: Transcribing, @unchecked Sendable {
     }
 
     func transcribe(buffer: AudioBuffer,
-                    language: String,
+                    language: String?,
                     initialPrompt: String?) async throws -> String {
         guard let pipe else { throw TranscribeError.modelNotLoaded }
         guard buffer.durationSeconds >= 0.5 else { throw TranscribeError.bufferTooShort }
@@ -57,11 +57,15 @@ final class WhisperKitTranscriber: Transcribing, @unchecked Sendable {
         // protocolo pra futura reintrodução com fix robusto.
         _ = initialPrompt
 
+        // language == nil → auto-detecção: TranscribeTask só detecta quando
+        // detectLanguage == true E language == nil E modelo multilíngue (ADR-0006).
+        // Idioma explícito (pt/en) mantém detectLanguage: false → path inalterado.
         let opts = DecodingOptions(
             verbose: false,
             task: .transcribe,
             language: language,
             usePrefillPrompt: true,
+            detectLanguage: language == nil,
             withoutTimestamps: true,
             promptTokens: nil,
             noSpeechThreshold: nil
@@ -78,7 +82,9 @@ final class WhisperKitTranscriber: Transcribing, @unchecked Sendable {
                              + Double(elapsed.components.attoseconds) / 1e15)
             let audioSec = String(format: "%.1f", buffer.durationSeconds)
             let modelName = self.loadedModelName ?? "?"
-            logger.notice("transcribe model=\(modelName, privacy: .public) audio=\(audioSec, privacy: .public)s wall=\(wallMs, privacy: .public)ms")
+            let reqLang = language ?? "auto"
+            let detLang = results.first?.language ?? "?"
+            logger.notice("transcribe model=\(modelName, privacy: .public) audio=\(audioSec, privacy: .public)s wall=\(wallMs, privacy: .public)ms reqLang=\(reqLang, privacy: .public) detLang=\(detLang, privacy: .public)")
 
             let text = results.map(\.text).joined(separator: " ")
             return text.trimmingCharacters(in: .whitespacesAndNewlines)

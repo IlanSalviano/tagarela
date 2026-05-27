@@ -57,6 +57,11 @@ final class PreferencesStore: ObservableObject {
     @Published var whisperModelName: String {
         didSet { defaults.set(whisperModelName, forKey: PreferencesKey.whisperModelName) }
     }
+    @Published var transcriptionLanguage: TranscriptionLanguage {
+        didSet {
+            defaults.set(transcriptionLanguage.rawValue, forKey: PreferencesKey.transcriptionLanguage)
+        }
+    }
 
     init(defaults: UserDefaults = .standard,
          defaultStyleID: UUID) {
@@ -107,6 +112,11 @@ final class PreferencesStore: ObservableObject {
 
         self.whisperModelName = defaults.string(forKey: PreferencesKey.whisperModelName)
             ?? PreferencesDefaults.whisperModelName
+
+        let langRaw = defaults.string(forKey: PreferencesKey.transcriptionLanguage)
+            ?? PreferencesDefaults.transcriptionLanguage.rawValue
+        self.transcriptionLanguage = TranscriptionLanguage(rawValue: langRaw)
+            ?? PreferencesDefaults.transcriptionLanguage
     }
 
     /// Setter que clampa pro range válido [1, 50] antes de publicar.

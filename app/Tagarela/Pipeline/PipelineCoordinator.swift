@@ -12,7 +12,10 @@ actor PipelineCoordinator {
     private let historyMaxDaysProvider: @MainActor @Sendable () -> Int
     private let llmModelNameProvider: @MainActor @Sendable (RefinerKind) -> String?
     private let whisperModelNameProvider: @MainActor @Sendable () -> String
-    private let language: String
+    /// `nil` → auto-detecção do idioma (ver ADR-0006). Closure pra ler a pref
+    /// em runtime, igual aos demais providers — idioma é stateless, não precisa
+    /// de swap como o modelo Whisper.
+    private let languageProvider: @MainActor @Sendable () -> String?
     private let initialPromptProvider: @MainActor @Sendable () -> String?
 
     private(set) var state: PipelineState = .idle
@@ -41,7 +44,7 @@ actor PipelineCoordinator {
          historyMaxDaysProvider: @escaping @MainActor @Sendable () -> Int,
          llmModelNameProvider: @escaping @MainActor @Sendable (RefinerKind) -> String?,
          whisperModelNameProvider: @escaping @MainActor @Sendable () -> String,
-         language: String = "pt",
+         languageProvider: @escaping @MainActor @Sendable () -> String? = { nil },
          initialPromptProvider: @escaping @MainActor @Sendable () -> String? = { nil }) {
         self.audio = audio
         self.transcriberProvider = transcriberProvider
@@ -52,7 +55,7 @@ actor PipelineCoordinator {
         self.historyMaxDaysProvider = historyMaxDaysProvider
         self.llmModelNameProvider = llmModelNameProvider
         self.whisperModelNameProvider = whisperModelNameProvider
-        self.language = language
+        self.languageProvider = languageProvider
         self.initialPromptProvider = initialPromptProvider
 
         var ref: AsyncStream<PipelineEvent>.Continuation!
@@ -190,7 +193,7 @@ actor PipelineCoordinator {
             logger.info("transcribing (model loaded? \(transcriber.loadedModelName ?? "NIL", privacy: .public))")
             let raw = try await transcriber.transcribe(
                 buffer: buffer,
-                language: language,
+                language: await languageProvider(),
                 initialPrompt: await initialPromptProvider()
             )
             if aborted() { logger.info("cancelled after transcribe"); setState(.idle); return }

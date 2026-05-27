@@ -14,6 +14,7 @@ enum PreferencesKey {
     static let openAIEndpoint       = "com.tagarela.preferences.openAIEndpoint"
     static let indicatorVariant     = "com.tagarela.preferences.indicatorVariant"
     static let whisperModelName     = "com.tagarela.preferences.whisperModelName"
+    static let transcriptionLanguage = "com.tagarela.preferences.transcriptionLanguage"
 }
 
 enum PreferencesDefaults {
@@ -35,4 +36,7 @@ enum PreferencesDefaults {
         baseURL: OpenAIEndpointDefaults.defaultURL(for: .official)!)
     static let indicatorVariant: IndicatorVariant = .pill
     static let whisperModelName: String   = "large-v3_turbo"
+    // Default Automático (auto-detect), inclusive pra users existentes (migração
+    // implícita pelo default). Ver ADR-0006.
+    static let transcriptionLanguage: TranscriptionLanguage = .auto
 }

@@ -183,6 +183,9 @@ final class AppContainer: ObservableObject {
             whisperModelNameProvider: {
                 transcriberRef.current.loadedModelName ?? "<unknown>"
             },
+            languageProvider: { [weak prefs] in
+                (prefs?.transcriptionLanguage ?? PreferencesDefaults.transcriptionLanguage).whisperCode
+            },
             initialPromptProvider: { [weak prefs] in
                 guard let prefs, !prefs.technicalVocabulary.isEmpty else { return nil }
                 return InitialPromptBuilder.build(vocab: prefs.technicalVocabulary)

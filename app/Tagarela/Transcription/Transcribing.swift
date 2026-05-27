@@ -2,8 +2,9 @@ import Foundation
 
 protocol Transcribing: AnyObject, Sendable {
     func loadModel(_ name: String, onProgress: @escaping (Double) -> Void) async throws
+    /// `language == nil` ativa a auto-detecção do Whisper (ver ADR-0006).
     func transcribe(buffer: AudioBuffer,
-                    language: String,
+                    language: String?,
                     initialPrompt: String?) async throws -> String
     func unloadModel()
     var loadedModelName: String? { get }

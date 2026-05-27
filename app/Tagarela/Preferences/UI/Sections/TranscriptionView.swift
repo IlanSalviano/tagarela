@@ -30,6 +30,18 @@ struct TranscriptionView: View {
                     enabled: pickerEnabled
                 )
                 statusBlock
+
+                Divider().padding(.vertical, 2)
+
+                Text(String(localized: "transcription.language.header", defaultValue: "IDIOMA"))
+                    .font(DS.Font.mono(10))
+                    .tracking(1.5)
+                    .foregroundStyle(DS.Color.ink3)
+                TranscriptionLanguagePicker(selected: $prefs.transcriptionLanguage)
+                Text(String(localized: "transcription.language.hint",
+                             defaultValue: "Automático detecta o idioma falado. Vale na próxima transcrição."))
+                    .font(DS.Font.mono(10))
+                    .foregroundStyle(DS.Color.ink3)
             }
             .padding(20)
         }

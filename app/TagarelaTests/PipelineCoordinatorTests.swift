@@ -191,6 +191,51 @@ final class PipelineCoordinatorTests: XCTestCase {
                       "Task.cancel() deve propagar até o refiner.refine sleep")
     }
 
+    func test_languageProvider_explicitValue_reachesTranscriber() async {
+        let transcriber = LanguageCapturingTranscriber()
+        let p = PipelineCoordinator(
+            audio: FakeAudio(),
+            transcriberProvider: { transcriber },
+            refinerProvider: { @MainActor in (IdentityRefiner(), BuiltInStyles.conversaInformal) },
+            injector: FakeInjector(),
+            historyStore: FakeHistoryStore(),
+            historyMaxItemsProvider: { @MainActor in 100 },
+            historyMaxDaysProvider: { @MainActor in 30 },
+            llmModelNameProvider: { @MainActor _ in nil },
+            whisperModelNameProvider: { "fake" },
+            languageProvider: { "en" }
+        )
+        await p.handle(.toggle)
+        await p.handle(.toggle)
+        try? await Task.sleep(nanoseconds: 300_000_000)
+        let got = await transcriber.received.get()
+        XCTAssertEqual(got, .some("en"),
+                       "languageProvider deve chegar como 'en' no transcriber")
+    }
+
+    func test_languageProvider_nil_propagatesAsAutoDetect() async {
+        let transcriber = LanguageCapturingTranscriber()
+        let p = PipelineCoordinator(
+            audio: FakeAudio(),
+            transcriberProvider: { transcriber },
+            refinerProvider: { @MainActor in (IdentityRefiner(), BuiltInStyles.conversaInformal) },
+            injector: FakeInjector(),
+            historyStore: FakeHistoryStore(),
+            historyMaxItemsProvider: { @MainActor in 100 },
+            historyMaxDaysProvider: { @MainActor in 30 },
+            llmModelNameProvider: { @MainActor _ in nil },
+            whisperModelNameProvider: { "fake" },
+            languageProvider: { nil }
+        )
+        await p.handle(.toggle)
+        await p.handle(.toggle)
+        try? await Task.sleep(nanoseconds: 300_000_000)
+        let got = await transcriber.received.get()
+        // outer .some confirma que transcribe foi chamado; inner nil = auto-detect
+        XCTAssertEqual(got, .some(nil),
+                       "languageProvider nil deve chegar como nil (auto-detect) no transcriber")
+    }
+
     // Helpers ----------------------------------------------------
 
     private func makeCoordinator(audio: AudioCapturing = FakeAudio(),
@@ -370,10 +415,28 @@ private final class FakeAudio: AudioCapturing, @unchecked Sendable {
 private final class FakeTranscriber: Transcribing, @unchecked Sendable {
     var loadedModelName: String? = "fake"
     func loadModel(_ name: String, onProgress: @escaping (Double) -> Void) async throws {}
-    func transcribe(buffer: AudioBuffer, language: String, initialPrompt: String?) async throws -> String {
+    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> String {
         "olá mundo"
     }
     func unloadModel() { loadedModelName = nil }
+}
+
+/// Captura o `language` recebido pra validar a propagação do languageProvider.
+private final class LanguageCapturingTranscriber: Transcribing, @unchecked Sendable {
+    var loadedModelName: String? = "fake"
+    let received = ActorOptionalString()
+    func loadModel(_ name: String, onProgress: @escaping (Double) -> Void) async throws {}
+    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> String {
+        await received.set(language)
+        return "olá mundo"
+    }
+    func unloadModel() { loadedModelName = nil }
+}
+
+private actor ActorOptionalString {
+    private var v: String??  // outer nil = nunca chamado; inner nil = auto
+    func set(_ value: String?) { v = value }
+    func get() -> String?? { v }
 }
 
 private final class FakeInjector: Injecting, @unchecked Sendable {
@@ -419,7 +482,7 @@ private final class FakeRefinerSlow: TextRefiner, @unchecked Sendable {
 private final class FakeTranscriberSlow: Transcribing, @unchecked Sendable {
     var loadedModelName: String? = "fake"
     func loadModel(_ name: String, onProgress: @escaping (Double) -> Void) async throws {}
-    func transcribe(buffer: AudioBuffer, language: String, initialPrompt: String?) async throws -> String {
+    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> String {
         try await Task.sleep(nanoseconds: 1_000_000_000) // 1s
         return "olá mundo"
     }

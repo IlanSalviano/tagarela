@@ -31,6 +31,20 @@ final class PreferencesStoreTests: XCTestCase {
         XCTAssertEqual(store.openAIEndpoint, PreferencesDefaults.openAIEndpoint)
         XCTAssertEqual(store.indicatorVariant, .pill)
         XCTAssertEqual(store.whisperModelName, "large-v3_turbo")
+        XCTAssertEqual(store.transcriptionLanguage, .auto)
+    }
+
+    func test_setTranscriptionLanguage_persistsAcrossInit() {
+        let s1 = PreferencesStore(defaults: defaults, defaultStyleID: dummyStyleID)
+        s1.transcriptionLanguage = .en
+        let s2 = PreferencesStore(defaults: defaults, defaultStyleID: dummyStyleID)
+        XCTAssertEqual(s2.transcriptionLanguage, .en)
+    }
+
+    func test_transcriptionLanguage_whisperCode_mapsAutoToNil() {
+        XCTAssertNil(TranscriptionLanguage.auto.whisperCode)
+        XCTAssertEqual(TranscriptionLanguage.pt.whisperCode, "pt")
+        XCTAssertEqual(TranscriptionLanguage.en.whisperCode, "en")
     }
 
     func test_setRefinerKind_persistsAcrossInit() {

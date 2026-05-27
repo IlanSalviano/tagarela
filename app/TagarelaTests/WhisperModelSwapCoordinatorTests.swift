@@ -228,7 +228,7 @@ private final class FakeT: Transcribing, @unchecked Sendable {
         loadedModelName = name
     }
 
-    func transcribe(buffer: AudioBuffer, language: String, initialPrompt: String?) async throws -> String {
+    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> String {
         ""
     }
 
