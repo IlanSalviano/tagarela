@@ -48,6 +48,18 @@ DMG_NAME=$(basename "$DMG_PATH")
 version=$(echo "$DMG_NAME" | sed -E 's/Tagarela-([0-9.]+)\.dmg/\1/')
 length=$(stat -f %z "$DMG_PATH")
 
+# sparkle:version DEVE ser o CFBundleVersion (número de build): o Sparkle compara
+# esse campo contra o CFBundleVersion do app instalado pra decidir se há update.
+# Usar a versão de marketing aqui (ex: "1.0.3" contra build "4") quebra a detecção
+# — o comparador lê [1,0,3] < [4] e nunca oferece o update. Ver ADR-0007.
+# O .app já notarizado (o mesmo empacotado no DMG) é a fonte da verdade.
+APP_PATH="$RELEASE_DIR/Tagarela.app"
+build_version=$(plutil -p "$APP_PATH/Contents/Info.plist" 2>/dev/null | grep '"CFBundleVersion"' | sed -E 's/.*=> "([^"]+)".*/\1/')
+if [ -z "$build_version" ]; then
+    echo "erro: não consegui ler CFBundleVersion de $APP_PATH/Contents/Info.plist"
+    exit 1
+fi
+
 # Localizar sign_update (binário do Sparkle SPM)
 # Find direto evita adivinhar estrutura intermediária do SPM artifact dir.
 # Filtra `old_dsa_scripts/` (legacy DSA) — queremos a EdDSA do Sparkle 2.x.
@@ -78,7 +90,7 @@ new_item=$(cat <<EOF
     <item>
       <title>Versão $version</title>
       <pubDate>$pub_date</pubDate>
-      <sparkle:version>$version</sparkle:version>
+      <sparkle:version>$build_version</sparkle:version>
       <sparkle:shortVersionString>$version</sparkle:shortVersionString>
       <enclosure
         url="$dmg_url"

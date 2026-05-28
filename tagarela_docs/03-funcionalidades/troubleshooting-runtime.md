@@ -53,3 +53,37 @@ Long-running session + churn de permissões (TCC `kTCCServiceAccessibility` foi 
 - Diagnóstico in-app: detectar transcribed-vazio em audio-com-sinal e sugerir restart do app via toast.
 
 Investigar como item de backlog se sintoma reaparecer em outra sessão.
+
+---
+
+## 2. Sparkle não detecta release nova (update silenciosamente não oferecido)
+
+**Data:** 2026-05-27 (máquina secundária na v1.0.2 não viu a v1.0.3).
+
+### Sintoma
+
+Uma máquina rodando uma versão antiga não recebe o prompt de update mesmo com a release
+nova publicada e o appcast atualizado. Nenhum erro visível; o Sparkle simplesmente conclui
+que não há nada mais novo.
+
+### Diagnóstico
+
+O `appcast.xml` trazia `sparkle:version` = versão de marketing (`1.0.3`), mas o Sparkle
+compara esse campo contra o `CFBundleVersion` do app instalado, que é um inteiro de build
+(`4`). `[1,0,3]` perde para `[4]` no primeiro componente (`1 < 4`) → update considerado
+"mais antigo" → não oferecido. Bug presente desde sempre; só não apareceu antes porque o
+único update testado no aceite (v1.0.0 build `1` → v1.0.1) é o caso que funciona por
+acidente. Detalhe completo em [ADR-0007](../04-decisoes/ADR-0007-sparkle-version-vs-build-number.md).
+
+### Remediação
+
+`sparkle:version` deve ser o `CFBundleVersion` (build number), não a versão de marketing.
+Corrigido em `appcast.xml` (itens passam a usar 1/2/3/4) e em `scripts/appcast.sh` (lê o
+`CFBundleVersion` do `.app` notarizado). Após push, a raw URL do GitHub leva ~5 min de CDN
+pra propagar; a máquina pega na próxima checagem (launch ou 24h).
+
+### Como confirmar que voltou
+
+Na máquina antiga, forçar uma checagem (relaunch do app) e verificar que o prompt de update
+aparece. Alternativamente, comparar `CFBundleVersion` instalado (`< 4`) com o
+`sparkle:version` do appcast (`4`).

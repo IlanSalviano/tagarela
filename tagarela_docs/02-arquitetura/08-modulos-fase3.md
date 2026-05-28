@@ -38,10 +38,18 @@ A Fase 3 entregou o pipeline de release: cert Developer ID Application, entitlem
 - `sign.sh` — codesign --deep com Developer ID + entitlements.
 - `notarize.sh` — zip → notarytool submit --wait → staple no .app.
 - `dmg.sh` — hdiutil + sign + **notarize separado** + staple no DMG. (Ticket é por arquivo; .app stapled não cobre o DMG.)
-- `appcast.sh` — gera `<item>` no appcast.xml com `sign_update` EdDSA. Find direto do binário, evita acoplar à estrutura interna do SPM artifacts dir.
+- `appcast.sh` — gera `<item>` no appcast.xml com `sign_update` EdDSA. Find direto do binário, evita acoplar à estrutura interna do SPM artifacts dir. `sparkle:version` = `CFBundleVersion` (build number), lido do `.app` notarizado — **não** a versão de marketing (ver correção abaixo).
 - `release.sh initial|patch|minor|major` — orquestrador + git tag + gh release create + push robusto (fallback pra `--set-upstream` se branch não tem tracking).
 
 `appcast.xml` versionado no repo, raw URL em `Info.plist`. DMGs hospedados em GitHub Releases.
+
+> **Correção 2026-05-27 — detecção de update estava quebrada.** O `appcast.sh` emitia a
+> versão de marketing (`1.0.3`) em `sparkle:version`, mas o Sparkle compara esse campo
+> contra o `CFBundleVersion` (build `4`). `[1,0,3] < [4]` → update nunca oferecido pra quem
+> estava em build ≥ 2. O aceite do Bloco D só validou v1.0.0→v1.0.1, o único caso que
+> funciona por acidente, mascarando o bug. Corrigido em `appcast.sh` + `appcast.xml`. Ver
+> [ADR-0007](../04-decisoes/ADR-0007-sparkle-version-vs-build-number.md) e
+> [troubleshooting-runtime.md #2](../03-funcionalidades/troubleshooting-runtime.md).
 
 ## Cleanup #6 da Fase 1: ✅ fechado
 
