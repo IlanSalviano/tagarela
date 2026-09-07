@@ -252,18 +252,23 @@ actor PipelineCoordinator {
             setState(.processing)
             let transcriber = await transcriberProvider()
             Diag.info(.pipeline, "transcribing (model loaded? \(transcriber.loadedModelName ?? "NIL"))")
-            let raw = try await transcriber.transcribe(
+            let outcome = try await transcriber.transcribe(
                 buffer: buffer,
                 language: await languageProvider(),
                 initialPrompt: await initialPromptProvider()
             )
+            let raw = outcome.text
             if aborted() { Diag.notice(.pipeline, "cancelled after transcribe"); setState(.idle); return }
             // NUNCA logar o texto: só o tamanho. Vazio é o caminho S2 da
             // auditoria §3.4 — indistinguível de sucesso sem esta linha.
             if raw.isEmpty {
                 consecutiveEmpty += 1
-                Diag.error(.pipeline, "transcribed vazio (audio=\(fmt(buffer.durationSeconds))s, "
-                           + "seguidas=\(consecutiveEmpty))")
+                // O pico pós-boost separa "não falei" de "o decoder devolveu
+                // nada apesar de haver sinal" — a diferença que a auditoria
+                // não conseguiu fazer (hipóteses H1 × H2).
+                let peak = audio.lastStats.map { String(format: "%.3f", $0.peakAfter) } ?? "?"
+                Diag.error(.pipeline, "transcribed vazio (audio=\(fmt(buffer.durationSeconds))s "
+                           + "peak=\(peak) seguidas=\(consecutiveEmpty)) \(outcome.metricsLine)")
                 continuation?.yield(.emptyTranscription)
                 if consecutiveEmpty >= 2 {
                     Diag.error(.pipeline, "recovery requested after \(consecutiveEmpty) empty")
@@ -276,7 +281,7 @@ actor PipelineCoordinator {
                 return
             }
             consecutiveEmpty = 0
-            Diag.notice(.pipeline, "transcribed chars=\(raw.count)")
+            Diag.notice(.pipeline, "transcribed \(outcome.metricsLine)")
             let (refiner, style) = await refinerProvider()
             let actualRefinerKind: RefinerKind
             let refined: String

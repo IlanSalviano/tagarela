@@ -81,7 +81,23 @@ feliz.
 ---
 
 ## Bloco B — modelo e decoder (Tarefa 5)
-_(a preencher quando a Tarefa 5 fechar)_
+
+- [ ] **B1 — launch sem rede.** Desligar Wi-Fi/Ethernet, fechar e reabrir o
+      build de dev, ditar. Tem que transcrever normalmente. No log:
+      `modelo '…' já em disco — carregando sem rede`. Antes desta fase o modelo
+      nem carregava sem internet e todo ditado virava "erro no pipeline".
+- [ ] **B2 — dois vazios seguidos disparam a recuperação.** Com o microfone
+      mudo no sistema (ou tampado), ditar duas vezes. Esperado: toast
+      "Não entendi nada — tente de novo." nas duas, depois
+      "Reconhecedor reiniciado.". No log, `transcribed vazio` com `peak=` e as
+      métricas (`logprob`, `cr`, `nsp`), depois `recarregando model=… do disco`
+      e `reloaded model=…`.
+- [ ] **B3 — o ditado seguinte funciona.** Reabilitar o microfone e ditar: tem
+      que voltar ao normal, sem relaunch.
+- [ ] **B4 — vazio não polui.** Confirmar que os ditados vazios de B2 **não**
+      colaram nada no app-alvo e **não** aparecem em Preferências › Histórico.
+
+**Resultado:** _(a preencher)_
 
 ## Bloco C — hotkey (Tarefa 7)
 _(a preencher quando a Tarefa 7 fechar)_

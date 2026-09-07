@@ -36,6 +36,10 @@ final class WhisperModelStoreLive: WhisperModelStore, @unchecked Sendable {
         return !contents.isEmpty
     }
 
+    func modelFolderURL(for name: String) -> URL? {
+        isDownloaded(name) ? modelDir(for: name) : nil
+    }
+
     func sizeOnDisk(_ name: String) -> Int64? {
         let dir = modelDir(for: name)
         guard fm.fileExists(atPath: dir.path) else { return nil }

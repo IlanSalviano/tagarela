@@ -7,6 +7,11 @@ protocol WhisperModelStore: Sendable {
     /// Retorna soma dos bytes de todos os arquivos da pasta do modelo, ou nil se ausente.
     func sizeOnDisk(_ name: String) -> Int64?
 
+    /// URL da pasta do modelo se ele já está em disco, senão `nil`.
+    /// Permite carregar sem tocar a rede — `WhisperKit.download` faz um HTTP
+    /// incondicional a `huggingface.co` mesmo com o modelo já baixado.
+    func modelFolderURL(for name: String) -> URL?
+
     /// Remove a pasta do modelo do disco. Lança `notFound` se não existe.
     func delete(_ name: String) async throws
 }

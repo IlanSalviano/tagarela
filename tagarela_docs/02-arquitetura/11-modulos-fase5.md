@@ -244,3 +244,39 @@ segundos de verdade, e a auditoria §5.5 já reclamava dos sleeps fixos da suít
 vermelho registrado em separado, porque os eventos novos precisavam existir para
 o arquivo compilar. A exigência de prova em vermelho vale para as Tarefas 3 e 6,
 e a da Tarefa 3 está registrada acima. Suíte **215 → 224**, verde.
+
+---
+
+## Tarefa 5 — transcriber: métricas, carga local sem rede, `reload()` ✅ (código; aceite Bloco B pendente)
+
+**`TranscriptionOutcome`** substitui a `String` crua devolvida pelo
+`transcribe`: texto, idioma detectado, `avgLogprob`, `compressionRatio`,
+`noSpeechProb`, `wallMs` e número de segmentos. As métricas já eram produzidas
+pelo WhisperKit e o app **jogava fora** — sem elas, um `''` era indistinguível
+entre "o usuário não falou" e "o decoder degradou" (H1 × H2). `metricsLine`
+formata tudo para o log e, por construção, **nunca inclui o texto** (há teste).
+
+Com isso a divergência que a Tarefa 1 deixou em aberto fechou: a linha de erro
+de transcrição vazia agora traz o **pico pós-boost** (via `audio.lastStats`) ao
+lado das métricas do decoder — que é exatamente o par de números que separa as
+duas hipóteses.
+
+**Carga sem rede.** `WhisperKit.download` chama `HubApi.getFilenames` — HTTP
+incondicional a `huggingface.co` — **antes** do snapshot, mesmo com o modelo já
+em disco. Consequências: launch sem internet deixava o modelo sem carregar e
+todo ditado virava "erro no pipeline" até relançar com rede; e um app
+"local-first" fazia requisição de rede a cada abertura. Agora
+`WhisperModelStore.modelFolderURL(for:)` decide: pasta local → instancia direto;
+ausente → baixa. O `downloader` é injetável, então a decisão tem teste sem tocar
+a rede.
+
+**`reload()`** descarrega e reinstancia **a partir do disco**, guardando a pasta
+usada na carga. É a recuperação disparada por dois vazios seguidos — e importa
+que seja de disco: o app está degradado justamente quando não se quer depender
+de um serviço externo estar de pé. O `AppContainer.recoverTranscriber()` passou
+a usá-lo no lugar do `unloadModel` + `loadModel` provisório da Tarefa 4.
+
+**Testes:** +5 (escolha disco × download com spy, `reload` sem modelo carregado,
+privacidade do `metricsLine`, `modelFolderURL`). Suíte **224 → 229**, verde.
+
+**Pendente:** aceite manual do Bloco B.

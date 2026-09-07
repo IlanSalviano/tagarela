@@ -70,4 +70,21 @@ final class WhisperModelStoreTests: XCTestCase {
             XCTFail("unexpected: \(error)")
         }
     }
+
+    func test_modelFolderURL_isNilWhenAbsentAndSetWhenPresent() throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("wms-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = WhisperModelStoreLive(rootDirectory: root)
+
+        XCTAssertNil(store.modelFolderURL(for: "large-v3_turbo"))
+
+        let dir = root.appendingPathComponent("openai_whisper-large-v3_turbo")
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        FileManager.default.createFile(atPath: dir.appendingPathComponent("x.mlmodelc").path,
+                                       contents: Data("x".utf8))
+
+        XCTAssertEqual(store.modelFolderURL(for: "large-v3_turbo")?.lastPathComponent,
+                       "openai_whisper-large-v3_turbo")
+    }
 }

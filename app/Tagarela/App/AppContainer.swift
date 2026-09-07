@@ -440,8 +440,8 @@ final class AppContainer: ObservableObject {
     /// auditoria é que o decoder degrada ao longo de uma sessão longa, e não há
     /// métrica que distinga isso de "o usuário não falou".
     ///
-    /// Hoje passa por `unloadModel` + `loadModel`, que ainda toca a rede; a
-    /// Tarefa 5 troca por um `reload()` que lê só do disco.
+    /// Usa `reload()`, que relê **do disco** — sem rede, e portanto sem depender
+    /// de `huggingface.co` estar de pé no momento em que o app está degradado.
     private func recoverTranscriber() {
         guard !isRecoveringTranscriber else {
             Diag.info(.transcribe, "recuperação já em andamento — ignorando pedido")
@@ -449,15 +449,11 @@ final class AppContainer: ObservableObject {
         }
         isRecoveringTranscriber = true
         let transcriber = self.transcriber
-        let name = transcriber.loadedModelName ?? prefs.whisperModelName
         let pipeline = self.pipeline
         Task { @MainActor [weak self] in
             defer { self?.isRecoveringTranscriber = false }
-            Diag.error(.transcribe, "recriando o transcriber (modelo=\(name))")
-            transcriber.unloadModel()
             do {
-                try await transcriber.loadModel(name) { _ in }
-                Diag.notice(.transcribe, "transcriber recriado")
+                try await transcriber.reload()
                 await pipeline.noteTranscriberRecovered()
             } catch {
                 Diag.error(.transcribe, "recriar o transcriber falhou: \(String(describing: error))")

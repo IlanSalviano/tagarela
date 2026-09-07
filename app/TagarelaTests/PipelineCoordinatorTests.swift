@@ -734,8 +734,11 @@ private final class CountingStartAudio: AudioCapturing, @unchecked Sendable {
 private final class EmptyTranscriber: Transcribing, @unchecked Sendable {
     var loadedModelName: String? = "fake"
     func loadModel(_ name: String, onProgress: @escaping (Double) -> Void) async throws {}
-    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> String { "" }
+    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> TranscriptionOutcome {
+        TranscriptionOutcome(text: "")
+    }
     func unloadModel() { loadedModelName = nil }
+    func reload() async throws {}
 }
 
 private final class SwitchableTranscriber: Transcribing, @unchecked Sendable {
@@ -748,8 +751,11 @@ private final class SwitchableTranscriber: Transcribing, @unchecked Sendable {
     }
     init(text: String) { self.value = text }
     func loadModel(_ name: String, onProgress: @escaping (Double) -> Void) async throws {}
-    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> String { text }
+    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> TranscriptionOutcome {
+        TranscriptionOutcome(text: text)
+    }
     func unloadModel() { loadedModelName = nil }
+    func reload() async throws {}
 }
 
 private final class SlowTranscriber: Transcribing, @unchecked Sendable {
@@ -757,20 +763,22 @@ private final class SlowTranscriber: Transcribing, @unchecked Sendable {
     private let delayMs: Int
     init(delayMs: Int) { self.delayMs = delayMs }
     func loadModel(_ name: String, onProgress: @escaping (Double) -> Void) async throws {}
-    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> String {
+    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> TranscriptionOutcome {
         try? await Task.sleep(nanoseconds: UInt64(delayMs) * 1_000_000)
-        return "olá mundo"
+        return TranscriptionOutcome(text: "olá mundo")
     }
     func unloadModel() { loadedModelName = nil }
+    func reload() async throws {}
 }
 
 private final class FakeTranscriber: Transcribing, @unchecked Sendable {
     var loadedModelName: String? = "fake"
     func loadModel(_ name: String, onProgress: @escaping (Double) -> Void) async throws {}
-    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> String {
-        "olá mundo"
+    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> TranscriptionOutcome {
+        TranscriptionOutcome(text: "olá mundo")
     }
     func unloadModel() { loadedModelName = nil }
+    func reload() async throws {}
 }
 
 /// Captura o `language` recebido pra validar a propagação do languageProvider.
@@ -778,11 +786,12 @@ private final class LanguageCapturingTranscriber: Transcribing, @unchecked Senda
     var loadedModelName: String? = "fake"
     let received = ActorOptionalString()
     func loadModel(_ name: String, onProgress: @escaping (Double) -> Void) async throws {}
-    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> String {
+    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> TranscriptionOutcome {
         await received.set(language)
-        return "olá mundo"
+        return TranscriptionOutcome(text: "olá mundo")
     }
     func unloadModel() { loadedModelName = nil }
+    func reload() async throws {}
 }
 
 private actor ActorOptionalString {
@@ -834,11 +843,12 @@ private final class FakeRefinerSlow: TextRefiner, @unchecked Sendable {
 private final class FakeTranscriberSlow: Transcribing, @unchecked Sendable {
     var loadedModelName: String? = "fake"
     func loadModel(_ name: String, onProgress: @escaping (Double) -> Void) async throws {}
-    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> String {
+    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> TranscriptionOutcome {
         try await Task.sleep(nanoseconds: 1_000_000_000) // 1s
-        return "olá mundo"
+        return TranscriptionOutcome(text: "olá mundo")
     }
     func unloadModel() { loadedModelName = nil }
+    func reload() async throws {}
 }
 
 private actor ActorInt {
