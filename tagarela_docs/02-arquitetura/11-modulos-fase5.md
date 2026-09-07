@@ -280,3 +280,44 @@ a usá-lo no lugar do `unloadModel` + `loadModel` provisório da Tarefa 4.
 privacidade do `metricsLine`, `modelFolderURL`). Suíte **224 → 229**, verde.
 
 **Pendente:** aceite manual do Bloco B.
+
+---
+
+## Tarefa 6 — `PermissionService.snapshots` multicast ✅
+
+**O bug, com teste vermelho antes.** `snapshots` era um único `AsyncStream`
+iterado por **dois** consumidores — o `AppContainer` e o `OnboardingCoordinator`,
+este criado em todo launch. `AsyncStream` é single-consumer: os elementos são
+**divididos** entre quem itera, não duplicados. O checklist do onboarding perdia
+cerca de metade das transições de permissão.
+
+O teste `test_makeSnapshots_deliversEveryUpdateToEverySubscriber` reproduziu
+exatamente isso antes da correção — com quatro transições, o assinante A recebeu
+3 e o B recebeu 2:
+
+```
+assinante A perdeu PermissionsSnapshot(…accessibility: .granted…); recebeu 3
+assinante B perdeu PermissionsSnapshot(…inputMonitoring: .granted…); recebeu 2
+```
+
+**Correção:** `makeSnapshots()` cria um stream **por assinante**; o poller faz
+broadcast para todos sob `OSAllocatedUnfairLock`, e quem assina depois recebe
+imediatamente o último snapshot conhecido — senão o onboarding só reagiria à
+transição seguinte. `onTermination` remove o assinante. `snapshots` continua
+existindo como compat, agora derivado de `makeSnapshots()`.
+
+**Vazamento fechado.** O `guard let self` ficava **fora** do laço de polling,
+mantendo o serviço vivo pela vida da Task: o `deinit` nunca rodava e o poll de
+1 s com 3 IPCs seguia para sempre (visível no log da auditoria como
+`TCCAccessRequest() IPC` contínuo). Agora `self` é resolvido por iteração e sai
+de escopo antes do sleep. Mesmo tratamento no `OnboardingCoordinator`.
+
+**`permissionsAllGranted` ganhou leitor.** O campo existia em `AppState` e
+**ninguém lia**. Agora vira aviso no menu — "permissões pendentes — abra
+Preferências" — o que importa porque sem Acessibilidade a cola morre e sem Input
+Monitoring a hotkey morre, e as duas falham em silêncio.
+
+**Injeção para teste:** `PermissionServiceLive(probe:pollIntervalNs:)` permite
+sondagem falsa e poll de 10 ms, sem depender do estado real de TCC da máquina.
+
+**Testes:** +1 (o de multicast). Suíte **229 → 230**, verde.

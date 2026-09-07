@@ -40,7 +40,8 @@ struct MenuBarContent: View {
             StateRow(state: appState.pipeline,
                      health: health,
                      loadedModelName: loadedModelName(),
-                     refinerLabel: refinerLabel)
+                     refinerLabel: refinerLabel,
+                     permissionsPending: !appState.permissionsAllGranted)
 
             Divider().background(DS.Color.hairline)
 

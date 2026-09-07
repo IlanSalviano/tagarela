@@ -462,7 +462,7 @@ final class AppContainer: ObservableObject {
     }
 
     private func wirePermissionsToAppState() {
-        let stream = permissions.snapshots
+        let stream = permissions.makeSnapshots()
         Task { [weak self] in
             for await snap in stream {
                 guard let self else { return }

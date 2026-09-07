@@ -285,13 +285,16 @@ Fechada em 2026-09-07. Suíte 215 → **224** verde. Notas em [`11-modulos-fase5
 
 **Files:** `Permissions/PermissionService.swift`, `Permissions/PermissionServiceLive.swift`, `UI/Onboarding/OnboardingCoordinator.swift`, `App/AppContainer.swift`, `App/AppState.swift`, `TagarelaTests/PermissionServiceTests.swift`.
 
-- [ ] **Step 1 — teste:** dois assinantes de `makeSnapshots()` recebem **todos** os snapshots (hoje dividem — teste falha no código atual). Usar um `PermissionServiceLive(probe:)` com closure de sondagem injetável e intervalo de 10 ms.
-- [ ] **Step 2 — implementar:** `current: CurrentValueSubject<PermissionsSnapshot, Never>` interno; `func makeSnapshots() -> AsyncStream<PermissionsSnapshot>` cria um stream por chamada a partir do subject (`.values` de um `AsyncPublisher` ou bridge manual com `sink` + `onTermination` cancelando). Manter `snapshots` como `makeSnapshots()` para compat, marcado deprecated.
-- [ ] **Step 3 — consumidores:** `OnboardingCoordinator` e `AppContainer` usam `makeSnapshots()`; `AppContainer` passa a **usar** `permissionsAllGranted` (badge no `StateRow` "permissões pendentes" quando `false` após o onboarding) ou remove o campo — escolher usar (barato) e expor no `PipelineHealth.summaryLine`.
-- [ ] **Step 4 — `[weak self]` por iteração** em `PermissionServiceLive.startPolling` e `OnboardingCoordinator.init`.
-- [ ] **Step 5 — suíte verde.** Commit: `fix(permissions): snapshots multicast; onboarding deixa de perder transições`.
+- [x] **Step 1 — teste:** dois assinantes de `makeSnapshots()` recebem **todos** os snapshots (hoje dividem — teste falha no código atual). Usar um `PermissionServiceLive(probe:)` com closure de sondagem injetável e intervalo de 10 ms.
+- [x] **Step 2 — implementar:** `current: CurrentValueSubject<PermissionsSnapshot, Never>` interno; `func makeSnapshots() -> AsyncStream<PermissionsSnapshot>` cria um stream por chamada a partir do subject (`.values` de um `AsyncPublisher` ou bridge manual com `sink` + `onTermination` cancelando). Manter `snapshots` como `makeSnapshots()` para compat, marcado deprecated.
+- [x] **Step 3 — consumidores:** `OnboardingCoordinator` e `AppContainer` usam `makeSnapshots()`; `AppContainer` passa a **usar** `permissionsAllGranted` (badge no `StateRow` "permissões pendentes" quando `false` após o onboarding) ou remove o campo — escolher usar (barato) e expor no `PipelineHealth.summaryLine`.
+- [x] **Step 4 — `[weak self]` por iteração** em `PermissionServiceLive.startPolling` e `OnboardingCoordinator.init`.
+- [x] **Step 5 — suíte verde.** Commit: `fix(permissions): snapshots multicast; onboarding deixa de perder transições`.
 
 ---
+
+
+Fechada em 2026-09-07. Suíte 229 → **230** verde. O teste de multicast esteve **vermelho** antes da correção, com o sintoma exato da auditoria (A recebeu 3 de 4 snapshots, B recebeu 2). Escolhido *usar* `permissionsAllGranted` (badge no `StateRow`) em vez de remover o campo.
 
 ## Tarefa 7: hotkey — `start()` idempotente, watchdog, re-start ao reconceder
 

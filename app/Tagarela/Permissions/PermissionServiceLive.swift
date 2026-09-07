@@ -1,25 +1,56 @@
 import AppKit
 import AVFoundation
 import IOKit.hid
-import OSLog
+import os
 
 final class PermissionServiceLive: PermissionService, @unchecked Sendable {
-    private let logger = Logger(subsystem: "com.tagarela", category: "Permissions")
-    nonisolated(unsafe) private var continuation: AsyncStream<PermissionsSnapshot>.Continuation?
-    let snapshots: AsyncStream<PermissionsSnapshot>
-    private var task: Task<Void, Never>?
+    /// Um continuation por assinante. Um `AsyncStream` compartilhado *divide*
+    /// os elementos entre consumidores em vez de duplicá-los — e o app tem dois
+    /// (auditoria §5.2).
+    private struct Subscribers {
+        var byID: [UUID: AsyncStream<PermissionsSnapshot>.Continuation] = [:]
+        var latest: PermissionsSnapshot?
+    }
+    private let subscribers = OSAllocatedUnfairLock(uncheckedState: Subscribers())
 
-    init() {
-        var contRef: AsyncStream<PermissionsSnapshot>.Continuation!
-        self.snapshots = AsyncStream { continuation in
-            contRef = continuation
-        }
-        self.continuation = contRef
+    private var task: Task<Void, Never>?
+    private let probe: (@Sendable () -> PermissionsSnapshot)?
+    private let pollIntervalNs: UInt64
+
+    init(probe: (@Sendable () -> PermissionsSnapshot)? = nil,
+         pollIntervalNs: UInt64 = 1_000_000_000) {
+        self.probe = probe
+        self.pollIntervalNs = pollIntervalNs
         startPolling()
     }
 
+    func makeSnapshots() -> AsyncStream<PermissionsSnapshot> {
+        let id = UUID()
+        let (stream, continuation) = AsyncStream<PermissionsSnapshot>.makeStream()
+        let known = subscribers.withLock { state -> PermissionsSnapshot? in
+            state.byID[id] = continuation
+            return state.latest
+        }
+        continuation.onTermination = { [weak self] _ in
+            self?.subscribers.withLock { _ = $0.byID.removeValue(forKey: id) }
+        }
+        // Quem chega depois recebe o estado atual em vez de esperar a próxima
+        // transição — senão o onboarding só reagiria à mudança seguinte.
+        if let known { continuation.yield(known) }
+        return stream
+    }
+
+    private func broadcast(_ snapshot: PermissionsSnapshot) {
+        let targets = subscribers.withLock { state -> [AsyncStream<PermissionsSnapshot>.Continuation] in
+            state.latest = snapshot
+            return Array(state.byID.values)
+        }
+        for continuation in targets { continuation.yield(snapshot) }
+    }
+
     func snapshot() -> PermissionsSnapshot {
-        PermissionsSnapshot(
+        if let probe { return probe() }
+        return PermissionsSnapshot(
             microphone: micStatus(),
             accessibility: AXIsProcessTrusted() ? .granted : .needed,
             inputMonitoring: inputMonitoringStatus()
@@ -59,19 +90,33 @@ final class PermissionServiceLive: PermissionService, @unchecked Sendable {
     }
 
     private func startPolling() {
+        let intervalNs = pollIntervalNs
         task = Task { [weak self] in
-            guard let self else { return }
             var last: PermissionsSnapshot?
             while !Task.isCancelled {
-                let now = self.snapshot()
-                if now != last {
-                    self.continuation?.yield(now)
-                    last = now
+                // `self` é resolvido a cada iteração e sai de escopo antes do
+                // sleep: antes, um `guard let self` fora do laço mantinha o
+                // serviço vivo para sempre e o `deinit` nunca rodava.
+                do {
+                    guard let self else { return }
+                    let now = self.snapshot()
+                    if now != last {
+                        self.broadcast(now)
+                        last = now
+                    }
                 }
-                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                try? await Task.sleep(nanoseconds: intervalNs)
             }
         }
     }
 
-    deinit { task?.cancel(); continuation?.finish() }
+    deinit {
+        task?.cancel()
+        let targets = subscribers.withLock { state -> [AsyncStream<PermissionsSnapshot>.Continuation] in
+            let all = Array(state.byID.values)
+            state.byID.removeAll()
+            return all
+        }
+        for continuation in targets { continuation.finish() }
+    }
 }

@@ -10,6 +10,10 @@ struct StateRow: View {
     /// Refinador realmente selecionado — o sub-label dizia "identity (sem llm)",
     /// que é justamente o caso em que `.refining` nem acontece.
     var refinerLabel: String?
+    /// `AppState.permissionsAllGranted` existia e **não tinha leitor nenhum**
+    /// (auditoria §5.2). Agora vira aviso: sem Acessibilidade a cola morre, sem
+    /// Input Monitoring a hotkey morre — e as duas falham em silêncio.
+    var permissionsPending: Bool = false
 
     private var sub: String {
         switch state {
@@ -47,6 +51,12 @@ struct StateRow: View {
                     Text(health.summaryLine)
                         .font(DS.Font.mono(10))
                         .foregroundStyle(DS.Color.ink3)
+                }
+                if permissionsPending {
+                    Text(String(localized: "menubar.permissions.pending",
+                                defaultValue: "permissões pendentes — abra Preferências"))
+                        .font(DS.Font.mono(10))
+                        .foregroundStyle(DS.Color.carmine)
                 }
             }
             Spacer()
