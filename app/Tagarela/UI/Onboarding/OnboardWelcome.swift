@@ -12,7 +12,7 @@ struct OnboardWelcome: View {
                 .foregroundStyle(DS.Color.ink)
                 .padding(.bottom, 16)
             Text(String(localized: "onboarding.welcome.body",
-                         defaultValue: "aperte ⌥ direito em qualquer app, fale, aperte de novo. o texto refinado aparece onde estiver o cursor. funciona offline. fala português."))
+                         defaultValue: "aperte ⌥ direito em qualquer app, fale, aperte de novo. o texto refinado aparece onde estiver o cursor. funciona offline. entende português e inglês."))
                 .font(DS.Font.ui(14))
                 .foregroundStyle(DS.Color.ink2)
                 .lineSpacing(4)

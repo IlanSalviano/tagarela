@@ -407,3 +407,34 @@ continua, agora acompanhado de testes de verdade). Suíte **236 → 240**, verde
 
 **Testes:** +8 (4 do health checker, 1 do `num_ctx`, 2 dos clamps, 1 da
 persistência do swap). Suíte **240 → 248**, verde. **Pendente:** aceite do Bloco E.
+
+---
+
+## Tarefa 10 — localização: 37 chaves ausentes + teste derivado dos fontes ✅
+
+**O arquivo não era a fonte da verdade que dizia ser.** A auditoria §5.3 recontou
+185 chaves usadas no código contra 149 declaradas: **37 ausentes**, todas caindo
+em silêncio no `defaultValue`. O `LocalizableKeysTests` não pegava nada disso
+porque testava uma **lista manual** — e a lista, claro, só tinha chaves que
+alguém lembrou de adicionar.
+
+**Agora o teste deriva a lista dos fontes.** Varre `app/Tagarela/**/*.swift` a
+partir do `#filePath` com regex sobre `String(localized:)` e
+`NSLocalizedString(`, compara com o `.strings` e falha listando **arquivo por
+arquivo** o que falta. Um segundo teste faz o caminho inverso e reprova chaves
+declaradas sem uso.
+
+Rodando pela primeira vez, o teste reproduziu a contagem da auditoria na mosca:
+**37 ausentes e 1 sem uso** (`onboarding.model.badge.recommended`). O bloco mais
+gritante: **nenhuma chave `toast.*` existia** — todos os toasts do app viviam do
+`defaultValue`.
+
+**Também nesta tarefa:**
+
+- Strings hardcoded viraram chaves: `Button("retry")` do onboarding (estava em inglês, num app pt-BR), o prefixo `"cru: …"` do histórico, e as três mensagens de erro do swap de modelo.
+- `%d` → `%lld` em `preferences.transcription.swap.downloading` — `String(localized:)` gera `%lld` para `Int`, então o `%d` era um descasamento silencioso.
+- O card de **Acessibilidade** no onboarding dizia "necessário pra registrar o atalho global e simular ⌘V". Acessibilidade é só o ⌘V; o atalho global é Input Monitoring. A copy passou a dizer isso, e a distinção importa porque as duas permissões falham de formas diferentes (uma mata a cola, a outra mata a hotkey).
+- "funciona offline. **fala português**." ficou datado depois da Fase 4, que tornou o idioma configurável com auto-detecção. Agora diz "entende português e inglês".
+
+**Testes:** o teste de lista manual foi substituído por dois derivados.
+Suíte **248 → 249**, verde. Arquivo: 149 → 186 chaves.

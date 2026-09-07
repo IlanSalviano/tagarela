@@ -348,11 +348,14 @@ Código fechado em 2026-09-07, suíte 240 → **248** verde. O item **9h** saiu 
 
 ## Tarefa 10: localização — 37 chaves ausentes + teste derivado dos fontes
 
-- [ ] **Step 1 — `LocalizableKeysTests`** passa a localizar a raiz do repo via `#filePath`, varrer `app/Tagarela/**/*.swift` com regex `String\(localized: *"([^"]+)"` e `NSLocalizedString\( *"([^"]+)"`, e falhar listando chaves ausentes no `.strings` do bundle. (Deve falhar com 37 + as novas desta fase.)
-- [ ] **Step 2 — adicionar as chaves** (lista na auditoria §5.3; recontagem: 185 no código × 149 no arquivo) com os `defaultValue` atuais como texto; remover `onboarding.model.badge.recommended` (sem uso); corrigir `%d` → `%lld` na `:172`; atualizar `:45` ("fala português.") para refletir a Fase 4; strings hardcoded em `OnboardModel.swift:40` ("retry"), `HistoryEntryView.swift:28`, `TranscriptionView.swift:181-183`; texto do card de Acessibilidade (é para ⌘V, não para o atalho).
-- [ ] Suíte verde. Commit: `fix(l10n): 37 chaves ausentes + teste derivado dos fontes`.
+- [x] **Step 1 — `LocalizableKeysTests`** passa a localizar a raiz do repo via `#filePath`, varrer `app/Tagarela/**/*.swift` com regex `String\(localized: *"([^"]+)"` e `NSLocalizedString\( *"([^"]+)"`, e falhar listando chaves ausentes no `.strings` do bundle. (Deve falhar com 37 + as novas desta fase.)
+- [x] **Step 2 — adicionar as chaves** (lista na auditoria §5.3; recontagem: 185 no código × 149 no arquivo) com os `defaultValue` atuais como texto; remover `onboarding.model.badge.recommended` (sem uso); corrigir `%d` → `%lld` na `:172`; atualizar `:45` ("fala português.") para refletir a Fase 4; strings hardcoded em `OnboardModel.swift:40` ("retry"), `HistoryEntryView.swift:28`, `TranscriptionView.swift:181-183`; texto do card de Acessibilidade (é para ⌘V, não para o atalho).
+- [x] Suíte verde. Commit: `fix(l10n): 37 chaves ausentes + teste derivado dos fontes`.
 
 ---
+
+
+Fechada em 2026-09-07. O teste derivado reproduziu a contagem da auditoria na mosca — **37 ausentes e 1 sem uso** — antes da correção. Suíte 248 → **249** verde; arquivo 149 → 186 chaves.
 
 ## Tarefa 11: scripts de release — ordem segura do appcast
 

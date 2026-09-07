@@ -46,7 +46,7 @@
 "onboarding.step1.label"      = "PASSO 1 / 3";
 "onboarding.step1.name"       = "BOAS-VINDAS";
 "onboarding.welcome.headline" = "ditado por voz para qualquer coisa que você escreva.";
-"onboarding.welcome.body"     = "aperte ⌥ direito em qualquer app, fale, aperte de novo. o texto refinado aparece onde estiver o cursor. funciona offline. fala português.";
+"onboarding.welcome.body"     = "aperte ⌥ direito em qualquer app, fale, aperte de novo. o texto refinado aparece onde estiver o cursor. funciona offline. entende português e inglês.";
 "onboarding.button.continue"  = "continuar →";
 
 // Onboarding — Permissions (passo 2)
@@ -57,7 +57,7 @@
 "onboarding.perm.mic.name"                 = "microfone";
 "onboarding.perm.mic.why"                  = "captura sua voz pra transcrever. áudio nunca é salvo, só processado em memória.";
 "onboarding.perm.accessibility.name"       = "acessibilidade";
-"onboarding.perm.accessibility.why"        = "necessário pra registrar o atalho global e simular ⌘V no app de destino.";
+"onboarding.perm.accessibility.why"        = "pra colar o texto no app de destino, simulando ⌘V. o atalho global é o input monitoring, ali embaixo.";
 "onboarding.perm.inputmonitoring.name"     = "input monitoring";
 "onboarding.perm.inputmonitoring.why"      = "pra ouvir a tecla ⌥ direito mesmo quando outro app está em foco.";
 "onboarding.perm.status.granted"           = "concedida";
@@ -70,7 +70,7 @@
 "onboarding.model.headline"           = "modelos.";
 "onboarding.model.whisper.header"     = "WHISPER · TRANSCRIÇÃO";
 "onboarding.button.start"             = "começar →";
-"onboarding.model.badge.recommended"  = "RECOM.";
+// removida (sem uso): "onboarding.model.badge.recommended"  = "RECOM.";
 
 // Preferences window
 "preferences.window.title"     = "Preferências";
@@ -173,7 +173,7 @@
 "preferences.transcription.swapConfirm.title"       = "Trocar pra %@?";
 "preferences.transcription.swapConfirm.body"        = "Vai baixar %@. Você pode continuar usando o app durante o download.";
 "preferences.transcription.swapConfirm.proceed"     = "Trocar";
-"preferences.transcription.swap.downloading"        = "Baixando %@ — %d%%";
+"preferences.transcription.swap.downloading"        = "Baixando %@ — %lld%%";
 "preferences.transcription.swap.swapping"           = "Trocando pra %@…";
 "preferences.transcription.swap.error.title"        = "Falha ao trocar";
 "preferences.transcription.swap.error.body"         = "Não consegui mudar pra %@.\n\n%@";
@@ -212,3 +212,69 @@
 "toast.capture.failed"        = "Não captei áudio do microfone. Confira o dispositivo de entrada.";
 "toast.transcription.empty"   = "Não entendi nada — tente de novo.";
 "toast.transcriber.recovered" = "Reconhecedor reiniciado.";
+
+/* ===========================================================================
+   Fase 5 — chaves que existiam no código e faltavam no arquivo.
+
+   A auditoria de 2026-09-07 (§5.3) recontou 185 chaves usadas contra 149
+   declaradas: 37 ausentes, todas caindo em silêncio no `defaultValue`. O
+   arquivo não era a fonte da verdade que dizia ser. `LocalizableKeysTests`
+   agora deriva a lista dos fontes e quebra a suíte se alguma faltar — ou se
+   alguma sobrar sem uso.
+   =========================================================================== */
+
+// Preferências — Geral / Indicador
+"preferences.geral.indicator.header"   = "Indicador";
+"preferences.geral.indicator.label"    = "Estilo do indicador";
+"preferences.geral.indicator.preview"  = "Visualizar selecionado por 3s";
+"indicator.variant.pill"               = "Pílula";
+"indicator.variant.orb"                = "Orb";
+"indicator.variant.vertical"           = "Vertical";
+"indicator.variant.hud"                = "HUD";
+
+// Histórico
+"preferences.history.records.header"   = "Registros";
+"history.search.placeholder"           = "Buscar no cru ou refinado…";
+"history.count.total"                  = "%lld registros";
+"history.count.filtered"               = "%lld de %lld";
+"history.loadFailed"                   = "Não foi possível carregar.";
+"history.clearAll"                     = "Limpar tudo";
+"history.clearAll.confirm.title"       = "Apagar todo o histórico?";
+"history.clearAll.confirm.info"        = "Esta ação não pode ser desfeita.";
+"history.entry.copy"                   = "Copiar";
+"history.entry.copied"                 = "Copiado";
+"history.entry.reinject"               = "Re-injetar";
+"history.entry.reinjected"             = "Re-injetado";
+"history.entry.reinjectFailed"         = "Falhou — colar manual";
+"history.entry.rawPrefix"              = "cru: %@";
+
+// Menu da bandeja
+"menubar.preferences"                  = "Preferências…";
+
+// Onboarding — modelo
+"onboarding.model.downloading"         = "baixando %lld%%";
+"onboarding.model.retry"               = "tentar de novo";
+
+// Modal da API key
+"openai.key.existing.prefix"           = "Key cadastrada: ";
+"openai.key.existing.suffix"           = ". Digite uma nova pra substituir.";
+
+// Transcrição — erros de swap
+"preferences.transcription.swap.error.download"  = "Falha ao baixar: %@";
+"preferences.transcription.swap.error.load"      = "Falha ao carregar: %@";
+"preferences.transcription.swap.error.cancelled" = "Cancelado.";
+
+// Toasts — nenhum existia no arquivo; todos viviam do defaultValue
+"toast.refiner.networkOffline"         = "Sem rede — usando texto cru.";
+"toast.refiner.unauthorized"           = "API key inválida — usando texto cru.";
+"toast.refiner.timedOut"               = "Timeout no refiner — usando texto cru.";
+"toast.refiner.serverError"            = "Erro do servidor (%lld) — usando texto cru.";
+"toast.refiner.rateLimited"            = "Rate limit no refiner — usando texto cru.";
+"toast.refiner.contextExceeded"        = "Texto longo demais — usando texto cru.";
+"toast.refiner.modelNotFound"          = "Modelo '%@' não encontrado — usando texto cru.";
+"toast.refiner.malformedResponse"      = "Resposta malformada — usando texto cru.";
+"toast.injection.failed"               = "Cola falhou — o ditado está salvo no histórico.";
+"toast.history.saveFailed"             = "Histórico não salvou.";
+"toast.permission.microphone"          = "Microfone negado — abra Configurações.";
+"toast.permission.accessibility"       = "Acessibilidade negada — o ditado está no histórico e na área de transferência.";
+"toast.permission.inputMonitoring"     = "Input Monitoring negado — abra Configurações.";

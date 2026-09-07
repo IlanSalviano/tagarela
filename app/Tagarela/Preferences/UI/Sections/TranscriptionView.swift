@@ -180,9 +180,15 @@ struct TranscriptionView: View {
 
     private func errorDescription(_ error: SwapError) -> String {
         switch error {
-        case .downloadFailed(let r): return "Falha ao baixar: \(r)"
-        case .loadFailed(let r):     return "Falha ao carregar: \(r)"
-        case .cancelled:             return "Cancelado."
+        case .downloadFailed(let r):
+            return String(localized: "preferences.transcription.swap.error.download",
+                          defaultValue: "Falha ao baixar: \(r)")
+        case .loadFailed(let r):
+            return String(localized: "preferences.transcription.swap.error.load",
+                          defaultValue: "Falha ao carregar: \(r)")
+        case .cancelled:
+            return String(localized: "preferences.transcription.swap.error.cancelled",
+                          defaultValue: "Cancelado.")
         }
     }
 
