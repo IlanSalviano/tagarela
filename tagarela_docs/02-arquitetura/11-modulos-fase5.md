@@ -196,3 +196,51 @@ ditado de 60 s seguem abertos para a Tarefa 12. Ou seja: o watchdog e a recriaç
 do engine estão corretos por construção e cobertos por teste, mas **ainda não
 foram vistos disparando em campo** — é exatamente o que a Tarefa 13 (validação
 em campo) existe para fechar.
+
+---
+
+## Tarefa 4 — pipeline com falhas visíveis, recuperação e corridas ✅
+
+**Eventos novos** (`PipelineEvent`): `captureFailed(reason:)` com
+`CaptureFailureReason { noAudio, tooShort }`, `emptyTranscription`,
+`transcriberRecoveryRequested`, `transcriberRecovered`. Toasts correspondentes
+em `ToastKind` — as três chaves entraram no `Localizable.strings`.
+
+> Achado de passagem: **não existia nenhuma chave `toast.*` no arquivo**. Todos
+> os toasts do app viviam do `defaultValue`. É parte do achado §5.3 (37 chaves
+> ausentes); a Tarefa 10 fecha o conjunto com teste derivado dos fontes.
+
+**Os dois caminhos mudos da auditoria deixaram de ser mudos:**
+
+| Caminho | Antes | Agora |
+|---|---|---|
+| **S1** — gravação sem áudio utilizável | descartada em `.info`, sem evento, toast, histórico ou log de erro | `.captureFailed(.noAudio)` quando o `stop()` lança, `.captureFailed(.tooShort)` quando veio áudio curto demais numa gravação de **≥ 1 s de wall-clock** — com toast e `.error` no log |
+| **S2** — Whisper devolve `''` | injetava string vazia no app-alvo e salvava histórico vazio | não injeta, não salva, emite `.emptyTranscription` com toast |
+
+O limiar de wall-clock é o que separa **falha real** de **toque acidental na
+hotkey**: abaixo de 1 s o descarte continua silencioso, e há teste para os dois
+lados (`test_tooShortAfterLongRecording_emitsCaptureFailed` e
+`test_tooShortAfterTapRecording_isSilent`).
+
+**Recuperação do decoder (hipótese H2).** Dois vazios seguidos emitem
+`transcriberRecoveryRequested`; o `AppContainer` recria o transcriber em
+background e devolve `transcriberRecovered` pelo mesmo stream de eventos (via
+`PipelineCoordinator.noteTranscriberRecovered()`), o que mantém toast e
+contadores num caminho só. Um sucesso no meio zera a sequência. A recriação
+hoje passa por `unloadModel` + `loadModel`, que **ainda toca a rede** — a
+Tarefa 5 troca por um `reload()` que lê só do disco.
+
+**Três corridas fechadas:**
+
+1. `.error → sleep 2 s → .idle` era incondicional. Um toggle dentro desses 2 s já tinha começado outra gravação e o `.idle` atrasado derrubava o `.recording`: o painel sumia, o engine seguia gravando, e o toggle seguinte fazia `installTap` duplo — `NSException`. Agora só volta a `.idle` se ainda estiver em `.error`.
+2. Esc durante "transcrevendo" deixava um `transcribe()` em vôo (WhisperKit só checa cancelamento entre etapas) e um toggle imediato começava outro **na mesma instância**. Agora o toggle espera a pipeline anterior, com teto de 3 s.
+3. **Ordem `save` → `inject`.** Com a Acessibilidade caída, o `inject` lançava antes do `save` e o ditado sumia inteiro — não colava, não ficava no clipboard, não entrava no histórico (S3). Agora o histórico é gravado primeiro, e o app-alvo é lido antes pelo novo `Injecting.frontmostBundleID()`.
+
+**Relógio injetável no `PipelineCoordinator`** (`now: () -> Date`, default
+`Date()`): sem isso os testes do limiar de wall-clock precisariam dormir
+segundos de verdade, e a auditoria §5.5 já reclamava dos sleeps fixos da suíte.
+
+**Testes:** +9, todos escritos antes da implementação do Step 3 — mas sem run
+vermelho registrado em separado, porque os eventos novos precisavam existir para
+o arquivo compilar. A exigência de prova em vermelho vale para as Tarefas 3 e 6,
+e a da Tarefa 3 está registrada acima. Suíte **215 → 224**, verde.

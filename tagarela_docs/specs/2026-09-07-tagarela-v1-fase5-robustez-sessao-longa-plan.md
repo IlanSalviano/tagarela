@@ -250,8 +250,8 @@ Risco a medir: latência do primeiro buffer com engine novo (esperado < 100 ms).
 
 **Files:** `Pipeline/PipelineEvent.swift`, `Pipeline/PipelineCoordinator.swift`, `UI/Toast/ToastKind.swift`, `App/AppContainer.swift`, `TagarelaTests/PipelineCoordinatorTests.swift`, `Localizable.strings`.
 
-- [ ] **Step 1 — eventos e toasts:** `PipelineEvent.captureFailed(reason: CaptureFailureReason)` (`noAudio`, `tooShort`), `.emptyTranscription`, `.transcriberRecoveryRequested`, `.transcriberRecovered`. `ToastKind.captureFailed` ("Não captei áudio do microfone. Confira o dispositivo de entrada."), `.emptyTranscription` ("Não entendi nada — tente de novo."), `.transcriberRecovered` ("Reconhecedor reiniciado.").
-- [ ] **Step 2 — testes (escrever antes):**
+- [x] **Step 1 — eventos e toasts:** `PipelineEvent.captureFailed(reason: CaptureFailureReason)` (`noAudio`, `tooShort`), `.emptyTranscription`, `.transcriberRecoveryRequested`, `.transcriberRecovered`. `ToastKind.captureFailed` ("Não captei áudio do microfone. Confira o dispositivo de entrada."), `.emptyTranscription` ("Não entendi nada — tente de novo."), `.transcriberRecovered` ("Reconhecedor reiniciado.").
+- [x] **Step 2 — testes (escrever antes):**
   - `test_tooShortAfterLongRecording_emitsCaptureFailed` (fake devolve 0,2 s após 2 s de gravação simulada → evento + `.idle`); `test_tooShortAfterTapRecording_isSilent` (< 1 s de wall-clock → só `.idle`, sem evento — toque acidental na hotkey não vira toast).
   - `test_audioStopThrowsNoAudioDelivered_emitsCaptureFailed`.
   - `test_emptyTranscription_doesNotInjectNorSave_emitsEvent`.
@@ -259,9 +259,11 @@ Risco a medir: latência do primeiro buffer com engine novo (esperado < 100 ms).
   - `test_errorAutoRecover_doesNotClobberNewRecording` (erro → toggle em < 2 s → estado permanece `.recording` após os 2 s).
   - `test_toggleAfterCancelWaitsForPreviousPipelineTask` (fake transcriber lento; Esc; toggle imediato → `audio.start()` só é chamado depois que a task anterior terminou ou após timeout de 3 s).
   - `test_historySavedEvenWhenInjectFails` (ordem save → inject).
-- [ ] **Step 3 — implementar:** guard de duração passa a distinguir wall-clock (`startTime`) de buffer; `raw.isEmpty` → `health`/evento e `return` sem inject/save; contador `consecutiveEmpty` no actor; recovery: emitir `.transcriberRecoveryRequested` e o `AppContainer` chama `transcriber.reload()` (Tarefa 5) numa Task, emitindo `.transcriberRecovered` ao terminar (toast); no `catch` final: `if case .error = state { setState(.idle) }` após o sleep; `handleToggle` em `.idle`: `if let previous = pipelineTask { await previous.valueWithTimeout(3 s) }` (helper `withTimeout` no arquivo); ordem `historyStore.save` **antes** de `injector.inject` (o `frontmostAppBundleID` passa a ser lido antes, via `injector.frontmostBundleID()` — adicionar ao protocolo `Injecting` com default).
-- [ ] **Step 4 — `AppContainer.wirePipelineToAppState`:** mapear os eventos novos para toasts e `PipelineHealth`; recovery com `Diag.error(.pipeline, "recovery requested after N empty")`.
-- [ ] **Step 5 — suíte verde.** Commit: `fix(pipeline): falhas de captura/transcrição visíveis, recovery do transcriber, corridas .error→.idle e transcribe concorrente`.
+- [x] **Step 3 — implementar:** guard de duração passa a distinguir wall-clock (`startTime`) de buffer; `raw.isEmpty` → `health`/evento e `return` sem inject/save; contador `consecutiveEmpty` no actor; recovery: emitir `.transcriberRecoveryRequested` e o `AppContainer` chama `transcriber.reload()` (Tarefa 5) numa Task, emitindo `.transcriberRecovered` ao terminar (toast); no `catch` final: `if case .error = state { setState(.idle) }` após o sleep; `handleToggle` em `.idle`: `if let previous = pipelineTask { await previous.valueWithTimeout(3 s) }` (helper `withTimeout` no arquivo); ordem `historyStore.save` **antes** de `injector.inject` (o `frontmostAppBundleID` passa a ser lido antes, via `injector.frontmostBundleID()` — adicionar ao protocolo `Injecting` com default).
+- [x] **Step 4 — `AppContainer.wirePipelineToAppState`:** mapear os eventos novos para toasts e `PipelineHealth`; recovery com `Diag.error(.pipeline, "recovery requested after N empty")`.
+- [x] **Step 5 — suíte verde.** Commit: `fix(pipeline): falhas de captura/transcrição visíveis, recovery do transcriber, corridas .error→.idle e transcribe concorrente`.
+
+Fechada em 2026-09-07. Suíte 215 → **224** verde. Notas em [`11-modulos-fase5.md`](../02-arquitetura/11-modulos-fase5.md): (a) o `Localizable.strings` **não tinha chave `toast.*` nenhuma** — todos os toasts do app viviam do `defaultValue`; só as três novas entraram, o resto é da Tarefa 10; (b) a recriação do transcriber ainda passa por `loadModel` (toca a rede) até a Tarefa 5 entregar o `reload()` de disco; (c) `PipelineCoordinator` ganhou relógio injetável para testar o limiar de wall-clock sem sleeps de segundos.
 
 ---
 

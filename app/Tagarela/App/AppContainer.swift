@@ -9,6 +9,7 @@ import Sparkle
 final class AppContainer: ObservableObject {
     let appState = AppState()
     let health = PipelineHealth()
+    private var isRecoveringTranscriber = false
     let permissions: PermissionService
     var transcriber: Transcribing
     let audio: AudioCapturing
@@ -413,10 +414,53 @@ final class AppContainer: ObservableObject {
                         self.toastCenter.show(Toast(kind: .historySaveFailed))
                     case .permissionDenied(let kind):
                         self.toastCenter.show(Toast(kind: .permissionDenied(kind: kind)))
+                    case .captureFailed(let reason):
+                        // Os dois motivos entram em "curtos": a captura não
+                        // rendeu áudio utilizável. O log distingue qual foi.
+                        self.health.noteDiscardedShort()
+                        Diag.error(.pipeline, "captureFailed(\(reason))")
+                        self.toastCenter.show(Toast(kind: .captureFailed))
+                    case .emptyTranscription:
+                        self.health.noteEmptyTranscription()
+                        self.toastCenter.show(Toast(kind: .emptyTranscription))
+                    case .transcriberRecoveryRequested:
+                        self.recoverTranscriber()
+                    case .transcriberRecovered:
+                        self.health.noteRecovery()
+                        self.toastCenter.show(Toast(kind: .transcriberRecovered))
                     case .toggle, .cancel:
                         break
                     }
                 }
+            }
+        }
+    }
+
+    /// Recria o reconhecedor depois de dois vazios seguidos — a hipótese H2 da
+    /// auditoria é que o decoder degrada ao longo de uma sessão longa, e não há
+    /// métrica que distinga isso de "o usuário não falou".
+    ///
+    /// Hoje passa por `unloadModel` + `loadModel`, que ainda toca a rede; a
+    /// Tarefa 5 troca por um `reload()` que lê só do disco.
+    private func recoverTranscriber() {
+        guard !isRecoveringTranscriber else {
+            Diag.info(.transcribe, "recuperação já em andamento — ignorando pedido")
+            return
+        }
+        isRecoveringTranscriber = true
+        let transcriber = self.transcriber
+        let name = transcriber.loadedModelName ?? prefs.whisperModelName
+        let pipeline = self.pipeline
+        Task { @MainActor [weak self] in
+            defer { self?.isRecoveringTranscriber = false }
+            Diag.error(.transcribe, "recriando o transcriber (modelo=\(name))")
+            transcriber.unloadModel()
+            do {
+                try await transcriber.loadModel(name) { _ in }
+                Diag.notice(.transcribe, "transcriber recriado")
+                await pipeline.noteTranscriberRecovered()
+            } catch {
+                Diag.error(.transcribe, "recriar o transcriber falhou: \(String(describing: error))")
             }
         }
     }

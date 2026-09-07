@@ -53,6 +53,9 @@ final class LocalizableKeysTests: XCTestCase {
             "pipeline.sub.processing.unloaded",
             "pipeline.sub.refining.unknown",
             "pipeline.sub.refining.none",
+            "toast.capture.failed",
+            "toast.transcription.empty",
+            "toast.transcriber.recovered",
         ]
         for k in keys {
             let resolved = String(localized: String.LocalizationValue(k))

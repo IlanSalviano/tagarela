@@ -3,6 +3,10 @@ import AppKit
 final class InjectorLive: Injecting, @unchecked Sendable {
     private let restoreDelayNanoseconds: UInt64 = 250_000_000
 
+    func frontmostBundleID() async -> String? {
+        await MainActor.run { NSWorkspace.shared.frontmostApplication?.bundleIdentifier }
+    }
+
     func inject(text: String) async throws -> String? {
         guard AXIsProcessTrusted() else {
             Diag.error(.inject, "AXIsProcessTrusted == false — Acessibilidade caiu")

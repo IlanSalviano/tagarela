@@ -203,3 +203,10 @@
 "about.diagnostics.export"   = "Exportar diagnóstico…";
 "about.diagnostics.exported" = "Salvo em %@";
 "about.diagnostics.failed"   = "Falhou: %@";
+
+/* Fase 5 — toasts das falhas que antes eram silenciosas.
+   As demais chaves toast.* ainda faltam no arquivo (achado §5.3 da auditoria);
+   a Tarefa 10 fecha o conjunto todo com teste derivado dos fontes. */
+"toast.capture.failed"        = "Não captei áudio do microfone. Confira o dispositivo de entrada.";
+"toast.transcription.empty"   = "Não entendi nada — tente de novo.";
+"toast.transcriber.recovered" = "Reconhecedor reiniciado.";

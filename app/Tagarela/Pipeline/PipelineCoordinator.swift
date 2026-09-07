@@ -19,6 +19,9 @@ actor PipelineCoordinator {
     /// de swap como o modelo Whisper.
     private let languageProvider: @MainActor @Sendable () -> String?
     private let initialPromptProvider: @MainActor @Sendable () -> String?
+    /// Injetável para que os testes atravessem o limiar de wall-clock sem
+    /// dormir segundos de verdade.
+    private let now: @Sendable () -> Date
 
     private(set) var state: PipelineState = .idle
     private var continuation: AsyncStream<PipelineEvent>.Continuation?
@@ -35,6 +38,10 @@ actor PipelineCoordinator {
     /// Sinaliza que o usuário cancelou durante .processing/.refining.
     /// `runTranscribeAndInject` checa após cada await pra abortar antes de inject/save.
     private var cancelled = false
+    /// Transcrições vazias em sequência. Duas seguidas pedem a recriação do
+    /// transcriber: é a única forma de distinguir "decoder degradou" de
+    /// "o usuário não falou" sem métrica do WhisperKit (hipótese H2).
+    private var consecutiveEmpty = 0
     /// Task que envolve `runTranscribeAndInject` durante .processing/.refining.
     /// `handleCancel` chama `cancel()` aqui pra abortar URLSession em vôo
     /// (URLSession honra Task cancellation nativamente). Lazy: só populada
@@ -52,7 +59,8 @@ actor PipelineCoordinator {
          llmModelNameProvider: @escaping @MainActor @Sendable (RefinerKind) -> String?,
          whisperModelNameProvider: @escaping @MainActor @Sendable () -> String,
          languageProvider: @escaping @MainActor @Sendable () -> String? = { nil },
-         initialPromptProvider: @escaping @MainActor @Sendable () -> String? = { nil }) {
+         initialPromptProvider: @escaping @MainActor @Sendable () -> String? = { nil },
+         now: @escaping @Sendable () -> Date = { Date() }) {
         self.audio = audio
         self.transcriberProvider = transcriberProvider
         self.refinerProvider = refinerProvider
@@ -64,6 +72,7 @@ actor PipelineCoordinator {
         self.whisperModelNameProvider = whisperModelNameProvider
         self.languageProvider = languageProvider
         self.initialPromptProvider = initialPromptProvider
+        self.now = now
 
         var ref: AsyncStream<PipelineEvent>.Continuation!
         self.events = AsyncStream { c in ref = c }
@@ -76,6 +85,12 @@ actor PipelineCoordinator {
         case .cancel: await handleCancel()
         default: break
         }
+    }
+
+    /// Chamado pelo `AppContainer` quando a recriação do transcriber termina.
+    /// Mantém toast e contadores num caminho só — o de eventos.
+    func noteTranscriberRecovered() {
+        continuation?.yield(.transcriberRecovered)
     }
 
     private func setState(_ s: PipelineState) {
@@ -91,9 +106,13 @@ actor PipelineCoordinator {
         }
         switch state {
         case .idle:
+            // WhisperKit só checa cancelamento entre etapas, então um Esc
+            // durante "transcrevendo" deixa um transcribe() em vôo. Começar
+            // outro na mesma instância mistura resultados (auditoria §5.1).
+            await awaitPreviousPipeline()
             do {
                 try audio.start()
-                startTime = Date()
+                startTime = now()
                 currentLevel = 0
                 setState(.recording(elapsedSeconds: 0, audioLevel: 0))
                 spawnRecordingTasks()
@@ -171,7 +190,7 @@ actor PipelineCoordinator {
 
     private func tickElapsed() {
         guard case .recording = state, let st = startTime else { return }
-        let elapsed = Date().timeIntervalSince(st)
+        let elapsed = now().timeIntervalSince(st)
         setState(.recording(elapsedSeconds: elapsed, audioLevel: currentLevel))
     }
 
@@ -187,12 +206,35 @@ actor PipelineCoordinator {
         pipelineTask = nil
     }
 
+    /// Espera a pipeline anterior terminar, com teto. O polling deixa o actor
+    /// livre entre as checagens, o que é o que permite ao `clearPipelineTask`
+    /// rodar.
+    private func awaitPreviousPipeline(timeoutMs: Int = 3_000) async {
+        guard pipelineTask != nil else { return }
+        var waited = 0
+        while pipelineTask != nil && waited < timeoutMs {
+            try? await Task.sleep(nanoseconds: 20_000_000)
+            waited += 20
+        }
+        if pipelineTask != nil {
+            Diag.error(.pipeline, "pipeline anterior não terminou em \(timeoutMs)ms — seguindo assim mesmo")
+        }
+    }
+
     private func runTranscribeAndInject() async {
         cancelled = false
         do {
             Diag.info(.pipeline, "stopping audio")
-            let buffer = try await audio.stop()
-            let wall = startTime.map { Date().timeIntervalSince($0) } ?? 0
+            let buffer: AudioBuffer
+            do {
+                buffer = try await audio.stop()
+            } catch AudioCaptureError.noAudioDelivered {
+                Diag.error(.pipeline, "captura não entregou áudio — gravação perdida")
+                continuation?.yield(.captureFailed(reason: .noAudio))
+                setState(.idle)
+                return
+            }
+            let wall = startTime.map { now().timeIntervalSince($0) } ?? 0
             Diag.notice(.pipeline, "buffer duration=\(fmt(buffer.durationSeconds))s samples=\(buffer.samples.count) wall=\(fmt(wall))s")
             guard buffer.durationSeconds >= 0.5 else {
                 // O wall-clock separa um toque acidental na hotkey (silencioso,
@@ -201,6 +243,7 @@ actor PipelineCoordinator {
                 // com a queixa "não fez o STT".
                 if wall >= 1.0 {
                     Diag.error(.pipeline, "buffer too short: \(fmt(buffer.durationSeconds))s de áudio para \(fmt(wall))s de gravação — descartando")
+                    continuation?.yield(.captureFailed(reason: .tooShort))
                 } else {
                     Diag.notice(.pipeline, "buffer too short (\(fmt(buffer.durationSeconds))s, wall=\(fmt(wall))s) — descartando")
                 }
@@ -218,10 +261,22 @@ actor PipelineCoordinator {
             // NUNCA logar o texto: só o tamanho. Vazio é o caminho S2 da
             // auditoria §3.4 — indistinguível de sucesso sem esta linha.
             if raw.isEmpty {
-                Diag.error(.pipeline, "transcribed vazio (audio=\(fmt(buffer.durationSeconds))s)")
-            } else {
-                Diag.notice(.pipeline, "transcribed chars=\(raw.count)")
+                consecutiveEmpty += 1
+                Diag.error(.pipeline, "transcribed vazio (audio=\(fmt(buffer.durationSeconds))s, "
+                           + "seguidas=\(consecutiveEmpty))")
+                continuation?.yield(.emptyTranscription)
+                if consecutiveEmpty >= 2 {
+                    Diag.error(.pipeline, "recovery requested after \(consecutiveEmpty) empty")
+                    continuation?.yield(.transcriberRecoveryRequested)
+                    // Zera pra não pedir recriação a cada vazio seguinte
+                    // enquanto a anterior ainda nem terminou.
+                    consecutiveEmpty = 0
+                }
+                setState(.idle)
+                return
             }
+            consecutiveEmpty = 0
+            Diag.notice(.pipeline, "transcribed chars=\(raw.count)")
             let (refiner, style) = await refinerProvider()
             let actualRefinerKind: RefinerKind
             let refined: String
@@ -267,23 +322,12 @@ actor PipelineCoordinator {
                 }
             }
             if aborted() { Diag.notice(.pipeline, "cancelled after refine"); setState(.idle); return }
-            Diag.info(.pipeline, "injecting (kind=\(actualRefinerKind.rawValue))")
-            let frontApp: String?
-            do {
-                frontApp = try await injector.inject(text: refined)
-            } catch InjectionError.accessibilityDenied {
-                Diag.error(.inject, "AXIsProcessTrusted == false — ditado de \(refined.count) chars não foi colado")
-                continuation?.yield(.permissionDenied(kind: .accessibility))
-                setState(.idle)
-                return
-            } catch {
-                Diag.error(.inject, "inject failed: \(String(describing: error))")
-                continuation?.yield(.injectionFailed)
-                setState(.idle)
-                return
-            }
-            if aborted() { Diag.notice(.pipeline, "cancelled after inject"); setState(.idle); return }
-            Diag.notice(.pipeline, "injected to \(frontApp ?? "?") chars=\(refined.count)")
+
+            // Histórico ANTES da cola. Com a Acessibilidade caída, o `inject`
+            // lançava antes do save e o ditado sumia inteiro: não colava, não
+            // ficava no clipboard e não entrava no histórico (S3, auditoria
+            // §5.2). O app-alvo é lido agora, enquanto ainda está em foco.
+            let frontApp = await injector.frontmostBundleID()
             do {
                 let maxItems = await historyMaxItemsProvider()
                 let maxDays = await historyMaxDaysProvider()
@@ -304,6 +348,25 @@ actor PipelineCoordinator {
                 Diag.error(.pipeline, "history save failed: \(String(describing: error))")
                 continuation?.yield(.historySaveFailed)
             }
+
+            Diag.info(.pipeline, "injecting (kind=\(actualRefinerKind.rawValue))")
+            do {
+                _ = try await injector.inject(text: refined)
+            } catch InjectionError.accessibilityDenied {
+                Diag.error(.inject, "AXIsProcessTrusted == false — ditado de \(refined.count) chars "
+                           + "não foi colado (está no histórico e no clipboard)")
+                continuation?.yield(.permissionDenied(kind: .accessibility))
+                setState(.idle)
+                return
+            } catch {
+                Diag.error(.inject, "inject failed: \(String(describing: error))")
+                continuation?.yield(.injectionFailed)
+                setState(.idle)
+                return
+            }
+            if aborted() { Diag.notice(.pipeline, "cancelled after inject"); setState(.idle); return }
+            Diag.notice(.pipeline, "injected to \(frontApp ?? "?") chars=\(refined.count)")
+
             continuation?.yield(.finished(rawText: raw,
                                           refinedText: refined,
                                           frontmostApp: frontApp))
@@ -312,9 +375,13 @@ actor PipelineCoordinator {
             Diag.error(.pipeline, "FALHOU: \(String(describing: error))")
             setState(.error(message: "erro no pipeline"))
             continuation?.yield(.errorOccurred(String(describing: error)))
-            // Auto-recover pra idle após 2s
+            // Auto-recover pra idle após 2 s — mas só se ainda estivermos em
+            // .error. Sem a guarda, um toggle dentro desses 2 s já tinha
+            // começado outra gravação e este .idle atrasado derrubava o
+            // .recording: o painel sumia, o engine seguia gravando e o toggle
+            // seguinte fazia installTap duplo (auditoria §5.1).
             try? await Task.sleep(nanoseconds: 2_000_000_000)
-            setState(.idle)
+            if case .error = state { setState(.idle) }
         }
     }
 

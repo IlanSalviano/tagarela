@@ -34,6 +34,9 @@ enum ToastKind: Equatable, Sendable {
     case injectionFailed
     case historySaveFailed
     case permissionDenied(kind: PermissionKind)
+    case captureFailed
+    case emptyTranscription
+    case transcriberRecovered
 
     var displayMessage: String {
         switch self {
@@ -82,6 +85,15 @@ enum ToastKind: Equatable, Sendable {
                 return String(localized: "toast.permission.inputMonitoring",
                               defaultValue: "Input Monitoring negado — abra Configurações.")
             }
+        case .captureFailed:
+            return String(localized: "toast.capture.failed",
+                          defaultValue: "Não captei áudio do microfone. Confira o dispositivo de entrada.")
+        case .emptyTranscription:
+            return String(localized: "toast.transcription.empty",
+                          defaultValue: "Não entendi nada — tente de novo.")
+        case .transcriberRecovered:
+            return String(localized: "toast.transcriber.recovered",
+                          defaultValue: "Reconhecedor reiniciado.")
         }
     }
 
@@ -91,6 +103,9 @@ enum ToastKind: Equatable, Sendable {
         case .injectionFailed:    return "doc.on.clipboard"
         case .historySaveFailed:  return "externaldrive.badge.xmark"
         case .permissionDenied:   return "lock.shield"
+        case .captureFailed:      return "mic.slash"
+        case .emptyTranscription: return "waveform.badge.exclamationmark"
+        case .transcriberRecovered: return "arrow.clockwise"
         }
     }
 
@@ -100,6 +115,9 @@ enum ToastKind: Equatable, Sendable {
         case .injectionFailed:    return .red
         case .historySaveFailed:  return .red
         case .permissionDenied:   return .red
+        case .captureFailed:      return .red
+        case .emptyTranscription: return .orange
+        case .transcriberRecovered: return .green
         }
     }
 }
