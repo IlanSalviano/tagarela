@@ -331,17 +331,20 @@ Código fechado em 2026-09-07, suíte 236 → **240** verde. Divergência (melho
 
 Cada item é pequeno; um commit por item ou agrupado como `fix(misc)`.
 
-- [ ] **9a — swap persiste no `AppContainer.swapActive`** (`prefs.whisperModelName = newActive.loadedModelName`); `TranscriptionView.handleStateTransition` só oferece cleanup. Teste: `WhisperModelSwapCoordinatorTests` com `swapActive` que registra a persistência.
-- [ ] **9b — `OllamaHealthChecker`:** `isAvailable(baseURL:)` com cache por URL; não cachear quando `Task.isCancelled` ou erro `.cancelled`; TTL negativo 3 s. `OllamaRefiner` passa sua URL. Testes com `MockURLProtocol`.
-- [ ] **9c — `OllamaRefiner`:** enviar `"options": {"num_ctx": RemoteRefinerConfig.contextWindow(for:)}`. Teste no `OllamaRefinerTests` (payload contém `num_ctx`).
-- [ ] **9d — `PreferencesStore.init`:** clampar `historyMaxItems/Days ≥ 1` e `refinerTimeoutSec` em `5…600` na carga. Testes.
-- [ ] **9e — `OpenAIKeyPromptWindow`:** `NSWindow.willCloseNotification` → `close(canceled: true)`; `show(onCancel:onSaved:)` explícito nos dois callsites.
-- [ ] **9f — `FloatingIndicatorPanel`:** `.fullScreenAuxiliary` no `collectionBehavior`; `show()` cancela `previewTask`; posicionar no cursor só na transição oculto → visível.
-- [ ] **9g — onboarding fechado sem concluir:** item de menu "Concluir configuração…" visível enquanto `showOnboarding == true`, que reabre a janela.
-- [ ] **9h — `ToastKind.injectionFailed` copy** coerente com a Tarefa 8.
+- [x] **9a — swap persiste no `AppContainer.swapActive`** (`prefs.whisperModelName = newActive.loadedModelName`); `TranscriptionView.handleStateTransition` só oferece cleanup. Teste: `WhisperModelSwapCoordinatorTests` com `swapActive` que registra a persistência.
+- [x] **9b — `OllamaHealthChecker`:** `isAvailable(baseURL:)` com cache por URL; não cachear quando `Task.isCancelled` ou erro `.cancelled`; TTL negativo 3 s. `OllamaRefiner` passa sua URL. Testes com `MockURLProtocol`.
+- [x] **9c — `OllamaRefiner`:** enviar `"options": {"num_ctx": RemoteRefinerConfig.contextWindow(for:)}`. Teste no `OllamaRefinerTests` (payload contém `num_ctx`).
+- [x] **9d — `PreferencesStore.init`:** clampar `historyMaxItems/Days ≥ 1` e `refinerTimeoutSec` em `5…600` na carga. Testes.
+- [x] **9e — `OpenAIKeyPromptWindow`:** `NSWindow.willCloseNotification` → `close(canceled: true)`; `show(onCancel:onSaved:)` explícito nos dois callsites.
+- [x] **9f — `FloatingIndicatorPanel`:** `.fullScreenAuxiliary` no `collectionBehavior`; `show()` cancela `previewTask`; posicionar no cursor só na transição oculto → visível.
+- [x] **9g — onboarding fechado sem concluir:** item de menu "Concluir configuração…" visível enquanto `showOnboarding == true`, que reabre a janela.
+- [x] **9h — `ToastKind.injectionFailed` copy** coerente com a Tarefa 8.
 - [ ] Suíte verde + aceite manual dos itens de UI (Bloco E). Commit(s).
 
 ---
+
+
+Código fechado em 2026-09-07, suíte 240 → **248** verde. O item **9h** saiu junto da Tarefa 8, por estar acoplado à nova política de clipboard. **Aceite do Bloco E pendente.**
 
 ## Tarefa 10: localização — 37 chaves ausentes + teste derivado dos fontes
 

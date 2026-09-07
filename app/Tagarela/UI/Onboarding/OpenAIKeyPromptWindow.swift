@@ -5,6 +5,7 @@ import SwiftUI
 @MainActor
 final class OpenAIKeyPromptWindow {
     private var window: NSPanel?
+    private var closeObserver: NSObjectProtocol?
     private let keychain: KeychainService
     /// Callback chamado se o usuário cancelar (pra reverter prefs.refinerKind quando aplicável).
     var onCancel: (() -> Void)?
@@ -13,6 +14,16 @@ final class OpenAIKeyPromptWindow {
 
     init(keychain: KeychainService) {
         self.keychain = keychain
+    }
+
+    /// Callbacks explícitos por chamada. Antes, o caminho via Preferências não
+    /// resetava `onCancel`/`onSaved`, e as closures do último fluxo do menu
+    /// continuavam armadas: cancelar em "Alterar…" revertia `refinerKind` para
+    /// um `previous` antigo (auditoria §5.3).
+    func show(onCancel: (() -> Void)? = nil, onSaved: (() -> Void)? = nil) {
+        self.onCancel = onCancel
+        self.onSaved = onSaved
+        show()
     }
 
     func show() {
@@ -40,8 +51,30 @@ final class OpenAIKeyPromptWindow {
         panel.level = NSWindow.Level(rawValue: NSWindow.Level.popUpMenu.rawValue + 1)
         panel.hidesOnDeactivate = false
         self.window = panel
+        // Fechar no ⨯ nunca chamava `close(canceled:)`: o rollback de
+        // `refinerKind` não disparava e o backend ficava em OpenAI sem key,
+        // fazendo todo ditado cair em "API key inválida" (auditoria §5.3).
+        closeObserver = NotificationCenter.default.addObserver(
+            forName: NSWindow.willCloseNotification,
+            object: panel,
+            queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.handleUserClose() }
+            }
         NSApp.activate(ignoringOtherApps: true)
         panel.makeKeyAndOrderFront(nil)
+    }
+
+    /// Fechamento vindo do próprio sistema de janelas (⨯ ou ⌘W).
+    private func handleUserClose() {
+        guard window != nil else { return }   // já tratado por close(canceled:)
+        removeCloseObserver()
+        window = nil
+        onCancel?()
+    }
+
+    private func removeCloseObserver() {
+        if let closeObserver { NotificationCenter.default.removeObserver(closeObserver) }
+        closeObserver = nil
     }
 
     /// Fecha o popover do `MenuBarExtra(style: .window)` se estiver visível.
@@ -56,8 +89,12 @@ final class OpenAIKeyPromptWindow {
     }
 
     private func close(canceled: Bool) {
-        window?.close()
+        // Solta o observer antes do `close()` pra não disparar o caminho de
+        // fechamento pelo usuário em cima deste.
+        removeCloseObserver()
+        let panel = window
         window = nil
+        panel?.close()
         if canceled { onCancel?() } else { onSaved?() }
     }
 }

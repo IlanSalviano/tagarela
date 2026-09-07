@@ -217,6 +217,14 @@ final class AppContainer: ObservableObject {
                 let old = self.transcriber
                 self.transcriber = newActive
                 transcriberRef.current = newActive
+                // Persistir aqui, e não na view: o `TranscriptionView` fazia
+                // isso dentro de um `if` que dependia do estado **da view**, e
+                // navegar para outra seção no meio do swap destruía a view — o
+                // swap terminava e ninguém persistia, então o launch seguinte
+                // carregava o modelo antigo em silêncio (auditoria §5.3).
+                if let name = newActive.loadedModelName {
+                    self.prefs.whisperModelName = name
+                }
                 Diag.notice(.app, "transcriber swapped (old=\(old.loadedModelName ?? "nil") → new=\(newActive.loadedModelName ?? "nil"))")
                 return old
             }
@@ -320,7 +328,7 @@ final class AppContainer: ObservableObject {
                     baseURL: URL(string: self?.prefs.ollamaBaseURL ?? "")
                         ?? URL(string: "http://localhost:11434")!)
             },
-            openAIKeyEditor: { [weak self] in self?.keyPromptWindow.show() },
+            openAIKeyEditor: { [weak self] in self?.keyPromptWindow.show(onCancel: {}, onSaved: {}) },
             healthChecker: healthChecker,
             indicatorPanel: indicatorPanel,
             keychain: keychain,

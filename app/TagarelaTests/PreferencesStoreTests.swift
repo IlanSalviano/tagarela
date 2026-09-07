@@ -141,4 +141,42 @@ final class PreferencesStoreTests: XCTestCase {
         let s2 = PreferencesStore(defaults: defaults, defaultStyleID: dummyStyleID)
         XCTAssertEqual(s2.whisperModelName, "large-v3")
     }
+
+    // MARK: - Fase 5: clamps na carga
+
+    /// A retenção era clampada só nos setters. Um `defaults write` externo (ou
+    /// um valor legado) entrava direto — e `0` apaga inclusive o registro
+    /// recém-salvo, deixando o histórico sempre vazio, sem aviso (§5.4).
+    @MainActor
+    func test_initClampsRetentionAndTimeout() {
+        let suite = "tagarela.tests.clamp.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        defaults.set(0, forKey: PreferencesKey.historyMaxItems)
+        defaults.set(0, forKey: PreferencesKey.historyMaxDays)
+        defaults.set(0.0, forKey: PreferencesKey.refinerTimeoutSec)
+
+        let store = PreferencesStore(defaults: defaults, defaultStyleID: UUID())
+
+        XCTAssertEqual(store.historyMaxItems, 1)
+        XCTAssertEqual(store.historyMaxDays, 1)
+        XCTAssertEqual(store.refinerTimeoutSec, PreferencesStore.timeoutRange.lowerBound)
+    }
+
+    @MainActor
+    func test_settersClampToo() {
+        let suite = "tagarela.tests.clamp2.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let store = PreferencesStore(defaults: defaults, defaultStyleID: UUID())
+
+        store.historyMaxItems = -5
+        store.historyMaxDays = 0
+        store.refinerTimeoutSec = 99_999
+
+        XCTAssertEqual(store.historyMaxItems, 1)
+        XCTAssertEqual(store.historyMaxDays, 1)
+        XCTAssertEqual(store.refinerTimeoutSec, PreferencesStore.timeoutRange.upperBound)
+    }
 }

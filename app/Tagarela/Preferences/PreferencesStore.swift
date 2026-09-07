@@ -5,6 +5,10 @@ import Foundation
 /// Single source of truth pra config persistente que precisa reagir em UI.
 @MainActor
 final class PreferencesStore: ObservableObject {
+    /// Faixa aceita para `refinerTimeoutSec`, aplicada tanto no setter quanto
+    /// na carga.
+    static let timeoutRange: ClosedRange<Double> = 5...600
+
     private let defaults: UserDefaults
 
     @Published var refinerKind: RefinerKind {
@@ -23,16 +27,30 @@ final class PreferencesStore: ObservableObject {
         didSet { defaults.set(ollamaModel, forKey: PreferencesKey.ollamaModel) }
     }
     @Published var refinerTimeoutSec: Double {
-        didSet { defaults.set(refinerTimeoutSec, forKey: PreferencesKey.refinerTimeoutSec) }
+        didSet {
+            // O `TextField` das Preferências escrevia direto no
+            // `timeoutInterval` do URLSession, onde 0 ou negativo é indefinido.
+            let clamped = min(max(refinerTimeoutSec, Self.timeoutRange.lowerBound),
+                              Self.timeoutRange.upperBound)
+            if clamped != refinerTimeoutSec { refinerTimeoutSec = clamped; return }
+            defaults.set(refinerTimeoutSec, forKey: PreferencesKey.refinerTimeoutSec)
+        }
     }
     @Published var technicalVocabulary: [String] {
         didSet { defaults.set(technicalVocabulary, forKey: PreferencesKey.technicalVocabulary) }
     }
     @Published var historyMaxItems: Int {
-        didSet { defaults.set(historyMaxItems, forKey: PreferencesKey.historyMaxItems) }
+        didSet {
+            // `0` apagava inclusive o registro recém-salvo.
+            if historyMaxItems < 1 { historyMaxItems = 1; return }
+            defaults.set(historyMaxItems, forKey: PreferencesKey.historyMaxItems)
+        }
     }
     @Published var historyMaxDays: Int {
-        didSet { defaults.set(historyMaxDays, forKey: PreferencesKey.historyMaxDays) }
+        didSet {
+            if historyMaxDays < 1 { historyMaxDays = 1; return }
+            defaults.set(historyMaxDays, forKey: PreferencesKey.historyMaxDays)
+        }
     }
     @Published var audioBoostMaxGain: Float {
         didSet {
@@ -79,14 +97,21 @@ final class PreferencesStore: ObservableObject {
             ?? PreferencesDefaults.ollamaBaseURL
         self.ollamaModel = defaults.string(forKey: PreferencesKey.ollamaModel)
             ?? PreferencesDefaults.ollamaModel
-        self.refinerTimeoutSec = defaults.object(forKey: PreferencesKey.refinerTimeoutSec) as? Double
+        // Clamp na carga, não só nos setters: um `defaults write` externo (ou um
+        // valor legado) entrava direto e ia parar no `timeoutInterval` do
+        // URLSession, onde 0 ou negativo é indefinido (auditoria §5.4).
+        let storedTimeout = defaults.object(forKey: PreferencesKey.refinerTimeoutSec) as? Double
             ?? PreferencesDefaults.refinerTimeoutSec
+        self.refinerTimeoutSec = min(max(storedTimeout, PreferencesStore.timeoutRange.lowerBound),
+                                     PreferencesStore.timeoutRange.upperBound)
         self.technicalVocabulary = defaults.stringArray(forKey: PreferencesKey.technicalVocabulary)
             ?? [] // populado depois pelo init do AppContainer com DefaultVocabulary.terms
-        self.historyMaxItems = defaults.object(forKey: PreferencesKey.historyMaxItems) as? Int
-            ?? PreferencesDefaults.historyMaxItems
-        self.historyMaxDays = defaults.object(forKey: PreferencesKey.historyMaxDays) as? Int
-            ?? PreferencesDefaults.historyMaxDays
+        // `0` apagava inclusive o registro recém-salvo — histórico sempre vazio,
+        // sem aviso nenhum.
+        self.historyMaxItems = max(1, defaults.object(forKey: PreferencesKey.historyMaxItems) as? Int
+            ?? PreferencesDefaults.historyMaxItems)
+        self.historyMaxDays = max(1, defaults.object(forKey: PreferencesKey.historyMaxDays) as? Int
+            ?? PreferencesDefaults.historyMaxDays)
 
         // audioBoostMaxGain: usar defaults.float(forKey:) com check de existência
         // para evitar falha na conversão NSNumber -> Float

@@ -160,10 +160,12 @@ struct TranscriptionView: View {
     private func handleStateTransition(_ state: SwapState) {
         switch state {
         case .idle(let active):
-            // se acabei de mudar (vinha de .swapping), ofereço cleanup do antigo
+            // Só oferece o cleanup do modelo antigo. A persistência de
+            // `whisperModelName` mora no `AppContainer.swapActive`, que roda
+            // exatamente uma vez no sucesso do swap e não depende desta view
+            // continuar viva.
             if let last = lastActive, last != active, modelStore.isDownloaded(last) {
                 pendingCleanup = last
-                prefs.whisperModelName = active
             }
             lastActive = active
             errorSheetVisible = false

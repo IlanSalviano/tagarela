@@ -389,3 +389,21 @@ roda a suíte. Rodam sempre.
 **Testes:** +4 (o tautológico de `Equatable` que a auditoria §5.5 apontou
 continua, agora acompanhado de testes de verdade). Suíte **236 → 240**, verde.
 **Pendente:** aceite do Bloco D.
+
+---
+
+## Tarefa 9 — correções pontuais confirmadas ✅ (código; aceite Bloco E pendente)
+
+| Item | Bug | Correção |
+|---|---|---|
+| **9a** | `prefs.whisperModelName` só era persistido dentro de um `if` que dependia do estado **da view**: navegar para outra seção no meio do swap destruía a view, o swap terminava e ninguém persistia — o launch seguinte carregava o modelo **antigo** em silêncio | Persistência mudou para `AppContainer.swapActive`, que roda exatamente uma vez no sucesso e não depende de view alguma. A view só oferece o cleanup do modelo antigo |
+| **9b** | `OllamaHealthChecker.baseURL` era fixada no init e nunca atualizada: apontar o Ollama para outra máquina deixava o ping no `localhost` antigo e todo `refine` virava "Sem rede" até relançar. Além disso, `URLError.cancelled` (Esc durante `.refining`) era cacheado como "indisponível" por 30 s | URL por chamada com cache **por URL**; cancelamento não é cacheado; TTL negativo cai para 3 s |
+| **9c** | Request sem `num_ctx`: o servidor usava o default dele (2048/4096), 8 a 30× menor que a janela real. O truncamento acontecia no servidor, em silêncio, **começando pelo system prompt** — o modelo perdia a instrução "reescreva, não responda" e devolvia uma resposta ao ditado | `options.num_ctx` coerente com `RemoteRefinerConfig.contextWindow(for:)` |
+| **9d** | Retenção e timeout só eram clampados nos setters. `historyMaxItems == 0` apaga inclusive o registro recém-salvo — histórico sempre vazio, sem aviso; `refinerTimeoutSec` ia do `TextField` direto para o `timeoutInterval` do URLSession, onde 0 é indefinido | Clamp na carga **e** nos setters (`≥ 1`; timeout em `5...600`) |
+| **9e** | O painel da API key era `.closable` sem delegate: fechar no ⨯ nunca chamava `close(canceled:)`, o rollback de `refinerKind` não disparava e o backend ficava em OpenAI sem key — todo ditado caindo em "API key inválida". E o caminho via Preferências não resetava os callbacks, então as closures do último fluxo do menu seguiam armadas | `NSWindow.willCloseNotification` trata o ⨯ como cancelar; `show(onCancel:onSaved:)` explícito nos três callsites |
+| **9f** | Sem `.fullScreenAuxiliary`, ditar num app em tela cheia não mostrava indicador nem toasts. O painel era reposicionado no cursor a cada `.stateChanged` (12–25×/s gravando), então **seguia o mouse** e desfazia qualquer arrasto. E um preview de 3 s em vôo escondia uma gravação real ao expirar | `.fullScreenAuxiliary` no `collectionBehavior`; reposiciona só na transição oculto → visível; `show()` cancela o `previewTask` |
+| **9g** | Onboarding fechado no ⌘W sem concluir deixava o app "zumbi": hotkey e modelo nunca subiam e não havia como reabrir a janela | Item "Concluir configuração…" no menu enquanto o onboarding estiver pendente |
+| **9h** | — | Feito na Tarefa 8, por estar acoplado à nova política de clipboard |
+
+**Testes:** +8 (4 do health checker, 1 do `num_ctx`, 2 dos clamps, 1 da
+persistência do swap). Suíte **240 → 248**, verde. **Pendente:** aceite do Bloco E.

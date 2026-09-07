@@ -40,6 +40,7 @@
 "pipeline.sub.refining.none"       = "sem refinador";
 "menubar.health.summary"  = "%lld ditados · %lld vazios · %lld curtos · %@";
 "menubar.permissions.pending" = "permissões pendentes — abra Preferências";
+"menubar.onboarding.resume"   = "Concluir configuração…";
 
 // Onboarding — Welcome (passo 1)
 "onboarding.step1.label"      = "PASSO 1 / 3";

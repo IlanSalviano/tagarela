@@ -139,7 +139,32 @@ feliz.
 **Resultado:** _(a preencher)_
 
 ## Bloco E — UI (Tarefa 9)
-_(a preencher quando a Tarefa 9 fechar)_
+
+- [ ] **E1 — tela cheia.** Pôr um app em tela cheia (⌃⌘F) e ditar. O indicador
+      **e** os toasts têm que aparecer. Antes não apareciam.
+- [ ] **E2 — o indicador não persegue o mouse.** Durante a gravação, mover o
+      mouse: o indicador tem que ficar parado. Arrastá-lo para outro canto
+      também tem que grudar (antes o arrasto era desfeito no tick seguinte).
+- [ ] **E3 — modal da API key no ⨯.** Menu › Backend › OpenAI sem key
+      configurada, e fechar o modal no ⨯ (não no botão Cancelar). O backend tem
+      que **voltar** ao anterior. Antes ficava em OpenAI sem key e todo ditado
+      caía em "API key inválida".
+- [ ] **E4 — "Alterar…" via Preferências.** Preferências › Refiner › OpenAI ›
+      Alterar…, cancelar. O `refinerKind` **não** pode mudar (antes as closures
+      do último fluxo do menu ainda estavam armadas e revertiam para um valor
+      antigo).
+- [ ] **E5 — swap de modelo persiste.** Preferências › Transcrição, iniciar a
+      troca de modelo e **navegar para outra seção** antes de terminar. Ao fim,
+      fechar e reabrir o app: o modelo carregado tem que ser o **novo**.
+- [ ] **E6 — onboarding reabre.** (Só se der pra simular: com
+      `onboardingCompleted` falso, fechar a janela no ⌘W.) O menu tem que
+      mostrar "Concluir configuração…", que reabre a janela.
+- [ ] **E7 — Ollama em outra URL.** Se você usa Ollama: mudar a URL em
+      Preferências para uma máquina inexistente e ditar (esperado: "Sem rede"),
+      depois voltar para a URL boa e ditar de novo — tem que funcionar **sem
+      relaunch**. Antes o ping ficava preso na URL antiga.
+
+**Resultado:** _(a preencher)_
 
 ## Bloco F — diagnóstico (Tarefas 1 e 2)
 

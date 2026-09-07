@@ -3,6 +3,7 @@ import SwiftUI
 struct MenuBarContent: View {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var prefs: PreferencesStore
+    @Environment(\.openWindow) private var openWindow
     @ObservedObject var health: PipelineHealth
     let customStore: CustomStyleStoreLive?  // nil quando container falha
     let styleProvider: StyleProvider
@@ -13,6 +14,9 @@ struct MenuBarContent: View {
     var onOpenPreferences: () -> Void = {}
     /// Modelo Whisper carregado agora — resolvido em runtime porque muda com o swap.
     var loadedModelName: () -> String? = { nil }
+    /// Onboarding fechado no ⌘W sem concluir deixava o app "zumbi": a hotkey e
+    /// o modelo nunca subiam e não havia como reabrir a janela (auditoria §5.3).
+    var onboardingPending: Bool = false
 
     private var refinerLabel: String {
         switch prefs.refinerKind {
@@ -60,6 +64,25 @@ struct MenuBarContent: View {
 
             RecentTranscriptionsSubmenu(provider: recentsProvider,
                                          injector: injector)
+
+            if onboardingPending {
+                Button(action: {
+                    openWindow(id: "onboarding")
+                    NSApp.activate(ignoringOtherApps: true)
+                }) {
+                    HStack {
+                        Text(String(localized: "menubar.onboarding.resume",
+                                    defaultValue: "Concluir configuração…"))
+                            .font(DS.Font.mono(11))
+                            .foregroundStyle(DS.Color.carmine)
+                        Spacer()
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
 
             Button(action: onOpenPreferences) {
                 HStack {

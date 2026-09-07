@@ -57,6 +57,7 @@ final class LocalizableKeysTests: XCTestCase {
             "toast.transcription.empty",
             "toast.transcriber.recovered",
             "menubar.permissions.pending",
+            "menubar.onboarding.resume",
         ]
         for k in keys {
             let resolved = String(localized: String.LocalizationValue(k))

@@ -15,6 +15,10 @@ final class FloatingIndicatorPanel {
               onCancel: @escaping () -> Void,
               onToastDismiss: @escaping () -> Void) {
         ensurePanel()
+        // Um preview de 3 s em vôo escondia uma gravação real quando expirava.
+        previewTask?.cancel()
+        previewTask = nil
+
         let root = VStack(spacing: 8) {
             if let toast {
                 ToastView(kind: toast.kind, onDismiss: onToastDismiss)
@@ -24,7 +28,10 @@ final class FloatingIndicatorPanel {
         let host = NSHostingController(rootView: root)
         host.view.layer?.backgroundColor = .clear
         panel?.contentViewController = host
-        positionNearCursor()
+        // Reposicionar só na transição oculto → visível: `.stateChanged` chega
+        // 12–25×/s gravando, e reposicionar a cada tick fazia o indicador
+        // **seguir o mouse** e desfazia qualquer arrasto do usuário.
+        if panel?.isVisible != true { positionNearCursor() }
         panel?.orderFrontRegardless()
     }
 
@@ -67,7 +74,9 @@ final class FloatingIndicatorPanel {
         p.isMovableByWindowBackground = true
         p.backgroundColor = .clear
         p.hasShadow = false
-        p.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
+        // `.fullScreenAuxiliary`: sem ela, ditar num app em tela cheia não
+        // mostrava indicador nem toasts (auditoria §5.3).
+        p.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle, .fullScreenAuxiliary]
         self.panel = p
     }
 
