@@ -1,9 +1,7 @@
 import AppKit
 import IOKit.hid
-import OSLog
 
 final class HotkeyServiceLive: HotkeyService, @unchecked Sendable {
-    private let logger = Logger(subsystem: "com.tagarela", category: "Hotkey")
     private let hotkey: Hotkey
     private let cancelarComEsc: Bool
 
@@ -32,12 +30,12 @@ final class HotkeyServiceLive: HotkeyService, @unchecked Sendable {
         // estiver concedido, IOHIDRequestAccess prompta nativamente.
         var imGranted = IOHIDCheckAccess(kIOHIDRequestTypeListenEvent) == kIOHIDAccessTypeGranted
         if !imGranted {
-            logger.info("requesting Input Monitoring via IOHIDRequestAccess")
+            Diag.info(.hotkey, "requesting Input Monitoring via IOHIDRequestAccess")
             imGranted = IOHIDRequestAccess(kIOHIDRequestTypeListenEvent)
         }
-        logger.info("start() — InputMonitoring granted=\(imGranted, privacy: .public)")
+        Diag.info(.hotkey, "start() — InputMonitoring granted=\(imGranted)")
         if !imGranted {
-            logger.error("Input Monitoring negado mesmo após request")
+            Diag.error(.hotkey, "Input Monitoring negado mesmo após request")
             throw HotkeyServiceError.inputMonitoringDenied
         }
 
@@ -52,10 +50,10 @@ final class HotkeyServiceLive: HotkeyService, @unchecked Sendable {
             callback: HotkeyServiceLive.callback,
             userInfo: observer
         ) else {
-            logger.error("CGEvent.tapCreate retornou nil — provavelmente falta Input Monitoring no binário atual")
+            Diag.error(.hotkey, "CGEvent.tapCreate retornou nil — provavelmente falta Input Monitoring no binário atual")
             throw HotkeyServiceError.eventTapCreationFailed
         }
-        logger.info("tap criado, registrando no run loop")
+        Diag.info(.hotkey, "tap criado, registrando no run loop")
         self.eventTap = tap
         let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
         // Forçar main run loop (independente de quem chamou start()) — alguns
@@ -63,7 +61,7 @@ final class HotkeyServiceLive: HotkeyService, @unchecked Sendable {
         CFRunLoopAddSource(CFRunLoopGetMain(), source, .commonModes)
         CGEvent.tapEnable(tap: tap, enable: true)
         self.runLoopSource = source
-        logger.info("HotkeyService started for \(self.hotkey.displayLabel, privacy: .public)")
+        Diag.notice(.hotkey, "started for \(hotkey.displayLabel)")
     }
 
     func stop() {
@@ -76,7 +74,9 @@ final class HotkeyServiceLive: HotkeyService, @unchecked Sendable {
     fileprivate func reEnableTap() {
         guard let tap = eventTap else { return }
         CGEvent.tapEnable(tap: tap, enable: true)
-        logger.info("event tap re-enabled after disable")
+        // `.error`: um tap desabilitado é exatamente S4 da auditoria §3.4 — a
+        // hotkey morre em silêncio e o usuário só vê "não faz nada".
+        Diag.error(.hotkey, "event tap estava desabilitado; reabilitado")
     }
 
     // CGEventTap C callback. Não pode capturar contexto Swift; recebe self via refcon.
@@ -94,7 +94,7 @@ final class HotkeyServiceLive: HotkeyService, @unchecked Sendable {
         if type == .flagsChanged {
             let keyCode = UInt16(event.getIntegerValueField(.keyboardEventKeycode))
             if keyCode == me.hotkey.virtualKeyCode {
-                me.logger.info("flagsChanged keyCode=\(keyCode, privacy: .public) (Right Option)")
+                Diag.info(.hotkey, "flagsChanged keyCode=\(keyCode) (Right Option)")
                 let flags = event.flags
                 // keyCode 0x3D (61) é exclusivo do Right Option no macOS — validado
                 // empiricamente em 2026-05-01. Left Option dispara keyCode diferente,

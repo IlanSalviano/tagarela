@@ -48,6 +48,29 @@ xcodebuild -project Tagarela.xcodeproj -scheme Tagarela -destination 'platform=m
   -derivedDataPath ~/Library/Developer/Xcode/DerivedData/Tagarela-fase5 test 2>&1 | tail -8
 ```
 
+### Comando padrão **nesta máquina** (`/Volumes/Brain`) — assinatura
+
+O `project.yml` fixa Debug/Tests no certificado da outra máquina (team `BCM26K6YNA`), que aqui não existe. Unificar os Team IDs é achado §5.5 da auditoria e está **fora do escopo** desta fase, então a identidade local é passada **por linha de comando** e nenhum arquivo commitado muda:
+
+```bash
+xcodebuild -project Tagarela.xcodeproj -scheme Tagarela -destination 'platform=macOS' \
+  -derivedDataPath ~/Library/Developer/Xcode/DerivedData/Tagarela-fase5 \
+  CODE_SIGN_IDENTITY="Apple Development: Created via API (33HY58YHW4)" \
+  CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=22CZXFP6W7 PROVISIONING_PROFILE_SPECIFIER="" \
+  test 2>&1 | tail -8
+```
+
+Detalhe que custou uma tentativa: o `33HY58YHW4` no *nome* do certificado é o **UID**, não o time. O Team ID real está no campo `OU` do subject (`OU=22CZXFP6W7`) e é o que o `DEVELOPMENT_TEAM` precisa casar. Com `DEVELOPMENT_TEAM=33HY58YHW4` o build falha igual ao caso do `BCM26K6YNA`.
+
+Por que esta identidade e não ad-hoc (`CODE_SIGN_IDENTITY="-"`): o designated requirement fica ancorado no **certificado**, não no cdhash —
+
+```
+designated => identifier "com.tagarela.Tagarela" and anchor apple generic
+  and certificate leaf[subject.CN] = "Apple Development: Created via API (33HY58YHW4)" ...
+```
+
+logo os grants de TCC (Microfone, Acessibilidade, Input Monitoring) do build de dev **sobrevivem a rebuilds**, o que torna os aceites manuais das Tarefas 3, 5, 7, 8 e 9 praticáveis. Com ad-hoc o DR seria o cdhash e cada rebuild exigiria reconceder tudo. Efeito colateral bem-vindo: o build local passa a ter `TeamIdentifier=22CZXFP6W7`, **o mesmo da release** — reduz (não elimina) o descasamento de designated requirement que originou o TCC zumbi do [`cleanup-fase3.md`](../04-decisoes/cleanup-fase3.md). A **Regra de coexistência acima continua valendo integralmente**: o bundle id segue igual ao da release.
+
 Esperado ao fim da fase: `** TEST SUCCEEDED **`, ≥ 186 + novos testes.
 
 ---
@@ -135,11 +158,14 @@ Documentação produzida por esta fase em `tagarela_docs/`:
 
 ## Pre-flight (antes da Tarefa 1)
 
-- [ ] **`main` limpo e contendo a auditoria.** `git log --oneline -3` deve mostrar os commits `docs(auditoria)` e `docs(specs)` de 2026-09-07.
-- [ ] **Branch:** `git checkout -b fase-5-robustez`.
-- [ ] **Toolchain:** `which xcodegen` (`brew install xcodegen` se faltar); `xcodebuild -version` (usado na auditoria: Xcode 26.6).
-- [ ] **Baseline da suíte** com a Regra de coexistência: rodar o comando padrão; esperado `** TEST SUCCEEDED **`, 186 testes. Anotar `lsregister -dump | grep -c "com.tagarela.Tagarela"` antes e depois; desregistrar o host de testes ao fim.
-- [ ] **Baseline em campo:** anotar a saída de `tools/diag/event_taps.swift` e `vmmap -summary $(pgrep -x Tagarela)` da release em execução (comparação futura).
+- [x] **`main` limpo e contendo a auditoria.** `main` em `808755e docs(auditoria)`. Ruído incidental do working tree (`.DS_Store` deletados, `graph.json` do Obsidian) restaurado com `git restore .` antes de branchar.
+- [x] **Branch:** `fase-5-robustez` criada a partir de `808755e`.
+- [x] **Toolchain:** xcodegen `/opt/homebrew/bin/xcodegen`; Xcode 26.6 (17F113) — mesma da auditoria. `xcodegen generate` sem drift no `.xcodeproj`.
+- [x] **Baseline da suíte:** `** TEST SUCCEEDED **`, **186 testes, 0 falhas** (12,7 s). `lsregister | grep -c` = **7 antes → 11 durante → 7 depois** do `lsregister -u`; tap da release segue `enabled=YES` (id 1025202362), permissões intactas.
+  - ⚠️ **Divergência do comando padrão (2026-09-07) — resolvida:** o comando padrão do plano **não builda nesta máquina**. `project.yml` fixa Debug e TagarelaTests em `CODE_SIGN_IDENTITY: 78C7C6375957D553AD632832D0821B446F53D0F3` / `DEVELOPMENT_TEAM: BCM26K6YNA` — certificado da **outra** máquina (auditoria §5.5, "Team IDs diferentes"), que aqui não existe: `No certificate for team 'BCM26K6YNA'`. Ver **Comando padrão nesta máquina** abaixo.
+- [x] **Baseline em campo** (release v1.0.3 build 4, PID 1569, uptime 9d13h — mesmo processo da auditoria):
+  - `event_taps`: `tap id=1025202362 pid=1569 enabled=YES options=1 point=1 mask=0x1400`.
+  - `vmmap -summary`: footprint **166,0 MB**, pico **313,3 MB**, IOSurface **206 regiões / 105,8 MB**, `neural_peak` 3001 MB — idênticos aos da auditoria (§3.2), sem drift.
 
 ---
 
@@ -149,14 +175,16 @@ Objetivo: toda linha que explica um "não fez o STT" sobrevive dias (arquivo) e 
 
 **Files:** criar `App/Diagnostics/DiagnosticsLog.swift`, `App/Diagnostics/Diag.swift`, `TagarelaTests/DiagnosticsLogTests.swift`; modificar logs em `Audio/AudioCaptureLive.swift`, `Pipeline/PipelineCoordinator.swift`, `Transcription/WhisperKitTranscriber.swift`, `Hotkey/HotkeyServiceLive.swift`, `Injection/InjectorLive.swift`, `App/AppContainer.swift`.
 
-- [ ] **Step 1 — testes de `DiagnosticsLog`** (`DiagnosticsLogTests`): escreve linha com timestamp ISO-8601 + nível + categoria + mensagem; rotaciona ao passar `maxBytes` (usar 2 KB no teste) mantendo `maxFiles` (3) — `tagarela.log`, `tagarela.1.log`, `tagarela.2.log`; é seguro sob 50 threads concorrentes (`DispatchQueue.concurrentPerform`) sem linhas interleaved; `contents(limit:)` devolve as últimas N linhas; diretório inexistente é criado.
-- [ ] **Step 2 — implementar `DiagnosticsLog`:** `final class DiagnosticsLog: @unchecked Sendable` com `init(directory: URL, fileName: String = "tagarela.log", maxBytes: Int = 5_000_000, maxFiles: Int = 3)`, `func append(level: String, category: String, message: String)` (lock + `FileHandle` aberto em append; `fsync` não é necessário), rotação por rename, `static let shared` apontando para `~/Library/Logs/Tagarela/`.
-- [ ] **Step 3 — implementar `Diag`:** fachada `enum Diag` com `static func notice(_ cat: Category, _ msg: String)`, `error`, `info` (info **não** vai ao arquivo). `Category` = `audio, pipeline, transcribe, hotkey, inject, permissions, app, health`. Cada chamada emite no `Logger(subsystem: "com.tagarela", category:)` **e** no `DiagnosticsLog.shared` (exceto `.info`). Manter os `Logger` existentes onde a mensagem é só depuração.
-- [ ] **Step 4 — promover marcos.** Trocar por `Diag.notice`: `AudioCaptureLive.start` (formato de entrada: `sampleRate`, `channelCount`, nome do device default), `AudioCaptureLive.stop` (`raw`, `resampled`, `peak before/after`, `wallClock`, `buffers`), `PipelineCoordinator` (`toggle in state=…`, `buffer duration=…`, `transcribed chars=N` — **não** o texto, `injecting`, `injected to <bundle>`), `WhisperKitTranscriber.transcribe` (já é `.notice`; incluir métricas da Tarefa 5), `HotkeyServiceLive` (`started`, `re-enabled`), `InjectorLive` (`pasted`, `restored`, `restore skipped`). Trocar por `Diag.error`: `buffer too short` quando wall-clock ≥ 1 s, `raw == 0`, `engine.start() falhou`, `transcribed vazio com peak ≥ 0,3`, `tap desabilitado`, `AXIsProcessTrusted == false`, `loadModel FALHOU`, `inject failed`, `history save failed`.
-- [ ] **Step 5 — grep de privacidade:** `grep -rn "Diag\.\(notice\|error\)" app/Tagarela | grep -iE "raw\b|refined|text:" ` não pode logar variáveis de texto. Adicionar teste `DiagnosticsLogTests.test_noDictatedTextInSources` que faz esse grep via `#filePath` e falha se encontrar `\(raw` ou `\(refined` dentro de chamadas `Diag.`.
-- [ ] **Step 6 — build + suíte verde.** Commit: `feat(diag): Diag + DiagnosticsLog — marcos do pipeline persistidos em arquivo e .notice`.
+- [x] **Step 1 — testes de `DiagnosticsLog`** (`DiagnosticsLogTests`): escreve linha com timestamp ISO-8601 + nível + categoria + mensagem; rotaciona ao passar `maxBytes` (usar 2 KB no teste) mantendo `maxFiles` (3) — `tagarela.log`, `tagarela.1.log`, `tagarela.2.log`; é seguro sob 50 threads concorrentes (`DispatchQueue.concurrentPerform`) sem linhas interleaved; `contents(limit:)` devolve as últimas N linhas; diretório inexistente é criado.
+- [x] **Step 2 — implementar `DiagnosticsLog`:** `final class DiagnosticsLog: @unchecked Sendable` com `init(directory: URL, fileName: String = "tagarela.log", maxBytes: Int = 5_000_000, maxFiles: Int = 3)`, `func append(level: String, category: String, message: String)` (lock + `FileHandle` aberto em append; `fsync` não é necessário), rotação por rename, `static let shared` apontando para `~/Library/Logs/Tagarela/`.
+- [x] **Step 3 — implementar `Diag`:** fachada `enum Diag` com `static func notice(_ cat: Category, _ msg: String)`, `error`, `info` (info **não** vai ao arquivo). `Category` = `audio, pipeline, transcribe, hotkey, inject, permissions, app, health`. Cada chamada emite no `Logger(subsystem: "com.tagarela", category:)` **e** no `DiagnosticsLog.shared` (exceto `.info`). Manter os `Logger` existentes onde a mensagem é só depuração.
+- [x] **Step 4 — promover marcos.** Trocar por `Diag.notice`: `AudioCaptureLive.start` (formato de entrada: `sampleRate`, `channelCount`, nome do device default), `AudioCaptureLive.stop` (`raw`, `resampled`, `peak before/after`, `wallClock`, `buffers`), `PipelineCoordinator` (`toggle in state=…`, `buffer duration=…`, `transcribed chars=N` — **não** o texto, `injecting`, `injected to <bundle>`), `WhisperKitTranscriber.transcribe` (já é `.notice`; incluir métricas da Tarefa 5), `HotkeyServiceLive` (`started`, `re-enabled`), `InjectorLive` (`pasted`, `restored`, `restore skipped`). Trocar por `Diag.error`: `buffer too short` quando wall-clock ≥ 1 s, `raw == 0`, `engine.start() falhou`, `transcribed vazio com peak ≥ 0,3`, `tap desabilitado`, `AXIsProcessTrusted == false`, `loadModel FALHOU`, `inject failed`, `history save failed`.
+- [x] **Step 5 — grep de privacidade:** `grep -rn "Diag\.\(notice\|error\)" app/Tagarela | grep -iE "raw\b|refined|text:" ` não pode logar variáveis de texto. Adicionar teste `DiagnosticsLogTests.test_noDictatedTextInSources` que faz esse grep via `#filePath` e falha se encontrar `\(raw` ou `\(refined` dentro de chamadas `Diag.`.
+- [x] **Step 6 — build + suíte verde.** Commit: `feat(diag): Diag + DiagnosticsLog — marcos do pipeline persistidos em arquivo e .notice`.
 
-Aceite: após um ditado no build de dev, `tail -20 ~/Library/Logs/Tagarela/tagarela.log` mostra `start → stop → buffer → transcribed chars → injected` com números, sem texto.
+Aceite: após um ditado no build de dev, `tail -20 ~/Library/Logs/Tagarela/tagarela.log` mostra `start → stop → buffer → transcribed chars → injected` com números, sem texto. **Pendente** — depende de rodar o app de dev, o que só acontece no primeiro aceite manual (Tarefa 3); virou o Bloco F do checklist.
+
+Fechada em 2026-09-07. Suíte 186 → **193** verde. Divergências (todas com fecho previsto em tarefa posterior) registradas em [`11-modulos-fase5.md`](../02-arquitetura/11-modulos-fase5.md): `transcribed vazio` ainda sem a condição de pico (depende do `CaptureStats` da Tarefa 3), `restore skipped` ainda não existe (Tarefa 8), `buffersSeen`/`channelBuffers` seguem sem lock (Tarefa 3).
 
 ---
 

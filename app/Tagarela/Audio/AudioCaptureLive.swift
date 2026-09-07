@@ -1,14 +1,22 @@
 import AVFoundation
-import OSLog
+import CoreAudio
+
+private func fmt(_ value: Double, _ places: Int = 2) -> String {
+    String(format: "%.\(places)f", value)
+}
 
 final class AudioCaptureLive: AudioCapturing, @unchecked Sendable {
-    private let logger = Logger(subsystem: "com.tagarela", category: "Audio")
     private let engine = AVAudioEngine()
     private var captureFormat: AVAudioFormat?
     /// Um array por canal — cada callback do tap concatena seus N samples
     /// no array do canal correspondente. Mantém a ordem temporal por canal.
     private var channelBuffers: [[Float]] = []
     private(set) var isRecording: Bool = false
+    /// Quantos buffers o tap entregou nesta gravação, e desde quando ela corre.
+    /// Servem ao diagnóstico: `raw=0` com `wall` longo é a assinatura de S1
+    /// (auditoria §3.4), o candidato mais compatível com a queixa.
+    private var buffersSeen: Int = 0
+    private var startedAt: ContinuousClock.Instant?
     private let maxGainProvider: @Sendable () -> Float
 
     nonisolated(unsafe) private var levelContinuation: AsyncStream<Double>.Continuation?
@@ -23,17 +31,17 @@ final class AudioCaptureLive: AudioCapturing, @unchecked Sendable {
 
     func start() throws {
         let mic = AVCaptureDevice.authorizationStatus(for: .audio)
-        logger.info("start: mic auth=\(mic.rawValue, privacy: .public)")
+        Diag.info(.audio, "start: mic auth=\(mic.rawValue)")
         if mic == .denied {
             throw AudioCaptureError.microphoneDenied
         }
         channelBuffers.removeAll()
+        buffersSeen = 0
         let input = engine.inputNode
         let inFormat = input.outputFormat(forBus: 0)
         channelBuffers = Array(repeating: [], count: Int(inFormat.channelCount))
-        logger.info("inFormat sampleRate=\(inFormat.sampleRate, privacy: .public) channels=\(inFormat.channelCount, privacy: .public)")
         if inFormat.sampleRate == 0 || inFormat.channelCount == 0 {
-            logger.error("inputNode sem formato — provavelmente sem permissão de mic")
+            Diag.error(.audio, "inputNode sem formato (sampleRate=\(inFormat.sampleRate) ch=\(inFormat.channelCount)) — provavelmente sem permissão de mic")
             throw AudioCaptureError.microphoneDenied
         }
 
@@ -50,11 +58,40 @@ final class AudioCaptureLive: AudioCapturing, @unchecked Sendable {
         do {
             try engine.start()
         } catch {
-            logger.error("engine.start() falhou: \(String(describing: error), privacy: .public)")
+            Diag.error(.audio, "engine.start() falhou: \(String(describing: error))")
             throw AudioCaptureError.engineFailedToStart
         }
         isRecording = true
-        logger.info("AudioCapture started")
+        startedAt = .now
+        Diag.notice(.audio, "start in=\(Int(inFormat.sampleRate))Hz/\(inFormat.channelCount)ch device='\(Self.defaultInputDeviceName())'")
+    }
+
+    /// Nome do device de entrada default no CoreAudio. É diagnóstico: a auditoria
+    /// viu a lista de devices de entrada mudar várias vezes por dia nesta máquina
+    /// (iPhone via Continuity, C920 re-enumerada, DisplayLink), que é o gatilho
+    /// plausível da hipótese H1 pro "parou de transcrever".
+    private static func defaultInputDeviceName() -> String {
+        var deviceID = AudioDeviceID(0)
+        var size = UInt32(MemoryLayout<AudioDeviceID>.size)
+        var address = AudioObjectPropertyAddress(
+            mSelector: kAudioHardwarePropertyDefaultInputDevice,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain)
+        guard AudioObjectGetPropertyData(AudioObjectID(kAudioObjectSystemObject),
+                                         &address, 0, nil, &size, &deviceID) == noErr,
+              deviceID != AudioDeviceID(kAudioObjectUnknown) else { return "?" }
+
+        var name = "" as CFString
+        var nameSize = UInt32(MemoryLayout<CFString>.size)
+        var nameAddress = AudioObjectPropertyAddress(
+            mSelector: kAudioObjectPropertyName,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain)
+        guard AudioObjectGetPropertyData(deviceID, &nameAddress, 0, nil,
+                                         &nameSize, &name) == noErr else {
+            return "id=\(deviceID)"
+        }
+        return name as String
     }
 
     func stop() async throws -> AudioBuffer {
@@ -62,10 +99,17 @@ final class AudioCaptureLive: AudioCapturing, @unchecked Sendable {
         engine.inputNode.removeTap(onBus: 0)
         engine.stop()
         isRecording = false
+        let now = ContinuousClock.now
+        let wall: Double = startedAt.map { start in
+            let d = start.duration(to: now)
+            return Double(d.components.seconds) + Double(d.components.attoseconds) / 1e18
+        } ?? 0
+        startedAt = nil
+        let buffers = buffersSeen
         let perChannel = channelBuffers
         channelBuffers.removeAll()
         guard let inFormat = captureFormat else {
-            logger.error("stop sem captureFormat")
+            Diag.error(.audio, "stop sem captureFormat (buffers=\(buffers) wall=\(fmt(wall))s)")
             return AudioBuffer(samples: [], sampleRate: 16_000)
         }
         let resampled = downmixAndResample(perChannel: perChannel, from: inFormat)
@@ -75,7 +119,10 @@ final class AudioCaptureLive: AudioCapturing, @unchecked Sendable {
         var newPeak: Float = 0
         for s in boosted { let a = abs(s); if a > newPeak { newPeak = a } }
         let totalRaw = perChannel.reduce(0) { $0 + $1.count }
-        logger.info("stop: raw=\(totalRaw, privacy: .public) samples (\(inFormat.sampleRate, privacy: .public)Hz, \(inFormat.channelCount, privacy: .public)ch) → resampled=\(resampled.count, privacy: .public) (16kHz mono) peak before=\(rawPeak, privacy: .public) after=\(newPeak, privacy: .public)")
+        Diag.notice(.audio, "stop raw=\(totalRaw) buffers=\(buffers) in=\(Int(inFormat.sampleRate))Hz/\(inFormat.channelCount)ch → 16k=\(resampled.count) peak \(fmt(Double(rawPeak), 3))→\(fmt(Double(newPeak), 3)) wall=\(fmt(wall))s")
+        if totalRaw == 0 {
+            Diag.error(.audio, "raw=0 — tap não entregou sample nenhum em \(fmt(wall))s (buffers=\(buffers) device='\(Self.defaultInputDeviceName())')")
+        }
         return AudioBuffer(samples: boosted, sampleRate: 16_000)
     }
 
@@ -149,6 +196,7 @@ final class AudioCaptureLive: AudioCapturing, @unchecked Sendable {
             let ptr = channelData[c]
             channelBuffers[c].append(contentsOf: UnsafeBufferPointer(start: ptr, count: n))
         }
+        buffersSeen += 1
 
         // Calcula nível (RMS) só do canal 0 (mais barato)
         let ptr0 = channelData[0]

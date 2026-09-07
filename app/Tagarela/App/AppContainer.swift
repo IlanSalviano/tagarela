@@ -2,7 +2,6 @@ import SwiftUI
 import AppKit
 import AVFoundation
 import Combine
-import OSLog
 import SwiftData
 import Sparkle
 
@@ -61,7 +60,7 @@ final class AppContainer: ObservableObject {
             for candidate in ["large-v3", "medium", "small", "large-v3-turbo", "large-v3_turbo"] {
                 if migrationStore.isDownloaded(candidate) {
                     userDefaults.set(candidate, forKey: PreferencesKey.whisperModelName)
-                    Logger.tagarela.notice("migration: preserved existing model on disk: \(candidate, privacy: .public)")
+                    Diag.notice(.app, "migration: preserved existing model on disk: \(candidate)")
                     break
                 }
             }
@@ -216,7 +215,7 @@ final class AppContainer: ObservableObject {
                 let old = self.transcriber
                 self.transcriber = newActive
                 transcriberRef.current = newActive
-                Logger.tagarela.notice("AppContainer.transcriber swapped (old=\(old.loadedModelName ?? "nil", privacy: .public) → new=\(newActive.loadedModelName ?? "nil", privacy: .public))")
+                Diag.notice(.app, "transcriber swapped (old=\(old.loadedModelName ?? "nil") → new=\(newActive.loadedModelName ?? "nil"))")
                 return old
             }
         )
@@ -262,26 +261,26 @@ final class AppContainer: ObservableObject {
     private func ensureMicPermission() {
         let status = AVCaptureDevice.authorizationStatus(for: .audio)
         let videoStatus = AVCaptureDevice.authorizationStatus(for: .video)
-        Logger.tagarela.info("mic status=\(status.rawValue, privacy: .public) video status=\(videoStatus.rawValue, privacy: .public) (0=notDetermined, 1=restricted, 2=denied, 3=authorized)")
+        Diag.info(.permissions, "mic status=\(status.rawValue) video status=\(videoStatus.rawValue) (0=notDetermined, 1=restricted, 2=denied, 3=authorized)")
         guard status != .authorized else { return }
 
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
-        Logger.tagarela.info("activationPolicy promoted to .regular pra prompt")
+        Diag.info(.permissions, "activationPolicy promoted to .regular pra prompt")
 
         Task {
             // Tentativa 0: video. C920 é camera+mic combinado; em macOS 26
             // o device pode exigir Camera grant pra liberar o audio também.
             let okVideo = await AVCaptureDevice.requestAccess(for: .video)
-            Logger.tagarela.info("video requestAccess -> \(okVideo, privacy: .public)")
+            Diag.info(.permissions, "video requestAccess -> \(okVideo)")
 
             // Tentativa 1: audio
             let ok1 = await AVCaptureDevice.requestAccess(for: .audio)
-            Logger.tagarela.info("mic requestAccess -> \(ok1, privacy: .public)")
+            Diag.info(.permissions, "mic requestAccess -> \(ok1)")
 
             if !ok1 {
                 // Tentativa 2: AVCaptureSession real, que é o caminho canônico
-                Logger.tagarela.info("tentando via AVCaptureSession")
+                Diag.info(.permissions, "tentando via AVCaptureSession")
                 let session = AVCaptureSession()
                 if let dev = AVCaptureDevice.default(for: .audio) {
                     do {
@@ -289,21 +288,21 @@ final class AppContainer: ObservableObject {
                         if session.canAddInput(input) {
                             session.addInput(input)
                             session.startRunning()
-                            Logger.tagarela.info("capture session running — popup deveria ter aparecido")
+                            Diag.info(.permissions, "capture session running — popup deveria ter aparecido")
                             try? await Task.sleep(nanoseconds: 200_000_000)
                             session.stopRunning()
                         }
                     } catch {
-                        Logger.tagarela.error("AVCaptureDeviceInput falhou: \(String(describing: error), privacy: .public)")
+                        Diag.error(.permissions, "AVCaptureDeviceInput falhou: \(String(describing: error))")
                     }
                 } else {
-                    Logger.tagarela.error("AVCaptureDevice.default(.audio) retornou nil")
+                    Diag.error(.permissions, "AVCaptureDevice.default(.audio) retornou nil")
                 }
             }
 
             await MainActor.run {
                 NSApp.setActivationPolicy(.accessory)
-                Logger.tagarela.info("activationPolicy back to .accessory")
+                Diag.info(.permissions, "activationPolicy back to .accessory")
             }
         }
     }
@@ -345,14 +344,14 @@ final class AppContainer: ObservableObject {
     private func loadModelLogging(_ name: String) {
         let transcriber = self.transcriber
         Task {
-            Logger.tagarela.info("loadModel('\(name, privacy: .public)') iniciando")
+            Diag.info(.transcribe, "loadModel('\(name)') iniciando")
             do {
                 try await transcriber.loadModel(name) { p in
-                    Logger.tagarela.info("download \(Int(p * 100), privacy: .public)%")
+                    Diag.info(.transcribe, "download \(Int(p * 100))%")
                 }
-                Logger.tagarela.info("modelo '\(name, privacy: .public)' carregado")
+                Diag.notice(.transcribe, "modelo '\(name)' carregado")
             } catch {
-                Logger.tagarela.error("loadModel FALHOU: \(String(describing: error), privacy: .public)")
+                Diag.error(.transcribe, "loadModel FALHOU: \(String(describing: error))")
             }
         }
     }
@@ -360,9 +359,9 @@ final class AppContainer: ObservableObject {
     private func startHotkeyServiceLogging() {
         do {
             try hotkeyService.start()
-            Logger.tagarela.info("hotkey service started")
+            Diag.notice(.hotkey, "hotkey service started")
         } catch {
-            Logger.tagarela.error("hotkey service falhou ao iniciar: \(String(describing: error), privacy: .public)")
+            Diag.error(.hotkey, "hotkey service falhou ao iniciar: \(String(describing: error))")
         }
     }
 
@@ -372,9 +371,9 @@ final class AppContainer: ObservableObject {
         let coord = self.swapCoordinator
         Task {
             for await event in stream {
-                Logger.tagarela.info("hotkey event recebido: \(String(describing: event), privacy: .public)")
+                Diag.info(.hotkey, "hotkey event recebido: \(String(describing: event))")
                 if case .swapping = await coord.state {
-                    Logger.tagarela.info("hotkey ignored: swap in progress")
+                    Diag.info(.hotkey, "hotkey ignored: swap in progress")
                     continue
                 }
                 let pipelineEvent: PipelineEvent = (event == .toggle) ? .toggle : .cancel
@@ -394,7 +393,7 @@ final class AppContainer: ObservableObject {
                         self.appState.pipeline = s
                         self.refreshIndicator(for: s)
                     case .errorOccurred(let msg):
-                        Logger.tagarela.error("pipeline error: \(msg, privacy: .public)")
+                        Diag.error(.pipeline, "pipeline error: \(msg)")
                     case .finished:
                         break
                     case .refinerFellBack(let reason):
@@ -443,10 +442,6 @@ final class AppContainer: ObservableObject {
             onCancel: { Task { await pipelineRef.handle(.cancel) } },
             onToastDismiss: { toastCenterRef.dismiss() })
     }
-}
-
-extension Logger {
-    static let tagarela = Logger(subsystem: "com.tagarela", category: "App")
 }
 
 /// Holder mutável compartilhado entre AppContainer e PipelineCoordinator.

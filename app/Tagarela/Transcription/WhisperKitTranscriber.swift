@@ -1,5 +1,4 @@
 import Foundation
-import OSLog
 import WhisperKit
 
 /// Adaptador do WhisperKit (0.9+) pro protocolo Transcribing.
@@ -8,7 +7,6 @@ import WhisperKit
 /// baixar com progresso, depois inicializa WhisperKit apontando pro modelFolder
 /// local com prewarm + computeOptions ANE-explícitos.
 final class WhisperKitTranscriber: Transcribing, @unchecked Sendable {
-    private let logger = Logger(subsystem: "com.tagarela", category: "Transcribe")
     private var pipe: WhisperKit?
     private(set) var loadedModelName: String?
 
@@ -30,7 +28,7 @@ final class WhisperKitTranscriber: Transcribing, @unchecked Sendable {
             let pipe = try await WhisperKit(config)
             self.pipe = pipe
             self.loadedModelName = name
-            logger.notice("loaded whisper model: \(name, privacy: .public)")
+            Diag.notice(.transcribe, "loaded model=\(name)")
         } catch is CancellationError {
             throw CancellationError()
         } catch {
@@ -41,7 +39,7 @@ final class WhisperKitTranscriber: Transcribing, @unchecked Sendable {
     func unloadModel() {
         pipe = nil
         loadedModelName = nil
-        logger.notice("unloaded whisper model")
+        Diag.notice(.transcribe, "unloaded model")
     }
 
     func transcribe(buffer: AudioBuffer,
@@ -84,7 +82,7 @@ final class WhisperKitTranscriber: Transcribing, @unchecked Sendable {
             let modelName = self.loadedModelName ?? "?"
             let reqLang = language ?? "auto"
             let detLang = results.first?.language ?? "?"
-            logger.notice("transcribe model=\(modelName, privacy: .public) audio=\(audioSec, privacy: .public)s wall=\(wallMs, privacy: .public)ms reqLang=\(reqLang, privacy: .public) detLang=\(detLang, privacy: .public)")
+            Diag.notice(.transcribe, "transcribe model=\(modelName) audio=\(audioSec)s wall=\(wallMs)ms reqLang=\(reqLang) detLang=\(detLang)")
 
             let text = results.map(\.text).joined(separator: " ")
             return text.trimmingCharacters(in: .whitespacesAndNewlines)

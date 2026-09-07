@@ -1,8 +1,10 @@
 import Foundation
-import OSLog
+
+private func fmt(_ value: Double, _ places: Int = 2) -> String {
+    String(format: "%.\(places)f", value)
+}
 
 actor PipelineCoordinator {
-    private let logger = Logger(subsystem: "com.tagarela", category: "Pipeline")
     private let audio: AudioCapturing
     private let transcriberProvider: @MainActor @Sendable () -> Transcribing
     private let refinerProvider: @MainActor @Sendable () -> (refiner: TextRefiner, style: Style)
@@ -77,7 +79,7 @@ actor PipelineCoordinator {
     }
 
     private func handleToggle() async {
-        logger.info("toggle in state=\(String(describing: self.state), privacy: .public)")
+        Diag.notice(.pipeline, "toggle in state=\(String(describing: state))")
         // Recovery: se estamos em .error, o toggle limpa o estado e tenta de novo.
         if case .error = state {
             setState(.idle)
@@ -111,7 +113,7 @@ actor PipelineCoordinator {
     }
 
     private func handleCancel() async {
-        logger.info("cancel received in state=\(String(describing: self.state), privacy: .public)")
+        Diag.notice(.pipeline, "cancel in state=\(String(describing: state))")
         switch state {
         case .recording:
             cancelRecordingTasks()
@@ -181,23 +183,38 @@ actor PipelineCoordinator {
     private func runTranscribeAndInject() async {
         cancelled = false
         do {
-            logger.info("stopping audio")
+            Diag.info(.pipeline, "stopping audio")
             let buffer = try await audio.stop()
-            logger.info("buffer duration=\(buffer.durationSeconds, privacy: .public)s samples=\(buffer.samples.count, privacy: .public)")
+            let wall = startTime.map { Date().timeIntervalSince($0) } ?? 0
+            Diag.notice(.pipeline, "buffer duration=\(fmt(buffer.durationSeconds))s samples=\(buffer.samples.count) wall=\(fmt(wall))s")
             guard buffer.durationSeconds >= 0.5 else {
-                logger.info("buffer too short, descartando")
+                // O wall-clock separa um toque acidental na hotkey (silencioso,
+                // esperado) de uma gravação de verdade que não rendeu áudio —
+                // que é S1 da auditoria §3.4, o caminho mudo mais compatível
+                // com a queixa "não fez o STT".
+                if wall >= 1.0 {
+                    Diag.error(.pipeline, "buffer too short: \(fmt(buffer.durationSeconds))s de áudio para \(fmt(wall))s de gravação — descartando")
+                } else {
+                    Diag.notice(.pipeline, "buffer too short (\(fmt(buffer.durationSeconds))s, wall=\(fmt(wall))s) — descartando")
+                }
                 setState(.idle); return
             }
             setState(.processing)
             let transcriber = await transcriberProvider()
-            logger.info("transcribing (model loaded? \(transcriber.loadedModelName ?? "NIL", privacy: .public))")
+            Diag.info(.pipeline, "transcribing (model loaded? \(transcriber.loadedModelName ?? "NIL"))")
             let raw = try await transcriber.transcribe(
                 buffer: buffer,
                 language: await languageProvider(),
                 initialPrompt: await initialPromptProvider()
             )
-            if aborted() { logger.info("cancelled after transcribe"); setState(.idle); return }
-            logger.info("transcribed: '\(raw, privacy: .public)'")
+            if aborted() { Diag.notice(.pipeline, "cancelled after transcribe"); setState(.idle); return }
+            // NUNCA logar o texto: só o tamanho. Vazio é o caminho S2 da
+            // auditoria §3.4 — indistinguível de sucesso sem esta linha.
+            if raw.isEmpty {
+                Diag.error(.pipeline, "transcribed vazio (audio=\(fmt(buffer.durationSeconds))s)")
+            } else {
+                Diag.notice(.pipeline, "transcribed chars=\(raw.count)")
+            }
             let (refiner, style) = await refinerProvider()
             let actualRefinerKind: RefinerKind
             let refined: String
@@ -215,10 +232,10 @@ actor PipelineCoordinator {
                 } catch RefinerError.cancelled where cancelled {
                     // Cancelamento real do usuário (flag `cancelled` foi setada
                     // por handleCancel via Esc). Aborta sem fallback nem inject.
-                    logger.info("refiner cancelled (user)")
+                    Diag.notice(.pipeline, "refiner cancelled (user)")
                     setState(.idle); return
                 } catch {
-                    logger.error("refiner failed (\(refiner.kind.rawValue, privacy: .public)): \(String(describing: error), privacy: .public)")
+                    Diag.error(.pipeline, "refiner failed (\(refiner.kind.rawValue)): \(String(describing: error))")
                     // Cleanup #2 da Fase 2a: surfaceiar fallback ao usuário via toast.
                     // Se vier RefinerError.cancelled SEM a flag `cancelled` ligada,
                     // é network-drop disfarçado (URLSession -999 quando remote
@@ -242,23 +259,24 @@ actor PipelineCoordinator {
                     actualRefinerKind = identityFallback.kind
                 }
             }
-            if aborted() { logger.info("cancelled after refine"); setState(.idle); return }
-            logger.info("injecting (kind=\(actualRefinerKind.rawValue, privacy: .public))")
+            if aborted() { Diag.notice(.pipeline, "cancelled after refine"); setState(.idle); return }
+            Diag.info(.pipeline, "injecting (kind=\(actualRefinerKind.rawValue))")
             let frontApp: String?
             do {
                 frontApp = try await injector.inject(text: refined)
             } catch InjectionError.accessibilityDenied {
+                Diag.error(.inject, "AXIsProcessTrusted == false — ditado de \(refined.count) chars não foi colado")
                 continuation?.yield(.permissionDenied(kind: .accessibility))
                 setState(.idle)
                 return
             } catch {
-                logger.error("inject failed: \(String(describing: error), privacy: .public)")
+                Diag.error(.inject, "inject failed: \(String(describing: error))")
                 continuation?.yield(.injectionFailed)
                 setState(.idle)
                 return
             }
-            if aborted() { logger.info("cancelled after inject"); setState(.idle); return }
-            logger.info("injected to \(frontApp ?? "?", privacy: .public)")
+            if aborted() { Diag.notice(.pipeline, "cancelled after inject"); setState(.idle); return }
+            Diag.notice(.pipeline, "injected to \(frontApp ?? "?") chars=\(refined.count)")
             do {
                 let maxItems = await historyMaxItemsProvider()
                 let maxDays = await historyMaxDaysProvider()
@@ -276,7 +294,7 @@ actor PipelineCoordinator {
                     maxItems: maxItems,
                     maxDays:  maxDays)
             } catch {
-                logger.error("history save failed: \(String(describing: error), privacy: .public)")
+                Diag.error(.pipeline, "history save failed: \(String(describing: error))")
                 continuation?.yield(.historySaveFailed)
             }
             continuation?.yield(.finished(rawText: raw,
@@ -284,7 +302,7 @@ actor PipelineCoordinator {
                                           frontmostApp: frontApp))
             setState(.idle)
         } catch {
-            logger.error("FALHOU: \(String(describing: error), privacy: .public)")
+            Diag.error(.pipeline, "FALHOU: \(String(describing: error))")
             setState(.error(message: "erro no pipeline"))
             continuation?.yield(.errorOccurred(String(describing: error)))
             // Auto-recover pra idle após 2s

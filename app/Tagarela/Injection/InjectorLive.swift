@@ -1,12 +1,13 @@
 import AppKit
-import OSLog
 
 final class InjectorLive: Injecting, @unchecked Sendable {
-    private let logger = Logger(subsystem: "com.tagarela", category: "Inject")
     private let restoreDelayNanoseconds: UInt64 = 250_000_000
 
     func inject(text: String) async throws -> String? {
-        guard AXIsProcessTrusted() else { throw InjectionError.accessibilityDenied }
+        guard AXIsProcessTrusted() else {
+            Diag.error(.inject, "AXIsProcessTrusted == false — Acessibilidade caiu")
+            throw InjectionError.accessibilityDenied
+        }
         let pasteboard = NSPasteboard.general
         let frontBundleID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
 
@@ -33,6 +34,7 @@ final class InjectorLive: Injecting, @unchecked Sendable {
         vUp?.flags = .maskCommand
         vDown?.post(tap: .cgAnnotatedSessionEventTap)
         vUp?.post(tap: .cgAnnotatedSessionEventTap)
+        Diag.notice(.inject, "pasted to \(frontBundleID ?? "?") chars=\(text.count)")
 
         // 4. Restaura clipboard depois do delay
         try? await Task.sleep(nanoseconds: restoreDelayNanoseconds)
@@ -42,6 +44,7 @@ final class InjectorLive: Injecting, @unchecked Sendable {
             for (type, data) in dict { item.setData(data, forType: type) }
             pasteboard.writeObjects([item])
         }
+        Diag.notice(.inject, "clipboard restored (items=\(savedItems.count))")
 
         return frontBundleID
     }
