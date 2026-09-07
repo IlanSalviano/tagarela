@@ -63,9 +63,17 @@ fi
 # Localizar sign_update (binário do Sparkle SPM)
 # Find direto evita adivinhar estrutura intermediária do SPM artifact dir.
 # Filtra `old_dsa_scripts/` (legacy DSA) — queremos a EdDSA do Sparkle 2.x.
-SIGN_UPDATE=$(find ~/Library/Developer/Xcode/DerivedData/Tagarela-*/SourcePackages/artifacts \
+# Procura primeiro no derived do BUILD DE RELEASE. O build.sh resolve o SPM
+# em build/release/derived, não no DerivedData do IDE — numa máquina limpa
+# (sem nunca ter aberto o Xcode) o passo falhava só aqui, DEPOIS de notarizar.
+SIGN_UPDATE=$(find "$REPO_ROOT/build/release/derived/SourcePackages/artifacts" \
     -type f -name "sign_update" -perm +111 2>/dev/null \
     | grep -v old_dsa_scripts | head -1)
+if [ -z "$SIGN_UPDATE" ]; then
+    SIGN_UPDATE=$(find ~/Library/Developer/Xcode/DerivedData/Tagarela-*/SourcePackages/artifacts \
+        -type f -name "sign_update" -perm +111 2>/dev/null \
+        | grep -v old_dsa_scripts | head -1)
+fi
 if [ -z "$SIGN_UPDATE" ] || [ ! -x "$SIGN_UPDATE" ]; then
     echo "erro: sign_update (EdDSA) não encontrado em SourcePackages/artifacts."
     echo "      builda pelo menos uma vez via xcodebuild pra resolver SPM."
@@ -83,7 +91,9 @@ if [ -z "$ed_signature" ] || [ "$ed_signature" = "$SIGNATURE_OUTPUT" ]; then
 fi
 
 dmg_url="https://github.com/$GITHUB_USER/tagarela/releases/download/v$version/$DMG_NAME"
-pub_date=$(date -u +"%a, %d %b %Y %H:%M:%S +0000")
+# LC_ALL=C: o RFC 822 exige nomes de dia/mês em inglês. Num shell pt_BR o
+# `date` produzia "Dom, 07 Set 2026", que é pubDate inválido no feed.
+pub_date=$(LC_ALL=C date -u +"%a, %d %b %Y %H:%M:%S +0000")
 
 # Construir o novo <item>
 new_item=$(cat <<EOF
@@ -125,11 +135,9 @@ with open(path, "w", encoding="utf-8") as f:
 print(f"appcast.sh: <item> inserido em {path}")
 PYEOF
 
-# Commit do appcast.xml
-cd "$REPO_ROOT"
-git add appcast.xml
-git commit -m "chore(release): appcast.xml v$version"
-
+# NÃO commita: quem commita é o release.sh, e só DEPOIS de confirmar que o DMG
+# está publicado e acessível. O feed do Sparkle é o raw do main — publicar o
+# item antes do binário fazia todo cliente tomar 404 a cada checagem de update.
 echo ""
 echo "appcast.sh: ok"
 echo "APPCAST_VERSION=$version"

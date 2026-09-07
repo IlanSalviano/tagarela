@@ -438,3 +438,45 @@ gritante: **nenhuma chave `toast.*` existia** — todos os toasts do app viviam 
 
 **Testes:** o teste de lista manual foi substituído por dois derivados.
 Suíte **248 → 249**, verde. Arquivo: 149 → 200 chaves.
+
+---
+
+## Tarefa 11 — scripts de release: ordem segura do appcast ✅ (smoke test pendente)
+
+**A ordem estava invertida e isso quebrava clientes.** O `appcast.sh` commitava
+o `appcast.xml` e o `release.sh` dava `git push --follow-tags` **antes** do
+`gh release create` subir o DMG. Como o feed do Sparkle é o raw do `main`,
+qualquer falha do `gh` (auth, rede) — ou só a janela entre push e upload —
+deixava **todo cliente** vendo um item novo e tomando **404 a cada checagem de
+update**, até alguém consertar à mão. E o rerun travava, porque tag e commit já
+existiam.
+
+Ordem nova:
+
+```
+bump → build → sign → notarize → dmg
+     → git tag -a
+     → gh release create (upload do DMG)
+     → curl -sSfI  (confirma HTTP 200 na URL do DMG)
+     → appcast.sh + commit do appcast.xml
+     → git push --follow-tags
+```
+
+O `appcast.sh` **não commita mais** — quem commita é o `release.sh`, e só depois
+de o DMG estar comprovadamente acessível. Se algo falhar depois da tag, um trap
+`ERR` imprime o rollback exato (`git tag -d`, `git push --delete`,
+`gh release delete`) e lembra que o appcast não foi commitado, logo nenhum
+cliente viu item apontando para binário inexistente.
+
+| Item | Bug | Correção |
+|---|---|---|
+| **11b** | `sign_update` era procurado só no DerivedData do **IDE**, mas o `build.sh` resolve o SPM em `build/release/derived`. Numa máquina limpa o passo falhava **depois** de notarizar | Procura primeiro no derived do release, com o do IDE como fallback |
+| **11c** | Commit de bump acontecia antes de build/sign/notarize; qualquer falha depois deixava o bump local, e um novo `release.sh patch` bumpava de novo (1.0.4 → 1.0.5 sem release no meio) | Se o `HEAD` já é um commit de bump **sem tag correspondente**, reaproveita |
+| **11d** | `date` com nomes de dia/mês do locale gerava `pubDate` inválido (RFC 822 exige inglês) num shell pt_BR | `LC_ALL=C date -u` |
+
+**Pendente: o smoke test.** O plano pede um ensaio em branch temporária com
+`gh release create --draft` e rollback. Não foi executado: cria uma release no
+GitHub do usuário, precisa de rede e de autorização explícita. Fica junto do
+aceite manual, antes da v1.0.4.
+
+Todos os scripts passam `bash -n`.

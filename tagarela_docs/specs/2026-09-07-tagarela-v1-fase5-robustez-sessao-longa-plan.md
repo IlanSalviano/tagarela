@@ -361,13 +361,16 @@ Fechada em 2026-09-07. O teste derivado reproduziu a contagem da auditoria na mo
 
 **Files:** `scripts/release.sh`, `scripts/appcast.sh`, `scripts/bump.sh`.
 
-- [ ] **11a — ordem:** `appcast.sh` **não** commita mais; `release.sh` passa a: build → sign → notarize → dmg → `git tag -a` → `gh release create` (upload do DMG) → `curl -sSfI <URL do DMG>` (HTTP 200) → gerar/commitar `appcast.xml` → `git push --follow-tags`. Se qualquer passo após a tag falhar, imprimir instruções de rollback (`git tag -d`, `gh release delete`).
-- [ ] **11b — `sign_update`:** procurar primeiro em `build/release/derived/SourcePackages/artifacts`, depois em `~/Library/Developer/Xcode/DerivedData/Tagarela-*`.
-- [ ] **11c — bump idempotente:** se `HEAD` já é um commit `chore(release): bump` sem tag correspondente, `release.sh` reaproveita em vez de bumpar de novo.
-- [ ] **11d — `LC_ALL=C date -u` no `pubDate`.**
+- [x] **11a — ordem:** `appcast.sh` **não** commita mais; `release.sh` passa a: build → sign → notarize → dmg → `git tag -a` → `gh release create` (upload do DMG) → `curl -sSfI <URL do DMG>` (HTTP 200) → gerar/commitar `appcast.xml` → `git push --follow-tags`. Se qualquer passo após a tag falhar, imprimir instruções de rollback (`git tag -d`, `gh release delete`).
+- [x] **11b — `sign_update`:** procurar primeiro em `build/release/derived/SourcePackages/artifacts`, depois em `~/Library/Developer/Xcode/DerivedData/Tagarela-*`.
+- [x] **11c — bump idempotente:** se `HEAD` já é um commit `chore(release): bump` sem tag correspondente, `release.sh` reaproveita em vez de bumpar de novo.
+- [x] **11d — `LC_ALL=C date -u` no `pubDate`.**
 - [ ] Smoke test em branch temporária (`_release-smoke`) com `gh release create --draft` e rollback, como feito na Fase 3. Commit: `fix(release): appcast só depois do DMG publicado; sign_update no derived do release; bump idempotente`.
 
 ---
+
+
+Código fechado em 2026-09-07; todos os scripts passam `bash -n`. **Smoke test não executado** — cria uma release no GitHub do usuário e precisa de rede e autorização explícita; fica junto do aceite manual, antes da v1.0.4.
 
 ## Tarefa 12: aceite manual + docs + merge + release v1.0.4
 
