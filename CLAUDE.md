@@ -4,7 +4,7 @@ Codinome do projeto. Nome final do produto será definido depois.
 
 **O que é:** clone do Wispr Flow para uso individual. Aplicativo macOS nativo de ditado por voz, com pós-processamento por LLM (Ollama local, OpenAI API, ou sem LLM). Foco em português com regionalização.
 
-**Onde fica a documentação:** `/Users/tars/Dev/tagarela/tagarela_docs` (vault Obsidian).
+**Onde fica a documentação:** `tagarela_docs/` na raiz deste repositório (vault Obsidian). O caminho absoluto varia por máquina (`/Users/tars/Dev/tagarela` e `/Volumes/Brain/Dev/tagarela` já foram usados) — nunca hardcodar.
 
 ---
 
