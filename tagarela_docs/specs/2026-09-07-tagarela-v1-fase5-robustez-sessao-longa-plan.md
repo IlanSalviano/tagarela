@@ -355,7 +355,7 @@ Código fechado em 2026-09-07, suíte 240 → **248** verde. O item **9h** saiu 
 ---
 
 
-Fechada em 2026-09-07. O teste derivado reproduziu a contagem da auditoria na mosca — **37 ausentes e 1 sem uso** — antes da correção. Suíte 248 → **249** verde; arquivo 149 → 186 chaves.
+Fechada em 2026-09-07. O teste derivado reproduziu a contagem da auditoria na mosca — **37 ausentes e 1 sem uso** — antes da correção. Suíte 248 → **249** verde; arquivo 149 → 200 chaves.
 
 ## Tarefa 11: scripts de release — ordem segura do appcast
 

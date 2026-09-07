@@ -437,4 +437,4 @@ gritante: **nenhuma chave `toast.*` existia** — todos os toasts do app viviam 
 - "funciona offline. **fala português**." ficou datado depois da Fase 4, que tornou o idioma configurável com auto-detecção. Agora diz "entende português e inglês".
 
 **Testes:** o teste de lista manual foi substituído por dois derivados.
-Suíte **248 → 249**, verde. Arquivo: 149 → 186 chaves.
+Suíte **248 → 249**, verde. Arquivo: 149 → 200 chaves.
