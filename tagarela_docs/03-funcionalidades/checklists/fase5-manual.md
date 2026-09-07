@@ -48,16 +48,19 @@ Log para acompanhar tudo: `tail -f ~/Library/Logs/Tagarela/tagarela.log`.
 Objetivo: a gravação nunca termina "sem áudio" em silêncio, o engine não
 envelhece, e os níveis funcionam em **toda** gravação.
 
-- [ ] **A1 — três ditados seguidos.** As ondas do indicador precisam animar nos
+- [x] **A1 — três ditados seguidos.** As ondas do indicador precisam animar nos
       **três**, não só no primeiro. Este é o bug de regressão: até a Fase 5 os
       indicadores ficavam em `audioLevel = 0` da segunda gravação em diante.
-- [ ] **A2 — desconectar/reconectar a C920 entre ditados.** Ditar, desconectar,
+      ✅ **2026-09-07 — confirmado pelo usuário.** É a prova em runtime de que a
+      correção do stream por gravação funciona no `AudioCaptureLive` real, e não
+      só contra o fake do teste.
+- [ ] ⏳ **A2 — desconectar/reconectar a C920 entre ditados.** Ditar, desconectar,
       reconectar, ditar de novo. Tem que voltar a transcrever sem relaunch.
-- [ ] **A3 — trocar o device de entrada default e voltar** (Ajustes › Som, ou
+- [ ] ⏳ **A3 — trocar o device de entrada default e voltar** (Ajustes › Som, ou
       conectar o iPhone via Continuity). Ditar depois de cada troca.
-- [ ] **A4 — microfone ocupado por outro app.** Abrir algo que segure o mic e
+- [ ] ⏳ **A4 — microfone ocupado por outro app.** Abrir algo que segure o mic e
       tentar ditar: em vez de "não fez nada", esperar erro visível.
-- [ ] **A5 — ditado de 60 s.** Sem truncar, sem estourar memória.
+- [ ] ⏳ **A5 — ditado de 60 s.** Sem truncar, sem estourar memória.
 - [ ] **A6 — conferir o log.** `tail -30 ~/Library/Logs/Tagarela/tagarela.log`
       deve mostrar, por ditado, a sequência
       `start in=…Hz/…ch device='…'` → `stop raw=… buffers=… → 16k=… peak …→… wall=…s`
@@ -65,8 +68,15 @@ envelhece, e os níveis funcionam em **toda** gravação.
       **Nenhuma linha pode conter o texto ditado.**
       Se algum ditado tiver disparado o watchdog, aparece
       `nenhum buffer após 1s; recriando o engine` e o `stop` traz `[engine recriado]`.
+      ✅ **2026-09-07 — confirmado pelo usuário.**
 
-**Resultado:** _(a preencher)_
+**Resultado: `ok-parcial` (2026-09-07).** A1 e A6 confirmados pelo usuário — os
+dois itens que fecham o bug de regressão dos níveis e a persistência/privacidade
+do log. **A2, A3, A4 e A5 não foram exercitados nesta sessão** e seguem abertos:
+são justamente os cenários de troca de device (gatilho da hipótese H1), mic
+tomado por outro app e ditado longo. Reprogramados para o aceite completo da
+Tarefa 12 — até lá, o self-healing da captura está verificado só no caminho
+feliz.
 
 ---
 
@@ -96,7 +106,10 @@ _(a preencher quando a Tarefa 9 fechar)_
 - [ ] **F5** — Preferências › Sobre › **Abrir log do app** abre
       `~/Library/Logs/Tagarela/tagarela.log`.
 
-**Resultado:** _(a preencher)_
+**Resultado: `ok-em-bloco` (2026-09-07).** O usuário confirmou o bloco de
+diagnóstico funcionando junto com o A6, mas **sem registro item a item** — as
+caixas F1–F5 seguem abertas de propósito, para serem conferidas uma a uma no
+aceite da Tarefa 12.
 
 ## Bloco G — não-regressão (Tarefa 12)
 _(a preencher na Tarefa 12: estilos, Ollama, idioma auto/pt/en)_

@@ -140,7 +140,7 @@ Console não alcança uma falha de dias atrás.
 
 ---
 
-## Tarefa 3 — captura de áudio self-healing ✅ (código; aceite manual pendente)
+## Tarefa 3 — captura de áudio self-healing ✅ (aceite `ok-parcial`)
 
 **Módulo novo:** `Audio/AudioMath.swift` — `downmix`, `resampleLinear`,
 `peakNormalize`, `peak`, puros e testáveis sem microfone. A qualidade do ASR
@@ -187,5 +187,12 @@ quando o stream fecha.
 **Testes:** +12 (11 de `AudioMath`, 1 de regressão dos níveis).
 Suíte **203 → 215**, verde.
 
-**Pendente:** aceite manual do Bloco A (ver
-[`checklists/fase5-manual.md`](../03-funcionalidades/checklists/fase5-manual.md)).
+**Aceite manual (Bloco A, 2026-09-07): `ok-parcial`.** O usuário confirmou **A1**
+— três ditados seguidos com as ondas animando nos três, que é a prova em runtime
+de que o `AudioCaptureLive` real honra o contrato de stream por gravação — e
+**A6** (o log traz a sequência completa por ditado, sem o texto ditado). **A2–A5
+não foram exercitados**: troca/reconexão de device, mic tomado por outro app e
+ditado de 60 s seguem abertos para a Tarefa 12. Ou seja: o watchdog e a recriação
+do engine estão corretos por construção e cobertos por teste, mas **ainda não
+foram vistos disparando em campo** — é exatamente o que a Tarefa 13 (validação
+em campo) existe para fechar.
