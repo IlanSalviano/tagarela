@@ -2,17 +2,28 @@ import SwiftUI
 
 struct StateRow: View {
     let state: PipelineState
+    /// Observado pelo pai (`MenuBarContent`); aqui é só leitura para render.
+    var health: PipelineHealth?
+    /// Nome do modelo Whisper realmente carregado — o sub-label dizia
+    /// "whisper large-v3" fixo, mentindo desde que o modelo virou configurável.
+    var loadedModelName: String?
+    /// Refinador realmente selecionado — o sub-label dizia "identity (sem llm)",
+    /// que é justamente o caso em que `.refining` nem acontece.
+    var refinerLabel: String?
 
     private var sub: String {
         switch state {
         case .idle:
-            return String(localized: "pipeline.sub.idle", defaultValue: "right ⌥ pra começar")
-        case .recording(let s, _):
-            return String(format: "%02d:%02d · 16 kHz mono", Int(s) / 60, Int(s) % 60)
+            return String(localized: "pipeline.sub.idle", defaultValue: "⌥ direito pra começar")
+        case .recording(let seconds, _):
+            return String(format: "%02d:%02d · 16 kHz mono", Int(seconds) / 60, Int(seconds) % 60)
         case .processing:
-            return String(localized: "pipeline.sub.processing", defaultValue: "whisper large-v3")
+            return loadedModelName
+                ?? String(localized: "pipeline.sub.processing.unloaded",
+                          defaultValue: "modelo não carregado")
         case .refining:
-            return String(localized: "pipeline.sub.refining", defaultValue: "identity (sem llm)")
+            return refinerLabel
+                ?? String(localized: "pipeline.sub.refining.unknown", defaultValue: "refinador")
         case .error:
             return String(localized: "pipeline.sub.error", defaultValue: "fallback: texto cru")
         }
@@ -30,6 +41,13 @@ struct StateRow: View {
                 Text(sub)
                     .font(DS.Font.mono(10))
                     .foregroundStyle(DS.Color.ink3)
+                // Só aparece depois do primeiro ditado da sessão: numa sessão
+                // recém-aberta a linha não diria nada.
+                if let health, health.recordings > 0 {
+                    Text(health.summaryLine)
+                        .font(DS.Font.mono(10))
+                        .foregroundStyle(DS.Color.ink3)
+                }
             }
             Spacer()
         }

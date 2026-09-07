@@ -8,6 +8,7 @@ import Sparkle
 @MainActor
 final class AppContainer: ObservableObject {
     let appState = AppState()
+    let health = PipelineHealth()
     let permissions: PermissionService
     var transcriber: Transcribing
     let audio: AudioCapturing
@@ -325,7 +326,13 @@ final class AppContainer: ObservableObject {
             historyStore: historyStore,
             injector: injector,
             swapCoordinator: swapCoordinator,
-            modelStore: modelStore)
+            modelStore: modelStore,
+            health: health,
+            loadedModelName: { [weak self] in self?.transcriber.loadedModelName },
+            modelDownloaded: { [weak self] in
+                guard let self else { return nil }
+                return self.modelStore.isDownloaded(self.prefs.whisperModelName)
+            })
         preferencesWindow.show(content: { AnyView(view) })
     }
 
@@ -391,14 +398,16 @@ final class AppContainer: ObservableObject {
                     switch event {
                     case .stateChanged(let s):
                         self.appState.pipeline = s
+                        self.health.noteState(s)
                         self.refreshIndicator(for: s)
                     case .errorOccurred(let msg):
                         Diag.error(.pipeline, "pipeline error: \(msg)")
                     case .finished:
-                        break
+                        self.health.noteSuccess()
                     case .refinerFellBack(let reason):
                         self.toastCenter.show(Toast(kind: .refinerFellBack(reason: reason)))
                     case .injectionFailed:
+                        self.health.noteInjectionFailure()
                         self.toastCenter.show(Toast(kind: .injectionFailed))
                     case .historySaveFailed:
                         self.toastCenter.show(Toast(kind: .historySaveFailed))

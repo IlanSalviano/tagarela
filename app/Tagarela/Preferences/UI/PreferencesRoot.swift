@@ -12,6 +12,9 @@ struct PreferencesRoot: View {
     let injector: Injecting
     let swapCoordinator: WhisperModelSwapCoordinator
     let modelStore: WhisperModelStore
+    var health: PipelineHealth?
+    var loadedModelName: () -> String? = { nil }
+    var modelDownloaded: () -> Bool? = { nil }
 
     @State private var selection: PrefsSection = .geral
 
@@ -57,7 +60,11 @@ struct PreferencesRoot: View {
             case .historico:     HistoryView(prefs: prefs, historyStore: historyStore, injector: injector)
             case .vocabulario:   VocabularyView(prefs: prefs)
             case .atalhos:       ShortcutsView(prefs: prefs)
-            case .about:         AboutView()
+            case .about:
+                AboutView(health: health,
+                          prefs: prefs,
+                          loadedModelName: loadedModelName,
+                          modelDownloaded: modelDownloaded)
             }
         }
         .frame(minWidth: 600, idealWidth: 720, minHeight: 400, idealHeight: 520)

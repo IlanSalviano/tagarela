@@ -44,6 +44,15 @@ final class LocalizableKeysTests: XCTestCase {
             "about.logs.header",
             "about.logs.open",
             "about.logs.help",
+            // Fase 5 — diagnóstico
+            "about.diagnostics.export",
+            "about.diagnostics.exported",
+            "about.diagnostics.failed",
+            "menubar.health.summary",
+            "pipeline.sub.idle",
+            "pipeline.sub.processing.unloaded",
+            "pipeline.sub.refining.unknown",
+            "pipeline.sub.refining.none",
         ]
         for k in keys {
             let resolved = String(localized: String.LocalizationValue(k))

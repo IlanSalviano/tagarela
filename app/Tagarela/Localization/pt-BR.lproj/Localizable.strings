@@ -33,10 +33,12 @@
 "pipeline.state.refining"   = "refinando";
 
 // Pipeline sub-labels (StateRow)
-"pipeline.sub.idle"       = "right ⌥ pra começar";
-"pipeline.sub.processing" = "whisper large-v3";
-"pipeline.sub.refining"   = "identity (sem llm)";
+"pipeline.sub.idle"       = "⌥ direito pra começar";
 "pipeline.sub.error"      = "fallback: texto cru";
+"pipeline.sub.processing.unloaded" = "modelo não carregado";
+"pipeline.sub.refining.unknown"    = "refinador";
+"pipeline.sub.refining.none"       = "sem refinador";
+"menubar.health.summary"  = "%lld ditados · %lld vazios · %lld curtos · %@";
 
 // Onboarding — Welcome (passo 1)
 "onboarding.step1.label"      = "PASSO 1 / 3";
@@ -196,5 +198,8 @@
 
 // Fase 3 — Sobre logs
 "about.logs.header" = "LOGS";
-"about.logs.open"   = "Abrir logs no Console";
-"about.logs.help"   = "Filtre por subsystem == com.tagarela na barra de busca.";
+"about.logs.open"   = "Abrir log do app";
+"about.logs.help"   = "O log fica em ~/Library/Logs/Tagarela/ e sobrevive a dias — o Console só guarda cerca de um dia.";
+"about.diagnostics.export"   = "Exportar diagnóstico…";
+"about.diagnostics.exported" = "Salvo em %@";
+"about.diagnostics.failed"   = "Falhou: %@";

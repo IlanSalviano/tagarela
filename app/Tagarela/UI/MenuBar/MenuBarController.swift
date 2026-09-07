@@ -3,6 +3,7 @@ import SwiftUI
 struct MenuBarContent: View {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var prefs: PreferencesStore
+    @ObservedObject var health: PipelineHealth
     let customStore: CustomStyleStoreLive?  // nil quando container falha
     let styleProvider: StyleProvider
     let recentsProvider: RecentTranscriptionsProvider
@@ -10,6 +11,17 @@ struct MenuBarContent: View {
     var onSelectOpenAINeedsKey: (RefinerKind) -> Void = { _ in }
     var onExplicitConfigureKey: () -> Void = {}
     var onOpenPreferences: () -> Void = {}
+    /// Modelo Whisper carregado agora — resolvido em runtime porque muda com o swap.
+    var loadedModelName: () -> String? = { nil }
+
+    private var refinerLabel: String {
+        switch prefs.refinerKind {
+        case .ollama: return "ollama · \(prefs.ollamaModel)"
+        case .openai: return "openai · \(prefs.openAIModel)"
+        case .none:   return String(localized: "pipeline.sub.refining.none",
+                                    defaultValue: "sem refinador")
+        }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -25,7 +37,10 @@ struct MenuBarContent: View {
             .padding(.vertical, 12)
             .overlay(Divider().background(DS.Color.hairline), alignment: .bottom)
 
-            StateRow(state: appState.pipeline)
+            StateRow(state: appState.pipeline,
+                     health: health,
+                     loadedModelName: loadedModelName(),
+                     refinerLabel: refinerLabel)
 
             Divider().background(DS.Color.hairline)
 

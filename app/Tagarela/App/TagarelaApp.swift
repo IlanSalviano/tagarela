@@ -7,6 +7,7 @@ struct TagarelaApp: App {
     var body: some Scene {
         MenuBarExtra {
             MenuBarContent(
+                health: container.health,
                 customStore: container.customStyleStoreLive,
                 styleProvider: container.styleProvider,
                 recentsProvider: container.recentsProvider,
@@ -34,7 +35,8 @@ struct TagarelaApp: App {
                 },
                 onOpenPreferences: {
                     container.openPreferences()
-                })
+                },
+                loadedModelName: { [container] in container.transcriber.loadedModelName })
             .environmentObject(container.appState)
             .environmentObject(container.prefs)
         } label: {

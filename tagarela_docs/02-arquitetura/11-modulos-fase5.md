@@ -88,3 +88,52 @@ injetando uma violação de mentira antes de fechar a tarefa.
 rotação com teto de arquivos, 50 escritores concorrentes sem linha interleaved,
 `contents(limit:)` no arquivo corrente e atravessando rotacionados, privacidade).
 Suíte **186 → 193**, verde.
+
+---
+
+## Tarefa 2 — `PipelineHealth` + "Exportar diagnóstico" ✅
+
+**Módulos novos** (`app/Tagarela/App/Diagnostics/`):
+
+| Arquivo | O que é |
+|---|---|
+| `PipelineHealth.swift` | `@MainActor ObservableObject` com contadores desde o launch: `recordings`, `discardedShort`, `emptyTranscriptions`, `injectionFailures`, `recoveries`, `consecutiveEmpty`, `lastSuccessAt`, `uptime`. `launchedAt` e o relógio são injetáveis (testes determinísticos). `summaryLine` = `12 ditados · 0 vazios · 0 curtos · 3d 4h`. |
+| `DiagnosticsExporter.swift` | Monta `~/Desktop/tagarela-diagnostico-<data>/` com o log rotativo, `snapshot.txt` e `vmmap.txt`, e revela no Finder. |
+
+**Por que contadores:** a degradação desta fase é silenciosa — o usuário só
+descobre quando tenta ditar. Com `vazios`/`curtos`/`recuperações` no menu, a
+resposta a "o app tá bem?" leva 10 segundos.
+
+**Detalhe que valia um teste:** `recordings` conta a **transição** para
+`.recording`, não cada `.stateChanged`. O estado é republicado 12–25×/s enquanto
+grava; contar por evento multiplicaria o número por cem.
+
+**`snapshot.txt`** reúne o que a auditoria teve de coletar à mão: versão/build,
+macOS, pid, uptime e contadores, modelo carregado e presente em disco,
+preferências **sem segredos**, formato do `inputNode` e nome do device de entrada
+default, `AXIsProcessTrusted`, `IOHIDCheckAccess`, status do microfone, e os
+event taps **do próprio processo** (responde "a hotkey ainda está viva?" sem
+expor os taps de outros apps). A API key mora no Keychain e não é lida.
+
+**Menu (`StateRow`)** ganha a linha de saúde abaixo do sub-label, só depois do
+primeiro ditado da sessão. De passagem, os sub-labels que a auditoria §5.3
+apontou como mentirosos foram corrigidos:
+
+| Estado | Antes | Agora |
+|---|---|---|
+| `.idle` | "right ⌥ pra começar" (metade em inglês) | "⌥ direito pra começar" |
+| `.processing` | "whisper large-v3" fixo | nome do modelo realmente carregado |
+| `.refining` | "identity (sem llm)" — justamente o caso em que `.refining` nem acontece | `ollama · <modelo>` / `openai · <modelo>` |
+
+**Preferências › Sobre:** botão **"Exportar diagnóstico…"** ao lado de
+**"Abrir log do app"** — que deixou de abrir o Console filtrado por subsystem e
+passa a abrir `~/Library/Logs/Tagarela/tagarela.log`, pelo motivo de sempre: o
+Console não alcança uma falha de dias atrás.
+
+**Divergências do plano:**
+
+- O plano cita `UI/MenuBar/MenuBarContent.swift`; o arquivo não existe — a view `MenuBarContent` mora em `MenuBarController.swift`, e foi lá que a mudança entrou.
+- O plano manda alimentar `PipelineHealth` também com `.captureFailed`, `.emptyTranscription` e `.transcriberRecoveryRequested`. Esses eventos só nascem na Tarefa 4; por ora estão ligados `.stateChanged` (gravações), `.finished` (sucesso) e `.injectionFailed`. A Tarefa 4 fecha o resto — o próprio plano já prevê isso no Step 4 dela.
+- Fora do plano: `DiagnosticsExporterTests` afirma que a exportação escreve log + snapshot, que o snapshot traz as seções esperadas e que não vaza segredo. O plano deixava isso para aceite manual; um teste é mais barato e não depende de alguém olhar.
+
+**Testes:** +10 (9 de `PipelineHealth`, 1 de exportação). Suíte **193 → 203**, verde.

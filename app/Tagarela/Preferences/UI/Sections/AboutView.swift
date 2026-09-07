@@ -1,6 +1,15 @@
+import AppKit
 import SwiftUI
 
 struct AboutView: View {
+    var health: PipelineHealth?
+    var prefs: PreferencesStore?
+    var loadedModelName: () -> String? = { nil }
+    var modelDownloaded: () -> Bool? = { nil }
+
+    @State private var exportedFolder: String?
+    @State private var exportFailure: String?
+
     private var appVersion: String {
         let v = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
         let b = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "—"
@@ -65,19 +74,42 @@ struct AboutView: View {
                         .font(DS.Font.mono(10))
                         .tracking(1.4)
                         .foregroundStyle(DS.Color.ink3)
-                    Button(action: openLogsInConsole) {
-                        Text(String(localized: "about.logs.open",
-                                     defaultValue: "Abrir logs no Console"))
-                            .font(DS.Font.mono(11))
-                            .foregroundStyle(DS.Color.paper)
-                            .padding(.horizontal, 12).padding(.vertical, 6)
-                            .background(DS.Color.ink, in: RoundedRectangle(cornerRadius: 6))
+                    HStack(spacing: 8) {
+                        Button(action: openLogFile) {
+                            Text(String(localized: "about.logs.open",
+                                         defaultValue: "Abrir log do app"))
+                                .font(DS.Font.mono(11))
+                                .foregroundStyle(DS.Color.paper)
+                                .padding(.horizontal, 12).padding(.vertical, 6)
+                                .background(DS.Color.ink, in: RoundedRectangle(cornerRadius: 6))
+                        }
+                        .buttonStyle(.plain)
+                        Button(action: exportDiagnostics) {
+                            Text(String(localized: "about.diagnostics.export",
+                                         defaultValue: "Exportar diagnóstico…"))
+                                .font(DS.Font.mono(11))
+                                .foregroundStyle(DS.Color.paper)
+                                .padding(.horizontal, 12).padding(.vertical, 6)
+                                .background(DS.Color.carmine, in: RoundedRectangle(cornerRadius: 6))
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                     Text(String(localized: "about.logs.help",
-                                 defaultValue: "Filtre por subsystem == com.tagarela na barra de busca."))
+                                 defaultValue: "O log fica em ~/Library/Logs/Tagarela/ e sobrevive a dias — o Console só guarda cerca de um dia."))
                         .font(DS.Font.mono(10))
                         .foregroundStyle(DS.Color.ink3)
+                    if let exportedFolder {
+                        Text(String(localized: "about.diagnostics.exported",
+                                     defaultValue: "Salvo em \(exportedFolder)"))
+                            .font(DS.Font.mono(10))
+                            .foregroundStyle(DS.Color.moss)
+                    }
+                    if let exportFailure {
+                        Text(String(localized: "about.diagnostics.failed",
+                                     defaultValue: "Falhou: \(exportFailure)"))
+                            .font(DS.Font.mono(10))
+                            .foregroundStyle(DS.Color.carmine)
+                    }
                 }
 
                 Spacer(minLength: 0)
@@ -86,11 +118,31 @@ struct AboutView: View {
         }
     }
 
-    private func openLogsInConsole() {
-        let task = Process()
-        task.launchPath = "/usr/bin/open"
-        task.arguments = ["-a", "Console.app", "--args",
-                          "--predicate", "subsystem == 'com.tagarela'"]
-        try? task.run()
+    /// Antes abria o Console filtrado por subsystem. Trocado pelo arquivo: a
+    /// auditoria de 2026-09-07 mediu retenção de ~1,5 dia no log unificado, o
+    /// que torna o Console inútil justamente para a falha que aparece depois de
+    /// dias no ar.
+    private func openLogFile() {
+        let url = DiagnosticsLog.shared.fileURL(index: 0)
+        if !FileManager.default.fileExists(atPath: url.path) {
+            NSWorkspace.shared.activateFileViewerSelecting([DiagnosticsLog.shared.directory])
+            return
+        }
+        NSWorkspace.shared.open(url)
+    }
+
+    private func exportDiagnostics() {
+        exportedFolder = nil
+        exportFailure = nil
+        do {
+            let folder = try DiagnosticsExporter.export(
+                .init(health: health,
+                      prefs: prefs,
+                      loadedModelName: loadedModelName(),
+                      modelDownloaded: modelDownloaded()))
+            exportedFolder = folder.lastPathComponent
+        } catch {
+            exportFailure = String(describing: error)
+        }
     }
 }
