@@ -137,3 +137,55 @@ Console não alcança uma falha de dias atrás.
 - Fora do plano: `DiagnosticsExporterTests` afirma que a exportação escreve log + snapshot, que o snapshot traz as seções esperadas e que não vaza segredo. O plano deixava isso para aceite manual; um teste é mais barato e não depende de alguém olhar.
 
 **Testes:** +10 (9 de `PipelineHealth`, 1 de exportação). Suíte **193 → 203**, verde.
+
+---
+
+## Tarefa 3 — captura de áudio self-healing ✅ (código; aceite manual pendente)
+
+**Módulo novo:** `Audio/AudioMath.swift` — `downmix`, `resampleLinear`,
+`peakNormalize`, `peak`, puros e testáveis sem microfone. A qualidade do ASR
+depende inteiramente destas três operações e **nenhuma tinha teste** antes.
+
+**Bug corrigido no downmix.** Usava o **menor** canal (`min`), então um canal
+vazio zerava a gravação inteira — que virava "buffer curto" descartado em
+silêncio, o caminho S1 da auditoria §3.4. Agora usa o **maior** com zero-fill e
+devolve `channelMismatch`, que vira `.error` no log.
+
+**`AudioCaptureLive` reescrito:**
+
+| Antes | Agora |
+|---|---|
+| `engine` era `let`, criado uma vez e reusado para sempre | `AVAudioEngine` **novo a cada `start()`** — custa milissegundos e elimina a classe inteira de "o engine envelheceu ao longo de dias" (hipótese H1) |
+| Sem observer de configuração | `AVAudioEngineConfigurationChange` observado por gravação; a mudança vira `.error` no log e entra no `CaptureStats` |
+| Nenhuma verificação de que buffers chegaram | **Watchdog de 1 s**: sem buffer, derruba e recria o engine e tenta de novo; se a segunda tentativa também não entregar nada, o `stop()` **lança** `noAudioDelivered` em vez de devolver silêncio |
+| `channelBuffers` escrito na thread de render e lido no `stop()` sem sincronização | Tudo sob `OSAllocatedUnfairLock`, junto com o contador de buffers |
+| `engine.start()` falhando deixava o tap instalado → o `start()` seguinte fazia `installTap` no mesmo bus → `NSException` | `removeTap` no `catch` |
+| Nenhuma métrica exposta | `lastStats: CaptureStats` — frames, buffers, formato de entrada, pico antes/depois, wall-clock, mismatch de canal, se o engine foi recriado, se a configuração mudou |
+
+**O bug dos níveis (auditoria §5.1), com teste de regressão.** `levels` era um
+único `AsyncStream` criado no init; `cancelRecordingTasks()` cancelava a Task
+consumidora, e cancelar o consumidor **termina** o stream (provado em
+`tools/diag/asyncstream_cancel_test.swift`). Da segunda gravação em diante
+nenhum nível chegava — os 4 indicadores animavam com `audioLevel = 0` para
+sempre, em toda sessão, desde a Fase 1.
+
+A correção tem duas metades: o `AudioCaptureLive` cria um stream **por
+gravação** (finalizado no `stop()`), e o `PipelineCoordinator` deixa de cancelar
+a Task de níveis — só o ticker de 80 ms é cancelado; a de níveis termina sozinha
+quando o stream fecha.
+
+> **Honestidade sobre o teste:** `test_levels_arrive_in_second_recording` foi
+> escrito primeiro contra um fake que espelhava a forma **de então** do
+> `AudioCaptureLive` (um stream no init) e ficou **vermelho** na segunda
+> gravação, como previsto. A correção mudou o *contrato* de
+> `AudioCapturing.levels` (agora documentado como "por gravação"), e o fake foi
+> atualizado para espelhá-lo. O teste portanto prova que o **coordinator**
+> consome corretamente um stream por gravação ao longo de várias gravações; que
+> a **implementação real** honra o contrato é o que o Bloco A do aceite manual
+> verifica, olhando as ondas animarem nos três ditados.
+
+**Testes:** +12 (11 de `AudioMath`, 1 de regressão dos níveis).
+Suíte **203 → 215**, verde.
+
+**Pendente:** aceite manual do Bloco A (ver
+[`checklists/fase5-manual.md`](../03-funcionalidades/checklists/fase5-manual.md)).

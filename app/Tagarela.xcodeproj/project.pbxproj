@@ -21,6 +21,7 @@
 		1ACA4D266E12D45EDAB6DE18 /* Toast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72D87FE39418F9229E42065B /* Toast.swift */; };
 		1C73D490F7F8111D44B38DD9 /* OpenAIKeyPromptWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 135434B5A422DE2340594BB5 /* OpenAIKeyPromptWindow.swift */; };
 		1ED4C51A07338B23B42078E4 /* ToastCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CA8407C5F4A3FCEEA500C5B /* ToastCenter.swift */; };
+		1F05ABCBF18724C0FCD2BD25 /* AudioMathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFBD1A1C519F09363B12B818 /* AudioMathTests.swift */; };
 		297819BA5A957F06C5FE0F1F /* ShortcutsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F959F346FC72FDBA5B0A3C0 /* ShortcutsView.swift */; };
 		29AE01905EAC0648F69BBE3E /* OnboardModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7123EDA993F7879F2D0F4FA3 /* OnboardModel.swift */; };
 		2A3C2873638E4A39E896CD0C /* PreferencesStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9046134AA822B8003E250 /* PreferencesStoreTests.swift */; };
@@ -147,6 +148,7 @@
 		EFAA73358DCF48C1C1037FD8 /* IndicatorPill.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E6F51C94A5B358ED2DB0CBD /* IndicatorPill.swift */; };
 		F11CF8F05C71CAC179EAEA5D /* RemoteRefinerConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = C658A1FA765D0031A186BB22 /* RemoteRefinerConfig.swift */; };
 		F206D528CC394878508277D4 /* TranscriptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA6C40A17D3EDFC9DE72126E /* TranscriptionView.swift */; };
+		F28E2ADDD9F5B1D312C9C995 /* AudioMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07CD47F45CC7ACB1A3A5245D /* AudioMath.swift */; };
 		F4CFA2E3B88D0CFA2DA1A068 /* CustomStyleStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD31E2B52177A74935D9866F /* CustomStyleStore.swift */; };
 		F8FBCE0B00B117991617F4EB /* Glyph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64EB8767875513C5CBD96EB7 /* Glyph.swift */; };
 		F90DD43F74B7289508609B03 /* PipelineHealth.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0C81BE7BB000E2EC4FCC010 /* PipelineHealth.swift */; };
@@ -167,6 +169,7 @@
 		000437DA8749B2E09CBA9DC3 /* RefinerFallbackReasonTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefinerFallbackReasonTests.swift; sourceTree = "<group>"; };
 		04FC3209B0C0DC0F2562BD38 /* WhisperModelSwapCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperModelSwapCoordinatorTests.swift; sourceTree = "<group>"; };
 		063767F145310C13CC9F3BD3 /* IndicatorVariantTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndicatorVariantTests.swift; sourceTree = "<group>"; };
+		07CD47F45CC7ACB1A3A5245D /* AudioMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioMath.swift; sourceTree = "<group>"; };
 		08409FB81EE882100E04E4CF /* RefinerFactoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefinerFactoryTests.swift; sourceTree = "<group>"; };
 		09A9046134AA822B8003E250 /* PreferencesStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesStoreTests.swift; sourceTree = "<group>"; };
 		0A79C17F908D069616F31938 /* AudioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioView.swift; sourceTree = "<group>"; };
@@ -298,6 +301,7 @@
 		EA2A3341042C032C2AD90B62 /* PipelineEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PipelineEvent.swift; sourceTree = "<group>"; };
 		EA50651B0097577FB6353079 /* RefinerErrorMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefinerErrorMapperTests.swift; sourceTree = "<group>"; };
 		EA8D990802149FD51B43EDDE /* CustomStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomStyle.swift; sourceTree = "<group>"; };
+		EFBD1A1C519F09363B12B818 /* AudioMathTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioMathTests.swift; sourceTree = "<group>"; };
 		F12ABBA517752A7E8B23895F /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Fonts; path = Tagarela/Resources/Fonts; sourceTree = SOURCE_ROOT; };
 		F19CDE90411D6A59F7C2922E /* InitialPromptBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitialPromptBuilderTests.swift; sourceTree = "<group>"; };
 		F225C2D8AD43FF9F2BF1BF19 /* CustomStyleStoreNoop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomStyleStoreNoop.swift; sourceTree = "<group>"; };
@@ -328,6 +332,7 @@
 			children = (
 				7C1B5B143C23ACACE0B19BC6 /* AudioCaptureLive.swift */,
 				D935115B6E9C71348D73E53F /* AudioCapturing.swift */,
+				07CD47F45CC7ACB1A3A5245D /* AudioMath.swift */,
 			);
 			path = Audio;
 			sourceTree = "<group>";
@@ -443,6 +448,7 @@
 			isa = PBXGroup;
 			children = (
 				975BF2C05404881F02AF2DA1 /* Helpers */,
+				EFBD1A1C519F09363B12B818 /* AudioMathTests.swift */,
 				E9091563F088784340E570DD /* CustomStyleStoreTests.swift */,
 				D09C9789A9548B488C652FF9 /* CustomStyleTests.swift */,
 				A3F08F3CE9E6659808A9DF8B /* DiagnosticsExporterTests.swift */,
@@ -804,6 +810,7 @@
 				A723F99CF516D9C1904D9B08 /* AppState.swift in Sources */,
 				0779F6BEB11DF02D3334B344 /* AudioCaptureLive.swift in Sources */,
 				758D7A361EA11C3E32E36E8A /* AudioCapturing.swift in Sources */,
+				F28E2ADDD9F5B1D312C9C995 /* AudioMath.swift in Sources */,
 				0BBF76167A8FB6E4A7630DD6 /* AudioView.swift in Sources */,
 				E681CDA890AA16DEDECB9DD7 /* BackendSubmenu.swift in Sources */,
 				2D97B18192853DDAD3D9B1BA /* BaseRemoteRefiner.swift in Sources */,
@@ -911,6 +918,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1F05ABCBF18724C0FCD2BD25 /* AudioMathTests.swift in Sources */,
 				5347C7CDE75356338A218F1A /* CustomStyleStoreTests.swift in Sources */,
 				4EF88190CF8123AF3D9D9BF6 /* CustomStyleTests.swift in Sources */,
 				C71AB1FD1A71680A98FE5171 /* DiagnosticsExporterTests.swift in Sources */,

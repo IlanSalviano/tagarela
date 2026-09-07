@@ -238,6 +238,41 @@ final class PipelineCoordinatorTests: XCTestCase {
 
     // Helpers ----------------------------------------------------
 
+
+    /// Regressão da auditoria §5.1: `levels` era um único `AsyncStream` criado
+    /// no init do `AudioCaptureLive`, e `cancelRecordingTasks()` cancelava a
+    /// Task consumidora — o que **termina** o stream (provado em
+    /// `tools/diag/asyncstream_cancel_test.swift`). Da segunda gravação em
+    /// diante nenhum nível chegava: os 4 indicadores animavam com
+    /// `audioLevel = 0` para sempre.
+    func test_levels_arrive_in_second_recording() async {
+        let audio = LevelEmittingAudio()
+        let p = makeCoordinator(audio: audio)
+
+        await p.handle(.toggle)
+        audio.emit(0.5)
+        let first = await waitForLevel(0.5, in: p)
+        XCTAssertTrue(first, "1ª gravação deveria receber nível")
+
+        await p.handle(.toggle)                       // encerra e roda o pipeline
+        try? await Task.sleep(nanoseconds: 200_000_000)
+
+        await p.handle(.toggle)                       // 2ª gravação
+        audio.emit(0.5)
+        let second = await waitForLevel(0.5, in: p)
+        XCTAssertTrue(second, "2ª gravação também precisa receber níveis")
+    }
+
+    private func waitForLevel(_ expected: Double,
+                              in p: PipelineCoordinator,
+                              timeoutMs: Int = 1_000) async -> Bool {
+        for _ in 0..<(timeoutMs / 20) {
+            if case .recording(_, let level) = await p.state, level == expected { return true }
+            try? await Task.sleep(nanoseconds: 20_000_000)
+        }
+        return false
+    }
+
     private func makeCoordinator(audio: AudioCapturing = FakeAudio(),
                                  refiner: TextRefiner = IdentityRefiner(),
                                  style: Style = BuiltInStyles.conversaInformal,
@@ -408,6 +443,30 @@ private final class FakeAudio: AudioCapturing, @unchecked Sendable {
     }
     func stop() async throws -> AudioBuffer {
         isRecording = false
+        return AudioBuffer(samples: Array(repeating: 0.1, count: 16_000), sampleRate: 16_000)
+    }
+}
+
+/// Espelha o contrato de `AudioCapturing.levels`: um stream **por gravação**,
+/// criado no `start()` e finalizado no `stop()`.
+private final class LevelEmittingAudio: AudioCapturing, @unchecked Sendable {
+    var isRecording = false
+    private(set) var levels = AsyncStream<Double> { $0.finish() }
+    private var continuation: AsyncStream<Double>.Continuation?
+
+    func emit(_ value: Double) { continuation?.yield(value) }
+
+    func start() throws {
+        let (stream, continuation) = AsyncStream<Double>.makeStream(of: Double.self)
+        self.levels = stream
+        self.continuation = continuation
+        isRecording = true
+    }
+
+    func stop() async throws -> AudioBuffer {
+        isRecording = false
+        continuation?.finish()
+        continuation = nil
         return AudioBuffer(samples: Array(repeating: 0.1, count: 16_000), sampleRate: 16_000)
     }
 }

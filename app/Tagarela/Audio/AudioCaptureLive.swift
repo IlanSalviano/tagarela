@@ -1,75 +1,275 @@
 import AVFoundation
 import CoreAudio
+import os
 
 private func fmt(_ value: Double, _ places: Int = 2) -> String {
     String(format: "%.\(places)f", value)
 }
 
 final class AudioCaptureLive: AudioCapturing, @unchecked Sendable {
-    private let engine = AVAudioEngine()
+    /// Estado escrito pela thread de render do tap e lido no `stop()`.
+    /// Antes era acessado sem sincronização nenhuma.
+    private struct TapState {
+        var channelBuffers: [[Float]] = []
+        var buffersSeen: Int = 0
+    }
+    private let tapState = OSAllocatedUnfairLock(uncheckedState: TapState())
+
+    /// Engine **novo a cada gravação**. Custa milissegundos e elimina a classe
+    /// inteira de falhas "o engine envelheceu ao longo de dias" — a hipótese H1
+    /// da auditoria, que nenhuma inspeção conseguiu confirmar nem descartar.
+    private var engine = AVAudioEngine()
     private var captureFormat: AVAudioFormat?
-    /// Um array por canal — cada callback do tap concatena seus N samples
-    /// no array do canal correspondente. Mantém a ordem temporal por canal.
-    private var channelBuffers: [[Float]] = []
-    private(set) var isRecording: Bool = false
-    /// Quantos buffers o tap entregou nesta gravação, e desde quando ela corre.
-    /// Servem ao diagnóstico: `raw=0` com `wall` longo é a assinatura de S1
-    /// (auditoria §3.4), o candidato mais compatível com a queixa.
-    private var buffersSeen: Int = 0
+    private var configObserver: NSObjectProtocol?
+    private var watchdog: Task<Void, Never>?
     private var startedAt: ContinuousClock.Instant?
+    private var engineRecreated = false
+    private var configurationChanged = false
+    private var noAudioDelivered = false
+
+    private(set) var isRecording = false
+    private(set) var lastStats: CaptureStats?
+
     private let maxGainProvider: @Sendable () -> Float
 
+    /// Um stream por gravação (ver contrato em `AudioCapturing.levels`).
+    private(set) var levels = AsyncStream<Double> { $0.finish() }
     nonisolated(unsafe) private var levelContinuation: AsyncStream<Double>.Continuation?
-    let levels: AsyncStream<Double>
 
     init(maxGainProvider: @escaping @Sendable () -> Float = { 20.0 }) {
         self.maxGainProvider = maxGainProvider
-        var ref: AsyncStream<Double>.Continuation!
-        self.levels = AsyncStream { c in ref = c }
-        self.levelContinuation = ref
     }
+
+    // MARK: - ciclo de vida
 
     func start() throws {
         let mic = AVCaptureDevice.authorizationStatus(for: .audio)
         Diag.info(.audio, "start: mic auth=\(mic.rawValue)")
-        if mic == .denied {
-            throw AudioCaptureError.microphoneDenied
+        if mic == .denied { throw AudioCaptureError.microphoneDenied }
+
+        engineRecreated = false
+        configurationChanged = false
+        noAudioDelivered = false
+        tapState.withLock { $0 = TapState() }
+
+        engine = AVAudioEngine()
+        observeConfigurationChange()
+
+        let (stream, continuation) = AsyncStream<Double>.makeStream()
+        levels = stream
+        levelContinuation = continuation
+
+        do {
+            try installTapAndStart()
+        } catch {
+            levelContinuation?.finish()
+            levelContinuation = nil
+            removeConfigurationObserver()
+            throw error
         }
-        channelBuffers.removeAll()
-        buffersSeen = 0
+
+        isRecording = true
+        startedAt = .now
+        watchdog = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(1))
+            self?.watchdogFired()
+        }
+        Diag.notice(.audio, "start in=\(Int(captureFormat?.sampleRate ?? 0))Hz/"
+                    + "\(captureFormat?.channelCount ?? 0)ch device='\(Self.defaultInputDeviceName())'")
+    }
+
+    func stop() async throws -> AudioBuffer {
+        guard isRecording else { throw AudioCaptureError.notRecording }
+        watchdog?.cancel()
+        watchdog = nil
+
+        let captured = teardownEngine()
+        isRecording = false
+
+        let wall: Double = startedAt.map { start in
+            let elapsed = start.duration(to: .now)
+            return Double(elapsed.components.seconds)
+                 + Double(elapsed.components.attoseconds) / 1e18
+        } ?? 0
+        startedAt = nil
+
+        // Finaliza o stream desta gravação: o consumidor termina sozinho.
+        levelContinuation?.finish()
+        levelContinuation = nil
+
+        guard let inFormat = captureFormat else {
+            Diag.error(.audio, "stop sem captureFormat (buffers=\(captured.buffersSeen) wall=\(fmt(wall))s)")
+            throw AudioCaptureError.noAudioDelivered
+        }
+
+        let down = AudioMath.downmix(perChannel: captured.channelBuffers)
+        let resampled = AudioMath.resampleLinear(down.samples, from: inFormat.sampleRate, to: 16_000)
+        let peakBefore = AudioMath.peak(resampled)
+        let boosted = AudioMath.peakNormalize(resampled, maxGain: maxGainProvider())
+        let peakAfter = AudioMath.peak(boosted)
+        let rawFrames = captured.channelBuffers.reduce(0) { $0 + $1.count }
+
+        let stats = CaptureStats(
+            rawFrames: rawFrames,
+            buffers: captured.buffersSeen,
+            inputSampleRate: inFormat.sampleRate,
+            inputChannels: Int(inFormat.channelCount),
+            resampledFrames: resampled.count,
+            peakBefore: peakBefore,
+            peakAfter: peakAfter,
+            wallClockSeconds: wall,
+            channelMismatch: down.channelMismatch,
+            engineRecreated: engineRecreated,
+            configurationChanged: configurationChanged)
+        lastStats = stats
+
+        Diag.notice(.audio, "stop raw=\(rawFrames) buffers=\(captured.buffersSeen) "
+                    + "in=\(Int(inFormat.sampleRate))Hz/\(inFormat.channelCount)ch → 16k=\(resampled.count) "
+                    + "peak \(fmt(Double(peakBefore), 3))→\(fmt(Double(peakAfter), 3)) wall=\(fmt(wall))s"
+                    + (engineRecreated ? " [engine recriado]" : "")
+                    + (configurationChanged ? " [config mudou]" : ""))
+
+        if down.channelMismatch {
+            Diag.error(.audio, "canais com contagens diferentes "
+                       + "(\(captured.channelBuffers.map(\.count))) — completados com zero")
+        }
+
+        // A gravação correu tempo suficiente pra ter entregado áudio e não
+        // entregou: é o S1 da auditoria §3.4, que até aqui era mudo.
+        if noAudioDelivered || (resampled.isEmpty && wall >= 1.0) {
+            Diag.error(.audio, "raw=0 — tap não entregou sample nenhum em \(fmt(wall))s "
+                       + "(buffers=\(captured.buffersSeen) device='\(Self.defaultInputDeviceName())')")
+            throw AudioCaptureError.noAudioDelivered
+        }
+
+        return AudioBuffer(samples: boosted, sampleRate: 16_000)
+    }
+
+    // MARK: - engine
+
+    private func installTapAndStart() throws {
         let input = engine.inputNode
         let inFormat = input.outputFormat(forBus: 0)
-        channelBuffers = Array(repeating: [], count: Int(inFormat.channelCount))
         if inFormat.sampleRate == 0 || inFormat.channelCount == 0 {
-            Diag.error(.audio, "inputNode sem formato (sampleRate=\(inFormat.sampleRate) ch=\(inFormat.channelCount)) — provavelmente sem permissão de mic")
+            Diag.error(.audio, "inputNode sem formato (sampleRate=\(inFormat.sampleRate) "
+                       + "ch=\(inFormat.channelCount)) — provavelmente sem permissão de mic")
             throw AudioCaptureError.microphoneDenied
+        }
+        captureFormat = inFormat
+        tapState.withLock {
+            $0.channelBuffers = Array(repeating: [], count: Int(inFormat.channelCount))
         }
 
         // Capturamos no formato nativo do device e convertemos no stop().
-        // Evita problemas com AVAudioConverter de streaming que engasgam após
-        // o primeiro buffer em alguns devices USB.
-        self.captureFormat = inFormat
-        input.installTap(onBus: 0, bufferSize: 4096, format: inFormat) { [weak self] buf, _ in
-            guard let self else { return }
-            self.append(buffer: buf)
+        // Evita o AVAudioConverter de streaming, que engasga após o primeiro
+        // buffer em alguns devices USB.
+        input.installTap(onBus: 0, bufferSize: 4096, format: inFormat) { [weak self] buffer, _ in
+            self?.append(buffer: buffer)
         }
 
         engine.prepare()
         do {
             try engine.start()
         } catch {
+            // Sem isto o tap fica instalado e o próximo `start()` chama
+            // `installTap` no mesmo bus → NSException (auditoria §5.1).
+            input.removeTap(onBus: 0)
             Diag.error(.audio, "engine.start() falhou: \(String(describing: error))")
             throw AudioCaptureError.engineFailedToStart
         }
-        isRecording = true
-        startedAt = .now
-        Diag.notice(.audio, "start in=\(Int(inFormat.sampleRate))Hz/\(inFormat.channelCount)ch device='\(Self.defaultInputDeviceName())'")
+    }
+
+    @discardableResult
+    private func teardownEngine() -> TapState {
+        engine.inputNode.removeTap(onBus: 0)
+        engine.stop()
+        removeConfigurationObserver()
+        return tapState.withLock { state in
+            let copy = state
+            state = TapState()
+            return copy
+        }
+    }
+
+    /// Nenhum buffer em 1 s: derruba, recria e tenta uma vez. Se a segunda
+    /// tentativa também não entregar nada, o `stop()` lança em vez de devolver
+    /// silêncio — o caminho que hoje termina em "não fez nada, sem aviso".
+    private func watchdogFired() {
+        guard isRecording, tapState.withLock({ $0.buffersSeen }) == 0 else { return }
+        Diag.error(.audio, "nenhum buffer após 1s; recriando o engine")
+        engineRecreated = true
+
+        teardownEngine()
+        engine = AVAudioEngine()
+        observeConfigurationChange()
+        do {
+            try installTapAndStart()
+        } catch {
+            noAudioDelivered = true
+            Diag.error(.audio, "recriar o engine falhou: \(String(describing: error))")
+            return
+        }
+
+        watchdog = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(1))
+            self?.confirmRecreationWorked()
+        }
+    }
+
+    private func confirmRecreationWorked() {
+        guard isRecording, tapState.withLock({ $0.buffersSeen }) == 0 else { return }
+        noAudioDelivered = true
+        Diag.error(.audio, "ainda sem buffers depois de recriar o engine — "
+                   + "a gravação vai falhar explicitamente")
+    }
+
+    private func observeConfigurationChange() {
+        removeConfigurationObserver()
+        configObserver = NotificationCenter.default.addObserver(
+            forName: .AVAudioEngineConfigurationChange,
+            object: engine,
+            queue: nil) { [weak self] _ in
+                self?.configurationChanged = true
+                Diag.error(.audio, "configuration change durante a gravação")
+            }
+    }
+
+    private func removeConfigurationObserver() {
+        if let configObserver { NotificationCenter.default.removeObserver(configObserver) }
+        configObserver = nil
+    }
+
+    // MARK: - tap
+
+    /// Roda na thread de render. Nada de I/O aqui — só acumular e medir.
+    private func append(buffer: AVAudioPCMBuffer) {
+        guard let channelData = buffer.floatChannelData else { return }
+        let frames = Int(buffer.frameLength)
+        let channels = Int(buffer.format.channelCount)
+
+        tapState.withLock { state in
+            if state.channelBuffers.count < channels {
+                state.channelBuffers.append(contentsOf:
+                    Array(repeating: [Float](), count: channels - state.channelBuffers.count))
+            }
+            for channel in 0..<channels {
+                state.channelBuffers[channel].append(
+                    contentsOf: UnsafeBufferPointer(start: channelData[channel], count: frames))
+            }
+            state.buffersSeen += 1
+        }
+
+        // Nível (RMS) só do canal 0 — mais barato.
+        var sum: Float = 0
+        let first = channelData[0]
+        for index in 0..<frames { sum += first[index] * first[index] }
+        let rms = sqrt(sum / Float(max(1, frames)))
+        levelContinuation?.yield(min(1.0, max(0.0, Double(rms) * 4)))
     }
 
     /// Nome do device de entrada default no CoreAudio. É diagnóstico: a auditoria
-    /// viu a lista de devices de entrada mudar várias vezes por dia nesta máquina
-    /// (iPhone via Continuity, C920 re-enumerada, DisplayLink), que é o gatilho
-    /// plausível da hipótese H1 pro "parou de transcrever".
+    /// viu a lista de devices mudar várias vezes por dia nesta máquina (iPhone
+    /// via Continuity, C920 re-enumerada, DisplayLink).
     private static func defaultInputDeviceName() -> String {
         var deviceID = AudioDeviceID(0)
         var size = UInt32(MemoryLayout<AudioDeviceID>.size)
@@ -88,124 +288,13 @@ final class AudioCaptureLive: AudioCapturing, @unchecked Sendable {
             mScope: kAudioObjectPropertyScopeGlobal,
             mElement: kAudioObjectPropertyElementMain)
         guard AudioObjectGetPropertyData(deviceID, &nameAddress, 0, nil,
-                                         &nameSize, &name) == noErr else {
-            return "id=\(deviceID)"
-        }
+                                         &nameSize, &name) == noErr else { return "id=\(deviceID)" }
         return name as String
     }
 
-    func stop() async throws -> AudioBuffer {
-        guard isRecording else { throw AudioCaptureError.notRecording }
-        engine.inputNode.removeTap(onBus: 0)
-        engine.stop()
-        isRecording = false
-        let now = ContinuousClock.now
-        let wall: Double = startedAt.map { start in
-            let d = start.duration(to: now)
-            return Double(d.components.seconds) + Double(d.components.attoseconds) / 1e18
-        } ?? 0
-        startedAt = nil
-        let buffers = buffersSeen
-        let perChannel = channelBuffers
-        channelBuffers.removeAll()
-        guard let inFormat = captureFormat else {
-            Diag.error(.audio, "stop sem captureFormat (buffers=\(buffers) wall=\(fmt(wall))s)")
-            return AudioBuffer(samples: [], sampleRate: 16_000)
-        }
-        let resampled = downmixAndResample(perChannel: perChannel, from: inFormat)
-        let boosted = boostPeakNormalize(resampled)
-        var rawPeak: Float = 0
-        for s in resampled { let a = abs(s); if a > rawPeak { rawPeak = a } }
-        var newPeak: Float = 0
-        for s in boosted { let a = abs(s); if a > newPeak { newPeak = a } }
-        let totalRaw = perChannel.reduce(0) { $0 + $1.count }
-        Diag.notice(.audio, "stop raw=\(totalRaw) buffers=\(buffers) in=\(Int(inFormat.sampleRate))Hz/\(inFormat.channelCount)ch → 16k=\(resampled.count) peak \(fmt(Double(rawPeak), 3))→\(fmt(Double(newPeak), 3)) wall=\(fmt(wall))s")
-        if totalRaw == 0 {
-            Diag.error(.audio, "raw=0 — tap não entregou sample nenhum em \(fmt(wall))s (buffers=\(buffers) device='\(Self.defaultInputDeviceName())')")
-        }
-        return AudioBuffer(samples: boosted, sampleRate: 16_000)
+    deinit {
+        watchdog?.cancel()
+        removeConfigurationObserver()
+        levelContinuation?.finish()
     }
-
-    /// Boost peak-normalize: pegar peak e escalar pra targetPeak (com clipping suave).
-    /// Compensa input gain baixo do device sem distorcer fala normal.
-    private func boostPeakNormalize(_ samples: [Float], targetPeak: Float = 0.6) -> [Float] {
-        guard !samples.isEmpty else { return samples }
-        var peak: Float = 0
-        for s in samples {
-            let a = abs(s)
-            if a > peak { peak = a }
-        }
-        guard peak > 0.0001 else { return samples } // silêncio: não tenta boostar
-        // Limita gain ao cap do provider pra não amplificar ruído muito alto
-        let cap = maxGainProvider()
-        let gain = min(targetPeak / peak, cap)
-        return samples.map { s in
-            let g = s * gain
-            return max(-1, min(1, g))
-        }
-    }
-
-    /// Mixa múltiplos canais (mean) e resampla via interpolação linear pra 16kHz.
-    /// Suficiente pra Whisper; alternativa séria seria AVAudioConverter offline.
-    private func downmixAndResample(perChannel: [[Float]], from format: AVAudioFormat) -> [Float] {
-        let channels = perChannel.count
-        guard channels > 0 else { return [] }
-        let samplesPerChannel = perChannel.map(\.count).min() ?? 0
-        guard samplesPerChannel > 0 else { return [] }
-        var mono = [Float](repeating: 0, count: samplesPerChannel)
-        for c in 0..<channels {
-            let buf = perChannel[c]
-            for i in 0..<samplesPerChannel {
-                mono[i] += buf[i]
-            }
-        }
-        let inv = 1.0 / Float(channels)
-        for i in 0..<mono.count { mono[i] *= inv }
-
-        let inSR = format.sampleRate
-        let outSR = 16_000.0
-        if inSR == outSR { return mono }
-        let ratio = inSR / outSR
-        let outCount = Int(Double(samplesPerChannel) / ratio)
-        var resampled = [Float](repeating: 0, count: outCount)
-        for i in 0..<outCount {
-            let srcF = Double(i) * ratio
-            let srcI = Int(srcF)
-            let frac = Float(srcF - Double(srcI))
-            if srcI + 1 < samplesPerChannel {
-                resampled[i] = mono[srcI] * (1 - frac) + mono[srcI + 1] * frac
-            } else if srcI < samplesPerChannel {
-                resampled[i] = mono[srcI]
-            }
-        }
-        return resampled
-    }
-
-    /// Append raw samples no formato nativo do device. Cada canal acumula
-    /// seus samples num array próprio, preservando ordem temporal —
-    /// downmix + resample acontecem no stop().
-    private func append(buffer: AVAudioPCMBuffer) {
-        guard let channelData = buffer.floatChannelData else { return }
-        let n = Int(buffer.frameLength)
-        let channels = Int(buffer.format.channelCount)
-        if channelBuffers.count < channels {
-            channelBuffers.append(contentsOf:
-                Array(repeating: [Float](), count: channels - channelBuffers.count))
-        }
-        for c in 0..<channels {
-            let ptr = channelData[c]
-            channelBuffers[c].append(contentsOf: UnsafeBufferPointer(start: ptr, count: n))
-        }
-        buffersSeen += 1
-
-        // Calcula nível (RMS) só do canal 0 (mais barato)
-        let ptr0 = channelData[0]
-        var sum: Float = 0
-        for i in 0..<n { sum += ptr0[i] * ptr0[i] }
-        let rms = sqrt(sum / Float(max(1, n)))
-        let level = min(1.0, max(0.0, Double(rms) * 4))
-        levelContinuation?.yield(level)
-    }
-
-    deinit { levelContinuation?.finish() }
 }

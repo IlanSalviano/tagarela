@@ -26,7 +26,12 @@ actor PipelineCoordinator {
 
     private var startTime: Date?
     private var currentLevel: Double = 0
-    private var recordingTasks: [Task<Void, Never>] = []
+    /// Consome os níveis da gravação corrente. **Nunca** é cancelada: cancelar
+    /// o consumidor termina o `AsyncStream`, e era isso que deixava os
+    /// indicadores em `audioLevel = 0` da segunda gravação em diante
+    /// (auditoria §5.1). Ela acaba sozinha quando o `stop()` finaliza o stream.
+    private var levelsTask: Task<Void, Never>?
+    private var tickerTask: Task<Void, Never>?
     /// Sinaliza que o usuário cancelou durante .processing/.refining.
     /// `runTranscribeAndInject` checa após cada await pra abortar antes de inject/save.
     private var cancelled = false
@@ -136,23 +141,25 @@ actor PipelineCoordinator {
     }
 
     private func spawnRecordingTasks() {
+        // Lido DEPOIS de `audio.start()`: o stream é por gravação.
         let levels = audio.levels
-        recordingTasks.append(Task { [weak self] in
-            for await lv in levels {
-                await self?.setLevel(lv)
+        levelsTask = Task { [weak self] in
+            for await level in levels {
+                await self?.setLevel(level)
             }
-        })
-        recordingTasks.append(Task { [weak self] in
+        }
+        tickerTask = Task { [weak self] in
             while !Task.isCancelled {
                 try? await Task.sleep(nanoseconds: 80_000_000)
                 await self?.tickElapsed()
             }
-        })
+        }
     }
 
+    /// Só o ticker é cancelado — ver comentário em `levelsTask`.
     private func cancelRecordingTasks() {
-        for t in recordingTasks { t.cancel() }
-        recordingTasks.removeAll()
+        tickerTask?.cancel()
+        tickerTask = nil
     }
 
     private func setLevel(_ v: Double) {
