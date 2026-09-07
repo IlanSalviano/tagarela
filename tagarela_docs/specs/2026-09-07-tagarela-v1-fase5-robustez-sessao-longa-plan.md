@@ -316,13 +316,16 @@ Código fechado em 2026-09-07, suíte 230 → **236** verde. `isTapEnabled` pass
 
 **Files:** `Injection/Injecting.swift`, `Injection/InjectorLive.swift`, `UI/Toast/ToastKind.swift`, `TagarelaTests/InjectorTests.swift`, `Localizable.strings`.
 
-- [ ] **Step 1 — ordem:** escrever no pasteboard **antes** de `AXIsProcessTrusted()`; se negado, lançar `accessibilityDenied` **com o texto já no clipboard** (toast passa a dizer, verdadeiramente, "texto na área de transferência").
-- [ ] **Step 2 — restore seguro:** `restoreDelay` 400 ms (Electron); executar a restauração em `Task.detached` (não cancelável pelo pipeline) e **só** se `pasteboard.changeCount == changeCountAfterWrite` (ninguém mexeu) **e** a cola foi confirmada — como não há confirmação de ⌘V, adotar: restaurar o snapshot **apenas se** o snapshot anterior não era vazio; caso contrário deixar o ditado no clipboard. Registrar a decisão no ADR-0008.
-- [ ] **Step 3 — `frontmostBundleID()`** no protocolo (usado pela Tarefa 4 para salvar histórico antes da cola).
-- [ ] **Step 4 — testes** (`InjectorTests`, gated por `TAGARELA_INTEGRATION=1` porque usam `NSPasteboard.general`): texto vai ao pasteboard mesmo com AX negado (injetar `axTrusted: () -> Bool` fake); restore não acontece se `changeCount` mudou.
+- [x] **Step 1 — ordem:** escrever no pasteboard **antes** de `AXIsProcessTrusted()`; se negado, lançar `accessibilityDenied` **com o texto já no clipboard** (toast passa a dizer, verdadeiramente, "texto na área de transferência").
+- [x] **Step 2 — restore seguro:** `restoreDelay` 400 ms (Electron); executar a restauração em `Task.detached` (não cancelável pelo pipeline) e **só** se `pasteboard.changeCount == changeCountAfterWrite` (ninguém mexeu) **e** a cola foi confirmada — como não há confirmação de ⌘V, adotar: restaurar o snapshot **apenas se** o snapshot anterior não era vazio; caso contrário deixar o ditado no clipboard. Registrar a decisão no ADR-0008.
+- [x] **Step 3 — `frontmostBundleID()`** no protocolo (usado pela Tarefa 4 para salvar histórico antes da cola).
+- [x] **Step 4 — testes** (`InjectorTests`, gated por `TAGARELA_INTEGRATION=1` porque usam `NSPasteboard.general`): texto vai ao pasteboard mesmo com AX negado (injetar `axTrusted: () -> Bool` fake); restore não acontece se `changeCount` mudou.
 - [ ] **Step 5 — aceite manual** (Bloco D: colar no Claude desktop, no Codex e no WhatsApp; Esc durante a cola; revogar Accessibility e ditar → toast + texto no clipboard + entrada no histórico). Commit: `fix(inject): ditado nunca se perde — pasteboard antes do AX, histórico antes da cola, restore condicional`.
 
 ---
+
+
+Código fechado em 2026-09-07, suíte 236 → **240** verde. Divergência (melhoria): os testes usam um `NSPasteboard` nomeado próprio em vez do `general`, então dispensam o gate `TAGARELA_INTEGRATION=1` e não mexem no clipboard de quem roda a suíte. O item **9h** (copy do `injectionFailed`) foi feito aqui, por estar acoplado. **Aceite do Bloco D pendente.**
 
 ## Tarefa 9: correções pontuais confirmadas
 

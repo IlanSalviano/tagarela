@@ -68,8 +68,11 @@ enum ToastKind: Equatable, Sendable {
                               defaultValue: "Resposta malformada — usando texto cru.")
             }
         case .injectionFailed:
+            // O histórico é salvo antes da cola desde a Tarefa 4, então esta
+            // frase é verdadeira em todos os caminhos de falha — a anterior
+            // ("texto na área de transferência") era falsa nos dois.
             return String(localized: "toast.injection.failed",
-                          defaultValue: "Cola falhou — texto na área de transferência.")
+                          defaultValue: "Cola falhou — o ditado está salvo no histórico.")
         case .historySaveFailed:
             return String(localized: "toast.history.saveFailed",
                           defaultValue: "Histórico não salvou.")
@@ -80,7 +83,7 @@ enum ToastKind: Equatable, Sendable {
                               defaultValue: "Microfone negado — abra Configurações.")
             case .accessibility:
                 return String(localized: "toast.permission.accessibility",
-                              defaultValue: "Acessibilidade negada — abra Configurações.")
+                              defaultValue: "Acessibilidade negada — o ditado está no histórico e na área de transferência.")
             case .inputMonitoring:
                 return String(localized: "toast.permission.inputMonitoring",
                               defaultValue: "Input Monitoring negado — abra Configurações.")

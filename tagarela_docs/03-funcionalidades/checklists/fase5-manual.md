@@ -117,7 +117,26 @@ feliz.
 **Resultado:** _(a preencher)_
 
 ## Bloco D — cola (Tarefa 8)
-_(a preencher quando a Tarefa 8 fechar)_
+
+- [ ] **D1 — colar nos alvos reais:** Claude desktop, Codex, WhatsApp e Notes.
+      O texto tem que chegar **inteiro** e o clipboard voltar ao conteúdo
+      anterior. O delay subiu de 250 para 400 ms justamente por causa dos
+      Electron.
+- [ ] **D2 — copiar algo durante a cola.** Ditar e, no instante seguinte,
+      copiar outro texto (⌘C) em qualquer app. O que você copiou tem que
+      permanecer — a restauração é abortada. Log: `restore skipped: clipboard mudou`.
+- [ ] **D3 — clipboard vazio antes.** Limpar o clipboard, ditar. O ditado tem
+      que **ficar** no clipboard depois (não é apagado). Log:
+      `restore skipped: clipboard anterior estava vazio`.
+- [ ] **D4 — Esc durante a cola.** Ditar e apertar Esc logo depois de soltar a
+      hotkey. A restauração não pode antecipar e colar o conteúdo anterior.
+- [ ] **D5 — Acessibilidade revogada.** Ajustes › Privacidade › Acessibilidade:
+      desmarcar o Tagarela e ditar. Esperado: toast dizendo que o ditado está no
+      histórico e na área de transferência; `⌘V` manual cola o ditado; e a
+      entrada **aparece** em Preferências › Histórico. Antes o ditado sumia
+      inteiro. Reconceder ao terminar.
+
+**Resultado:** _(a preencher)_
 
 ## Bloco E — UI (Tarefa 9)
 _(a preencher quando a Tarefa 9 fechar)_

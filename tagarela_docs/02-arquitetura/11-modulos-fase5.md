@@ -352,3 +352,40 @@ estática que recebe `self` via `refcon`, então dá para chamá-la direto — s
 real do sistema e sem Input Monitoring. Não havia teste nenhum aqui até agora.
 
 **Testes:** +6. Suíte **230 → 236**, verde. **Pendente:** aceite do Bloco C.
+
+---
+
+## Tarefa 8 — injeção sem perda de ditado ✅ (código; aceite Bloco D pendente)
+
+**Ordem invertida.** `AXIsProcessTrusted()` era checado **antes** de escrever no
+pasteboard, e o pipeline retornava antes do `save`. Com a Acessibilidade caída —
+o TCC zumbi do `cleanup-fase3`, que já aconteceu nesta máquina — o ditado sumia
+inteiro: não colava, não ficava no clipboard, não entrava no histórico (S3).
+Agora o texto vai para o pasteboard **primeiro**, e o histórico foi para antes da
+cola na Tarefa 4. O ditado nunca mais se perde.
+
+**Política de restauração do clipboard** (registrada no ADR-0008). Não há como
+confirmar que o app-alvo processou o ⌘V, então a regra é conservadora — na
+dúvida, **o ditado fica no clipboard**:
+
+| Regra | Por quê |
+|---|---|
+| Roda em `Task.detached` | O Esc do usuário cancelava a Task do pipeline, o que interrompia o `sleep` e restaurava **antes** do app-alvo consumir o ⌘V — colando o conteúdo anterior |
+| Só se `changeCount` não mudou | Se alguém copiou outra coisa nesse meio-tempo, restaurar seria atropelar |
+| Só se havia algo antes | Com o clipboard anteriormente vazio, restaurar significaria **apagar** o ditado |
+| Delay 400 ms (era 250) | Os alvos reais deste usuário — Claude, Codex, WhatsApp — são Electron e consomem o ⌘V depois de 250 ms |
+
+**Copy dos toasts corrigida** (fecha o item 9h de passagem). "Cola falhou —
+texto na área de transferência." era **falso nos dois** caminhos de falha. Como
+o histórico agora é salvo antes da cola, a frase verdadeira em todos eles é
+"Cola falhou — o ditado está salvo no histórico."; e o toast de Acessibilidade
+passa a dizer onde o texto está em vez de só mandar abrir Configurações.
+
+**Divergência do plano (melhoria):** os testes usam um `NSPasteboard` **nomeado
+próprio** em vez do `general`, então não precisam do gate
+`TAGARELA_INTEGRATION=1` que o plano previa e não mexem no clipboard de quem
+roda a suíte. Rodam sempre.
+
+**Testes:** +4 (o tautológico de `Equatable` que a auditoria §5.5 apontou
+continua, agora acompanhado de testes de verdade). Suíte **236 → 240**, verde.
+**Pendente:** aceite do Bloco D.
