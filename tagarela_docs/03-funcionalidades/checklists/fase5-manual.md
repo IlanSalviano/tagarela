@@ -100,7 +100,21 @@ feliz.
 **Resultado:** _(a preencher)_
 
 ## Bloco C — hotkey (Tarefa 7)
-_(a preencher quando a Tarefa 7 fechar)_
+
+- [ ] **C1 — revogar e reconceder Input Monitoring com o app aberto.**
+      Ajustes › Privacidade › Monitoramento de Entrada: desmarcar o Tagarela,
+      esperar, marcar de novo. A hotkey tem que voltar **sem relaunch**. No log:
+      `Input Monitoring voltou a granted — reiniciando o tap` e
+      `started for right ⌥`. Antes desta fase a hotkey ficava morta até relançar.
+- [ ] **C2 — tap vivo.** `swiftc -O -framework CoreGraphics tools/diag/event_taps.swift -o /tmp/taps && /tmp/taps`
+      tem que mostrar o tap do Tagarela com `enabled=YES` (um só, não vários).
+- [ ] **C3 — Left Option não interfere.** Segurar o Left Option e pressionar o
+      Right Option: deve iniciar **uma** gravação, e o release **não** pode
+      iniciar outra. Antes, o release gerava um segundo toggle e uma gravação
+      de milissegundos descartada em silêncio.
+- [ ] **C4 — Esc cancela** durante gravação e durante "transcrevendo".
+
+**Resultado:** _(a preencher)_
 
 ## Bloco D — cola (Tarefa 8)
 _(a preencher quando a Tarefa 8 fechar)_

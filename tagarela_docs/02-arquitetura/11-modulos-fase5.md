@@ -321,3 +321,34 @@ Monitoring a hotkey morre, e as duas falham em silêncio.
 sondagem falsa e poll de 10 ms, sem depender do estado real de TCC da máquina.
 
 **Testes:** +1 (o de multicast). Suíte **229 → 230**, verde.
+
+---
+
+## Tarefa 7 — hotkey: `start()` idempotente, watchdog, re-start ao reconceder ✅ (código; aceite Bloco C pendente)
+
+**`start()` idempotente.** Antes, um segundo `start()` sobrescrevia `eventTap`
+sem invalidar o anterior nem remover a source do run loop — sobravam taps órfãos.
+Agora derruba o anterior (`tapEnable(false)` + `CFMachPortInvalidate` + remoção
+da source) antes de criar outro. Isso é o que torna o re-start seguro.
+
+**Watchdog de 30 s.** O callback só reabilita o tap quando o macOS avisa
+(`tapDisabledByTimeout` / `tapDisabledByUserInput`). Um tap **invalidado** —
+revogar e reconceder Input Monitoring, o mesmo churn da entrada #1 do
+troubleshooting — não avisa ninguém: a hotkey simplesmente morre e o usuário só
+vê "não faz nada" (S4). O watchdog checa `isTapEnabled` e reabilita.
+
+**Re-start ao reconceder.** O `AppContainer` observa as transições de permissão
+(agora confiáveis, graças ao multicast da Tarefa 6) e chama `start()` quando
+`inputMonitoring` volta a `.granted`.
+
+**Flag de device do Right Option (`0x40`, `NX_DEVICERALTKEYMASK`).** O filtro
+aceitava `.maskAlternate` agregado: com o Left Option segurado, o *release* do
+Right Option ainda trazia `.maskAlternate` ligado e gerava um segundo `.toggle`
+— que virava uma gravação de milissegundos, descartada em silêncio. Agora exige
+a flag do device direito, e há teste para os dois lados.
+
+**Testes do callback com `CGEvent` sintético.** O callback é uma função C
+estática que recebe `self` via `refcon`, então dá para chamá-la direto — sem tap
+real do sistema e sem Input Monitoring. Não havia teste nenhum aqui até agora.
+
+**Testes:** +6. Suíte **230 → 236**, verde. **Pendente:** aceite do Bloco C.

@@ -300,14 +300,17 @@ Fechada em 2026-09-07. Suíte 229 → **230** verde. O teste de multicast esteve
 
 **Files:** `Hotkey/HotkeyService.swift`, `Hotkey/HotkeyServiceLive.swift`, `App/AppContainer.swift`, `TagarelaTests/HotkeyCallbackTests.swift`.
 
-- [ ] **Step 1 — testes do callback com `CGEvent` sintético** (o callback estático é chamável diretamente com `refcon` = `Unmanaged.passUnretained(service)`): `flagsChanged` keyCode 61 com `.maskAlternate` **e** flag de device `0x40` → `.toggle`; release (sem `0x40`) → nada; Esc → `.cancel`; `tapDisabledByTimeout` → `reEnableTap` chamado (contar via closure de teste injetada em `tapEnabler`).
-- [ ] **Step 2 — `start()` idempotente:** se `eventTap != nil`: `tapEnable(false)`, `CFMachPortInvalidate`, remover source, zerar; então criar. `stop()` idem.
-- [ ] **Step 3 — watchdog:** `Task` de 30 s: `if let tap, !CGEvent.tapIsEnabled(tap: tap) { Diag.error(.hotkey, "tap disabled; re-enabling"); tapEnable(true); health.recoveries += 1 }`. Expor `var isTapEnabled: Bool` no protocolo (para o snapshot do exportador).
-- [ ] **Step 4 — re-start ao reconceder:** `AppContainer` observa `makeSnapshots()`; transição `inputMonitoring: != .granted → .granted` → `try? hotkeyService.start()` + `Diag.notice`.
-- [ ] **Step 5 — flag de device** `0x40` (`NX_DEVICERALTKEYMASK`) no filtro do Right Option.
+- [x] **Step 1 — testes do callback com `CGEvent` sintético** (o callback estático é chamável diretamente com `refcon` = `Unmanaged.passUnretained(service)`): `flagsChanged` keyCode 61 com `.maskAlternate` **e** flag de device `0x40` → `.toggle`; release (sem `0x40`) → nada; Esc → `.cancel`; `tapDisabledByTimeout` → `reEnableTap` chamado (contar via closure de teste injetada em `tapEnabler`).
+- [x] **Step 2 — `start()` idempotente:** se `eventTap != nil`: `tapEnable(false)`, `CFMachPortInvalidate`, remover source, zerar; então criar. `stop()` idem.
+- [x] **Step 3 — watchdog:** `Task` de 30 s: `if let tap, !CGEvent.tapIsEnabled(tap: tap) { Diag.error(.hotkey, "tap disabled; re-enabling"); tapEnable(true); health.recoveries += 1 }`. Expor `var isTapEnabled: Bool` no protocolo (para o snapshot do exportador).
+- [x] **Step 4 — re-start ao reconceder:** `AppContainer` observa `makeSnapshots()`; transição `inputMonitoring: != .granted → .granted` → `try? hotkeyService.start()` + `Diag.notice`.
+- [x] **Step 5 — flag de device** `0x40` (`NX_DEVICERALTKEYMASK`) no filtro do Right Option.
 - [ ] **Step 6 — suíte verde + aceite manual** (Bloco C: desligar/ligar Input Monitoring com o app aberto → hotkey volta sem relaunch). Commit: `fix(hotkey): start idempotente, watchdog do tap, re-start ao reconceder Input Monitoring`.
 
 ---
+
+
+Código fechado em 2026-09-07, suíte 230 → **236** verde. `isTapEnabled` passou a ser lido pelo próprio watchdog (em vez de virar propriedade sem uso, que é o defeito que a auditoria apontou em `permissionsAllGranted`); o snapshot do exportador já lista os event taps do processo direto do `CGGetEventTapList`, que é evidência melhor. **Aceite do Bloco C pendente.**
 
 ## Tarefa 8: injeção sem perda de ditado
 

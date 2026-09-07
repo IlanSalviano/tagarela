@@ -464,8 +464,20 @@ final class AppContainer: ObservableObject {
     private func wirePermissionsToAppState() {
         let stream = permissions.makeSnapshots()
         Task { [weak self] in
+            var previous: PermissionsSnapshot?
             for await snap in stream {
                 guard let self else { return }
+                // Input Monitoring reconcedido: o tap antigo foi invalidado e
+                // não avisa ninguém — a hotkey ficaria morta até o relaunch
+                // (S4 da auditoria §3.4). `start()` é idempotente.
+                if previous?.inputMonitoring != .granted, snap.inputMonitoring == .granted {
+                    await MainActor.run {
+                        Diag.notice(.hotkey, "Input Monitoring voltou a granted — reiniciando o tap")
+                        do { try self.hotkeyService.start() }
+                        catch { Diag.error(.hotkey, "re-start falhou: \(String(describing: error))") }
+                    }
+                }
+                previous = snap
                 await MainActor.run {
                     self.appState.permissionsAllGranted = snap.allGranted
                 }
