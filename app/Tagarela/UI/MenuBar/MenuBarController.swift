@@ -45,7 +45,8 @@ struct MenuBarContent: View {
                      health: health,
                      loadedModelName: loadedModelName(),
                      refinerLabel: refinerLabel,
-                     permissionsPending: !appState.permissionsAllGranted)
+                     permissionsPending: !appState.permissionsAllGranted,
+                     modelLoading: !appState.whisperModelReady)
 
             Divider().background(DS.Color.hairline)
 

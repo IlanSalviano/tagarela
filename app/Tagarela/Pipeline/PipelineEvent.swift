@@ -26,6 +26,9 @@ enum PipelineEvent: Equatable, Sendable {
     case transcriberRecoveryRequested
     /// Transcriber recriado com sucesso.
     case transcriberRecovered
+    /// Hotkey acionada antes de o modelo terminar de carregar. Não é erro do
+    /// pipeline — é só cedo demais.
+    case transcriberNotReady
 }
 
 enum CaptureFailureReason: Equatable, Sendable {

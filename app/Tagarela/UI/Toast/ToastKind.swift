@@ -37,6 +37,7 @@ enum ToastKind: Equatable, Sendable {
     case captureFailed
     case emptyTranscription
     case transcriberRecovered
+    case transcriberNotReady
 
     var displayMessage: String {
         switch self {
@@ -97,6 +98,9 @@ enum ToastKind: Equatable, Sendable {
         case .transcriberRecovered:
             return String(localized: "toast.transcriber.recovered",
                           defaultValue: "Reconhecedor reiniciado.")
+        case .transcriberNotReady:
+            return String(localized: "toast.transcriber.notReady",
+                          defaultValue: "Ainda carregando o reconhecedor — tente em alguns segundos.")
         }
     }
 
@@ -109,6 +113,7 @@ enum ToastKind: Equatable, Sendable {
         case .captureFailed:      return "mic.slash"
         case .emptyTranscription: return "waveform.badge.exclamationmark"
         case .transcriberRecovered: return "arrow.clockwise"
+        case .transcriberNotReady:  return "hourglass"
         }
     }
 
@@ -121,6 +126,7 @@ enum ToastKind: Equatable, Sendable {
         case .captureFailed:      return .red
         case .emptyTranscription: return .orange
         case .transcriberRecovered: return .green
+        case .transcriberNotReady:  return .orange
         }
     }
 }

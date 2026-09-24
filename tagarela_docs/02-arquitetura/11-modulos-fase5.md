@@ -480,3 +480,46 @@ GitHub do usuário, precisa de rede e de autorização explícita. Fica junto do
 aceite manual, antes da v1.0.4.
 
 Todos os scripts passam `bash -n`.
+
+---
+
+## Achado de campo (2026-09-24) — "o app parou de funcionar" era o modelo carregando
+
+**Não era a falha de sessão longa.** A máquina foi atualizada para **macOS 27.0**
+(build 26A428) entre 7 e 24 de setembro. No **primeiro launch depois do upgrade**,
+o CoreML teve de recompilar os 3 GB do modelo para a ANE e a carga levou
+**94 segundos** — contra **13 segundos** num launch normal, medido logo em seguida
+na mesma máquina.
+
+Durante esses 94 s, cada acionamento da hotkey gravava ~4 segundos de fala e
+devolvia **"erro no pipeline"**, sem dizer que o problema era só ser cedo demais.
+O log mostra os dois ditados perdidos exatamente dentro da janela:
+
+```
+20:13:38  loadModel('large-v3_turbo') iniciando
+20:13:44  toggle → gravou 3,8 s, peak 0,256 → 0,600   (fala de verdade)
+20:13:48  transcribing (model loaded? NIL) → FALHOU: modelNotLoaded
+20:14:44  toggle → gravou 3,5 s
+20:14:48  FALHOU: modelNotLoaded
+20:15:12  modelo 'large-v3_turbo' carregado            ← 94 s depois
+```
+
+É o caminho **S5** da [auditoria §3.4](./10-auditoria-2026-09-07.md), e o único dos
+cinco que a Fase 5 **não** tinha fechado: o §5.3 registrava
+"`whisperModelReady` nunca é setado/lido; cada hotkey vira 'erro no pipeline' por
+2 s sem dica" como severidade **baixa**. Em campo custou uma noite de uso e a
+conclusão razoável de que o app estava quebrado.
+
+**Correções:**
+
+- **Não grava sem modelo.** O toggle em `.idle` verifica `loadedModelName` antes de `audio.start()` e emite `transcriberNotReady`. Gravar 4 segundos de fala que serão descartados é pior que não gravar.
+- **Toast honesto:** "Ainda carregando o reconhecedor — tente em alguns segundos." em vez de "erro no pipeline".
+- **`whisperModelReady` ganhou escritor e leitor** — o menu mostra "carregando o modelo…" no lugar de "⌥ direito pra começar", que era uma mentira durante a carga.
+- **Rede de segurança:** `TranscribeError.modelNotLoaded` vindo do `transcribe` (modelo descarregado por swap ou recovery no meio da gravação) também cai nesse caminho, não no erro genérico.
+- **O tempo de carga vai para o log** (`carregado em 94.0s`). Sem o número, a diferença entre "lento" e "quebrado" é invisível — que é a tese inteira desta fase.
+
+**Testes:** +1. Suíte **249 → 250**, verde.
+
+> Nota sobre a Tarefa 5: a carga de 13 s inclui ~6 s de ida a `huggingface.co`
+> mesmo com o modelo em disco. A carga local sem rede, já implementada na
+> Tarefa 5, corta isso — o cold start normal deve cair para ~7 s.

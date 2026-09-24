@@ -437,6 +437,26 @@ final class PipelineCoordinatorTests: XCTestCase {
         XCTAssertEqual(history.saved.first?.rawText, "olá mundo")
     }
 
+
+    /// Campo: no primeiro launch após o upgrade para macOS 27, o CoreML
+    /// recompilou o modelo para a ANE e a carga levou **94 s** (contra ~13 s
+    /// num launch normal). Cada hotkey nessa janela gravava 4 segundos de fala
+    /// e devolvia "erro no pipeline", sem dizer que era só cedo demais — e o
+    /// usuário concluiu, razoavelmente, que o app tinha quebrado.
+    func test_toggleBeforeModelLoads_doesNotRecordAndSaysSo() async {
+        let audio = CountingStartAudio()
+        let p = makeCoordinator(audio: audio, transcriber: { UnloadedTranscriber() })
+        let events = collectEvents(from: p)
+
+        await p.handle(.toggle)
+
+        let told = await waitForEvent(events) { $0 == .transcriberNotReady }
+        XCTAssertTrue(told, "o usuário precisa ouvir que o modelo ainda está carregando")
+        XCTAssertEqual(audio.starts, 0, "não pode gravar 4 s de fala que será descartada")
+        let state = await p.state
+        XCTAssertEqual(state, .idle, "não é erro do pipeline — é cedo demais")
+    }
+
     // MARK: - helpers da Fase 5
 
     private func collectEvents(from p: PipelineCoordinator) -> EventCollector {
@@ -729,6 +749,16 @@ private final class CountingStartAudio: AudioCapturing, @unchecked Sendable {
         isRecording = false
         return AudioBuffer(samples: Array(repeating: 0.1, count: 16_000), sampleRate: 16_000)
     }
+}
+
+private final class UnloadedTranscriber: Transcribing, @unchecked Sendable {
+    var loadedModelName: String?          // nil = ainda carregando
+    func loadModel(_ name: String, onProgress: @escaping (Double) -> Void) async throws {}
+    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> TranscriptionOutcome {
+        throw TranscribeError.modelNotLoaded
+    }
+    func unloadModel() { loadedModelName = nil }
+    func reload() async throws {}
 }
 
 private final class EmptyTranscriber: Transcribing, @unchecked Sendable {

@@ -14,10 +14,18 @@ struct StateRow: View {
     /// (auditoria §5.2). Agora vira aviso: sem Acessibilidade a cola morre, sem
     /// Input Monitoring a hotkey morre — e as duas falham em silêncio.
     var permissionsPending: Bool = false
+    /// Modelo ainda carregando. `AppState.whisperModelReady` existia desde a
+    /// Fase 1 sem escritor nem leitor (auditoria §5.3) — era por isso que o
+    /// menu dizia "pronto" enquanto o app ainda não conseguia transcrever nada.
+    var modelLoading: Bool = false
 
     private var sub: String {
         switch state {
         case .idle:
+            if modelLoading {
+                return String(localized: "pipeline.sub.modelLoading",
+                              defaultValue: "carregando o modelo…")
+            }
             return String(localized: "pipeline.sub.idle", defaultValue: "⌥ direito pra começar")
         case .recording(let seconds, _):
             return String(format: "%02d:%02d · 16 kHz mono", Int(seconds) / 60, Int(seconds) % 60)

@@ -36,6 +36,7 @@
 "pipeline.sub.idle"       = "⌥ direito pra começar";
 "pipeline.sub.error"      = "fallback: texto cru";
 "pipeline.sub.processing.unloaded" = "modelo não carregado";
+"pipeline.sub.modelLoading"        = "carregando o modelo…";
 "pipeline.sub.refining.unknown"    = "refinador";
 "pipeline.sub.refining.none"       = "sem refinador";
 "menubar.health.summary"  = "%lld ditados · %lld vazios · %lld curtos · %@";
@@ -212,6 +213,7 @@
 "toast.capture.failed"        = "Não captei áudio do microfone. Confira o dispositivo de entrada.";
 "toast.transcription.empty"   = "Não entendi nada — tente de novo.";
 "toast.transcriber.recovered" = "Reconhecedor reiniciado.";
+"toast.transcriber.notReady"  = "Ainda carregando o reconhecedor — tente em alguns segundos.";
 
 /* ===========================================================================
    Fase 5 — chaves que existiam no código e faltavam no arquivo.

@@ -110,6 +110,16 @@ actor PipelineCoordinator {
             // durante "transcrevendo" deixa um transcribe() em vôo. Começar
             // outro na mesma instância mistura resultados (auditoria §5.1).
             await awaitPreviousPipeline()
+            // Nem começa a gravar se não há modelo: o usuário falaria 4
+            // segundos para ouvir "erro no pipeline" depois. Acontece de
+            // verdade no primeiro launch após upgrade de macOS, quando o
+            // CoreML recompila o modelo para a ANE e a carga leva ~90 s.
+            let ready = await transcriberProvider().loadedModelName != nil
+            guard ready else {
+                Diag.error(.pipeline, "toggle com o modelo ainda não carregado — gravação não iniciada")
+                continuation?.yield(.transcriberNotReady)
+                return
+            }
             do {
                 try audio.start()
                 startTime = now()
@@ -375,6 +385,12 @@ actor PipelineCoordinator {
             continuation?.yield(.finished(rawText: raw,
                                           refinedText: refined,
                                           frontmostApp: frontApp))
+            setState(.idle)
+        } catch TranscribeError.modelNotLoaded {
+            // Rede de segurança: o modelo pode ter sido descarregado durante a
+            // gravação (swap, recovery). Não é "erro no pipeline".
+            Diag.error(.pipeline, "modelo descarregado durante a gravação")
+            continuation?.yield(.transcriberNotReady)
             setState(.idle)
         } catch {
             Diag.error(.pipeline, "FALHOU: \(String(describing: error))")

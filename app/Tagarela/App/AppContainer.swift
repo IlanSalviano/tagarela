@@ -359,14 +359,25 @@ final class AppContainer: ObservableObject {
 
     private func loadModelLogging(_ name: String) {
         let transcriber = self.transcriber
-        Task {
+        Task { @MainActor [weak self] in
+            self?.appState.whisperModelReady = false
+            let started = ContinuousClock.now
             Diag.info(.transcribe, "loadModel('\(name)') iniciando")
             do {
                 try await transcriber.loadModel(name) { p in
                     Diag.info(.transcribe, "download \(Int(p * 100))%")
                 }
-                Diag.notice(.transcribe, "modelo '\(name)' carregado")
+                let elapsed = started.duration(to: .now)
+                let seconds = Double(elapsed.components.seconds)
+                    + Double(elapsed.components.attoseconds) / 1e18
+                self?.appState.whisperModelReady = true
+                // O tempo importa: num primeiro launch após upgrade de macOS o
+                // CoreML recompila o modelo para a ANE e isso passa de 90 s,
+                // contra ~13 s num launch normal. Sem o número no log, a
+                // diferença entre "lento" e "quebrado" é invisível.
+                Diag.notice(.transcribe, "modelo '\(name)' carregado em \(String(format: "%.1f", seconds))s")
             } catch {
+                self?.appState.whisperModelReady = false
                 Diag.error(.transcribe, "loadModel FALHOU: \(String(describing: error))")
             }
         }
@@ -436,6 +447,8 @@ final class AppContainer: ObservableObject {
                     case .transcriberRecovered:
                         self.health.noteRecovery()
                         self.toastCenter.show(Toast(kind: .transcriberRecovered))
+                    case .transcriberNotReady:
+                        self.toastCenter.show(Toast(kind: .transcriberNotReady))
                     case .toggle, .cancel:
                         break
                     }
