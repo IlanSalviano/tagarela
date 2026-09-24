@@ -384,7 +384,8 @@ Código fechado em 2026-09-07; todos os scripts passam `bash -n`. **Smoke test n
   - **G — Não-regressão:** blocos essenciais das Fases 2a/2d/4 (estilos, Ollama com `num_ctx`, idioma auto/pt/en).
 - [ ] **Docs:** `02-arquitetura/11-modulos-fase5.md` (snapshot: módulos novos/modificados, decisões, contagem da suíte), `04-decisoes/ADR-0008-diagnostico-persistido-e-self-healing.md` (Contexto / Decisão / Consequências / Alternativas — inclui a política de restore do clipboard e "nunca injetar vazio"), `README.md` (índice + status), auditoria (`status:` → "fase 5 em execução/concluída").
 - [ ] **Merge** `fase-5-robustez` → `main` (`--no-ff`), suíte verde em `main`.
-- [ ] **Release** `./scripts/release.sh patch` → v1.0.4 (build 5). Instalar em `/Applications`, confirmar update via Sparkle a partir da v1.0.3 (ADR-0007: `sparkle:version` = 5).
+- [ ] **Release** `./scripts/release.sh patch` → v1.0.4 (build 5).
+  - ⛔ **Bloqueado nesta máquina (verificado em 2026-09-24):** não existe certificado **Developer ID Application** em nenhum keychain daqui (`security find-certificate -a -c "Developer ID Application"` → 0), e `~/.tagarela-release.env` também não existe, então a notarização não roda. A v1.0.3 instalada foi assinada com `Developer ID Application: Ilan Salviano (22CZXFP6W7)` — cert que mora na **outra** máquina. Ou o certificado e o `.env` são importados para cá, ou a release sai de lá. Instalar em `/Applications`, confirmar update via Sparkle a partir da v1.0.3 (ADR-0007: `sparkle:version` = 5).
 - [ ] Desregistrar builds locais (`lsregister -u`), conferir permissões da release.
 
 ---
