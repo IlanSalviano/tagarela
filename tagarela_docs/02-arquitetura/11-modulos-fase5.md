@@ -541,7 +541,8 @@ completa da suíte.
 
 ### Build local instalado
 
-Com o certificado **Developer ID ausente desta máquina**, a v1.0.4 notarizada
+Com a **chave privada** do Developer ID ausente deste keychain (o certificado
+em si está no repo e é válido — ver Tarefa 12 no plano), a v1.0.4 notarizada
 não pode ser gerada aqui. Para destravar o uso diário foi instalado em
 `/Applications` um build **Release** da branch assinado com a *Apple
 Development* local (`1.0.4-fase5`, build 5), com backup da v1.0.3 em

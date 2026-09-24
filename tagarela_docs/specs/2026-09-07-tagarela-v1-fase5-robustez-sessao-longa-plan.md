@@ -385,7 +385,19 @@ Código fechado em 2026-09-07; todos os scripts passam `bash -n`. **Smoke test n
 - [ ] **Docs:** `02-arquitetura/11-modulos-fase5.md` (snapshot: módulos novos/modificados, decisões, contagem da suíte), `04-decisoes/ADR-0008-diagnostico-persistido-e-self-healing.md` (Contexto / Decisão / Consequências / Alternativas — inclui a política de restore do clipboard e "nunca injetar vazio"), `README.md` (índice + status), auditoria (`status:` → "fase 5 em execução/concluída").
 - [ ] **Merge** `fase-5-robustez` → `main` (`--no-ff`), suíte verde em `main`.
 - [ ] **Release** `./scripts/release.sh patch` → v1.0.4 (build 5).
-  - ⛔ **Bloqueado nesta máquina (verificado em 2026-09-24):** não existe certificado **Developer ID Application** em nenhum keychain daqui (`security find-certificate -a -c "Developer ID Application"` → 0), e `~/.tagarela-release.env` também não existe, então a notarização não roda. A v1.0.3 instalada foi assinada com `Developer ID Application: Ilan Salviano (22CZXFP6W7)` — cert que mora na **outra** máquina. Ou o certificado e o `.env` são importados para cá, ou a release sai de lá. Instalar em `/Applications`, confirmar update via Sparkle a partir da v1.0.3 (ADR-0007: `sparkle:version` = 5).
+  - ⛔ **Bloqueado nesta máquina (verificado em 2026-09-24).** Correção de um registro anterior impreciso: o **certificado existe** — `developerID_application.cer` está na raiz do repo (untracked), é o `Developer ID Application: Ilan Salviano (22CZXFP6W7)`, SHA-1 `E42EE72295E4853378FBEF2E589FBC7D609884EB` (exatamente o que o `project.yml` exige no Release) e vale até 2031-05-02. O pipeline de release funcionou de verdade: as v1.0.0 a v1.0.3 estão publicadas com DMG e assinatura.
+
+    O que falta é a **chave privada**, não o certificado. Enumerando as chaves privadas dos keychains destrancados, nenhuma tem o id `D04049B67121840BBEEFF44633931698D66C6DE2` (SHA-1 PKCS#1 da chave pública do cert, que é o formato do `kSecAttrApplicationLabel`). Sem a chave, o `.cer` sozinho não assina nada.
+
+    | Requisito | Estado |
+    |---|---|
+    | Cert Developer ID (`.cer` no repo) | ✅ válido até 2031, SHA-1 confere |
+    | Chave privada no keychain | ❌ ausente |
+    | `~/.tagarela-release.env` | ❌ ausente |
+    | Chave EdDSA do Sparkle (`~/.tagarela-release/`) | ❌ ausente |
+    | `mtbflow-ci.keychain-db` | 🔒 trancado — não inspecionado |
+
+    Caminhos: importar o `.p12` (cert + chave) exportado da máquina onde o par foi gerado; ou verificar o keychain `mtbflow-ci`, que está trancado e pode conter a chave; ou cortar a release na outra máquina. Os três secrets do `.env` (Apple ID, app-specific password, caminho da chave EdDSA) precisam ser recriados de qualquer forma. Instalar em `/Applications`, confirmar update via Sparkle a partir da v1.0.3 (ADR-0007: `sparkle:version` = 5).
 - [ ] Desregistrar builds locais (`lsregister -u`), conferir permissões da release.
 
 ---
