@@ -106,7 +106,10 @@ feliz.
       esperar, marcar de novo. A hotkey tem que voltar **sem relaunch**. No log:
       `Input Monitoring voltou a granted — reiniciando o tap` e
       `started for right ⌥`. Antes desta fase a hotkey ficava morta até relançar.
-- [ ] **C2 — tap vivo.** `swiftc -O -framework CoreGraphics tools/diag/event_taps.swift -o /tmp/taps && /tmp/taps`
+- [x] **C2 — tap vivo.** ✅ **2026-09-24, em produção:**
+      `tap id=1967513926 pid=35171 enabled=YES options=1 point=1 mask=0x1400` —
+      um tap só, habilitado.
+- [ ] ~~C2 original~~ **tap vivo.** `swiftc -O -framework CoreGraphics tools/diag/event_taps.swift -o /tmp/taps && /tmp/taps`
       tem que mostrar o tap do Tagarela com `enabled=YES` (um só, não vários).
 - [ ] **C3 — Left Option não interfere.** Segurar o Left Option e pressionar o
       Right Option: deve iniciar **uma** gravação, e o release **não** pode
@@ -114,7 +117,29 @@ feliz.
       de milissegundos descartada em silêncio.
 - [ ] **C4 — Esc cancela** durante gravação e durante "transcrevendo".
 
-**Resultado:** _(a preencher)_
+**Resultado: parcial (2026-09-24), validado em produção por acidente.**
+
+Ao instalar o build local da Fase 5, a assinatura mudou (Apple Development em
+vez do Developer ID) e o Input Monitoring caiu — o designated requirement é
+outro. O `tccutil reset ListenEvent com.tagarela.Tagarela` respondeu
+**"Successfully reset" duas vezes**, confirmando ao vivo a duplicação de
+registros TCC que o [`cleanup-fase3`](../../04-decisoes/cleanup-fase3.md)
+descreve.
+
+Depois de reconceder, com o app **já rodando**, o log registrou:
+
+```
+23:51:22.721 NOTICE [hotkey] Input Monitoring voltou a granted — reiniciando o tap
+23:51:22.722 NOTICE [hotkey] started for right ⌥
+```
+
+Ou seja: o observador de permissões do `AppContainer` (Tarefa 7) detectou a
+transição e reergueu o tap **sem relaunch**, que é precisamente o mecanismo que
+o C1 existe para testar. Não é o C1 literal — a permissão caiu por troca de
+assinatura, não por revogação manual — mas o caminho de código exercitado é o
+mesmo, e em produção.
+
+**C1, C3 e C4 seguem pendentes** de execução deliberada.
 
 ## Bloco D — cola (Tarefa 8)
 
