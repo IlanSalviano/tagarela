@@ -523,3 +523,31 @@ conclusão razoável de que o app estava quebrado.
 > Nota sobre a Tarefa 5: a carga de 13 s inclui ~6 s de ida a `huggingface.co`
 > mesmo com o modelo em disco. A carga local sem rede, já implementada na
 > Tarefa 5, corta isso — o cold start normal deve cair para ~7 s.
+
+### Defeito encontrado ao instalar o build (2026-09-24)
+
+O primeiro `tail` do log de produção logo após instalar mostrou linhas que
+**nunca aconteceram em uso real**: `transcribed vazio`, `recovery requested
+after 2 empty`, `buffer too short`. Eram da **suíte de testes** — que roda
+contra o `Diag` real e portanto escrevia em
+`~/Library/Logs/Tagarela/tagarela.log`.
+
+Numa fase inteira construída para que esse arquivo seja *a* evidência da
+próxima falha, isso é grave: a investigação seguinte leria sintomas que nunca
+ocorreram. `Diag` agora detecta execução sob XCTest
+(`XCTestConfigurationFilePath` ou presença de `XCTestCase`) e pula a escrita em
+arquivo. Verificado: o log ficou em 1966 linhas antes e depois de uma execução
+completa da suíte.
+
+### Build local instalado
+
+Com o certificado **Developer ID ausente desta máquina**, a v1.0.4 notarizada
+não pode ser gerada aqui. Para destravar o uso diário foi instalado em
+`/Applications` um build **Release** da branch assinado com a *Apple
+Development* local (`1.0.4-fase5`, build 5), com backup da v1.0.3 em
+`~/Tagarela-backups/Tagarela-v1.0.3.zip`.
+
+Resultados imediatos:
+
+- **Carga do modelo: 1,3 s** (`modelo 'large-v3_turbo' já em disco — carregando sem rede`), contra **13 s** na v1.0.3, que ia a `huggingface.co` mesmo com o modelo em disco. É a Tarefa 5 medida em campo.
+- **Input Monitoring precisou ser reconcedido** — assinatura diferente, designated requirement diferente. Microfone foi herdado. Esperado e avisado.

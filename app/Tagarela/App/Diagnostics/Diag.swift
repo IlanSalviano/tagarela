@@ -33,19 +33,33 @@ enum Diag {
     /// Marco normal do pipeline. Persiste no arquivo.
     static func notice(_ category: Category, _ message: String) {
         logger(for: category).notice("\(message, privacy: .public)")
-        DiagnosticsLog.shared.append(level: "notice", category: category.rawValue, message: message)
+        persist(level: "notice", category: category, message: message)
     }
 
     /// Anomalia que explica um "não fez o STT". Persiste no arquivo.
     static func error(_ category: Category, _ message: String) {
         logger(for: category).error("\(message, privacy: .public)")
-        DiagnosticsLog.shared.append(level: "error", category: category.rawValue, message: message)
+        persist(level: "error", category: category, message: message)
     }
 
     /// Detalhe de depuração. **Não** vai para o arquivo — e no log unificado
     /// praticamente não persiste (auditoria §3.2). Use para ruído de bancada.
     static func info(_ category: Category, _ message: String) {
         logger(for: category).info("\(message, privacy: .public)")
+    }
+
+    /// A suíte roda contra o `Diag` real e estava escrevendo no log de
+    /// **produção**: linhas como `transcribed vazio` e `recovery requested`
+    /// apareciam em `~/Library/Logs/Tagarela/tagarela.log` sem nunca terem
+    /// acontecido em uso real. Numa fase inteira construída para que esse
+    /// arquivo seja a evidência, isso envenenaria a próxima investigação.
+    private static let isRunningTests: Bool =
+        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+            || NSClassFromString("XCTestCase") != nil
+
+    private static func persist(level: String, category: Category, message: String) {
+        guard !isRunningTests else { return }
+        DiagnosticsLog.shared.append(level: level, category: category.rawValue, message: message)
     }
 
     private static let loggers: [Category: Logger] = Dictionary(
