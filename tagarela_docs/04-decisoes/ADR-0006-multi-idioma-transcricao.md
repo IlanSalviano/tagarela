@@ -128,3 +128,20 @@ modelo de 3 GB.
 **O que isso muda na seção "Como revisitar".** A dúvida sobre trocar o default para
 `pt` deixa de ser necessária por causa de misdetect — o Automático agora acerta o
 português. Continua valendo revisitar se o encoder extra pesar na latência.
+
+**Confirmado em campo (2026-09-25),** com o build local `1.0.4-fase5.1`:
+
+| áudio | detecção | logprob | wall | destino |
+|---|---|---|---|---|
+| 6,0 s | `auto=pt→pt` | −0,052 | 1521 ms | Claude desktop |
+| 5,3 s | `auto=en→en` | −0,145 | 1156 ms | Claude desktop |
+
+Dois dados úteis para o futuro:
+
+- **O logprob denuncia idioma errado.** Com o idioma certo, −0,05 a −0,15; nos
+  ditados de 2026-09-24 com o idioma corrompido, −0,25 a −0,58. Se um dia a
+  detecção limpa também errar, um `avgLogprob` baixo em modo Automático é um bom
+  gatilho para retentar com o outro idioma.
+- **A passada extra de encoder não pesou:** 1,2–1,5 s para 5–6 s de áudio, igual
+  ou melhor que os ditados de antes do conserto (1,3–1,9 s para 3,6–3,9 s).
+  A preocupação de latência da seção "Como revisitar" fica, por ora, sem motivo.

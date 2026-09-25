@@ -603,3 +603,8 @@ de fora (o usuário, provavelmente); com o conserto, o Automático passa a acert
 **Testes:** +4 (2 do painel, 1 do mapeamento de idioma, 1 de integração com o
 modelo real, pulado sem `TAGARELA_INTEGRATION=1`). Suíte **250 → 254**
 (253 verdes + 1 pulado); declarados = executados, sem testes órfãos.
+
+**Confirmado em campo (2026-09-25):** o usuário ditou em português no modo
+Automático e o log registrou `auto=pt→pt`, logprob −0,052, 1,5 s para 6 s de
+áudio, colado no Claude desktop. Detalhe e números em
+[ADR-0006](../04-decisoes/ADR-0006-multi-idioma-transcricao.md).
