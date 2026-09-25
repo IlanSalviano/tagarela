@@ -8,7 +8,7 @@ build: e109747
 
 # Aceite manual — Fase 2b-3
 
-Checklist do aceite manual da Fase 2b-3. Conduzido bloco-a-bloco conforme [memory: workflow_aceite_manual](file:///Users/tars/.claude/projects/-Users-tars-Dev-tagarela/memory/workflow_aceite_manual.md).
+Checklist do aceite manual da Fase 2b-3. Conduzido bloco-a-bloco conforme memória `workflow_aceite_manual`.
 
 **Setup geral:**
 - Build em Release: `xcodebuild -project app/Tagarela.xcodeproj -scheme Tagarela -configuration Release build`
