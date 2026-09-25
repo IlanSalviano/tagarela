@@ -123,3 +123,25 @@ Os seis passos do plano entraram como desenhados. Notas:
   `.notice` no log de diagnóstico.
 
 Suíte 253 → **257**, verde.
+
+## Publicação — v1.0.5 (2026-09-25)
+
+https://github.com/IlanSalviano/tagarela/releases/tag/v1.0.5 — o `release.sh`
+passou as sete etapas **de primeira**, confirmando o conserto da ordem
+tag → release → appcast feito na v1.0.4.
+
+Verificado de fora e por dentro:
+
+- Release pública com `Tagarela-1.0.5.dmg` (7,3 MB), DMG com HTTP 200, e o
+  `appcast.xml` do raw da main anunciando `sparkle:version` 6.
+- **Assinatura do Sparkle conferida como o cliente confere**, só com dados
+  públicos: a `SUPublicEDKey` do app instalado verifica a `edSignature` do
+  appcast sobre o DMG baixado do GitHub (CryptoKit, Curve25519) — **válida**.
+  É a primeira atualização assinada com a chave nova.
+- Dentro do DMG: 1.0.5 (build 6), Developer ID, **DR idêntico ao do app
+  instalado** (as permissões atravessam a atualização), Gatekeeper
+  `accepted · Notarized Developer ID`, staple válido.
+
+**Lacuna notada:** o app não tem item "Buscar atualizações" no menu. O Sparkle
+só checa no launch e a cada 24 h (`SUScheduledCheckInterval`), então não há
+como o usuário forçar uma checagem pela interface.
