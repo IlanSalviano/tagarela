@@ -80,6 +80,7 @@ Identidade, tokens, tipografia, cores, copy pt-BR, catálogo de componentes e bu
 
 - [`2026-09-24-tagarela-v1-permissoes-pos-onboarding-design.md`](./specs/2026-09-24-tagarela-v1-permissoes-pos-onboarding-design.md) — relato de campo após a v1.0.4: só o microfone era pedido, e os avisos mandavam para Preferências, onde não havia nada sobre permissões. Pedido explícito de Acessibilidade, seção **Preferências › Permissões** com estado ao vivo e um botão por permissão, e o aviso do menu virando atalho para ela. **Status: aceito (`ok`) e publicado na v1.0.5.**
 - [`2026-09-24-tagarela-v1-buscar-atualizacoes-design.md`](./specs/2026-09-24-tagarela-v1-buscar-atualizacoes-design.md) — item **"Buscar atualizações…"** no menu, revisando a decisão "Sparkle minimal" da Fase 3. Desabilitado enquanto uma checagem já roda. **Status: aceito e publicado na v1.0.6.**
+- [`2026-09-24-tagarela-v1-host-de-testes-inerte-design.md`](./specs/2026-09-24-tagarela-v1-host-de-testes-inerte-design.md) — o host de testes (`xcodebuild test`) deixa de agir como o app: sem pedidos de permissão, hotkey, modelo, ⌘V real nem microfone aberto pelo exportador. Resolve o microfone pedido de novo na release depois de cada suíte. Sai também o pedido de câmera. **Status: em implementação.**
 
 ---
 
