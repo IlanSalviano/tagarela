@@ -1,6 +1,6 @@
 ---
 data: 2026-09-25
-status: implementado (branch `feat-buscar-atualizacoes`) — aceite manual pendente
+status: implementado e aceito (2026-09-25)
 origem: pedido do usuário após publicar a v1.0.5
 revisa: decisão nº 3 do design da Fase 3 (Sparkle minimal)
 ---
@@ -35,11 +35,13 @@ A checagem automática não muda.
 
 ## Aceite manual
 
+**Resultado (2026-09-25):** o usuário clicou no item e o Sparkle respondeu *"Tagarela 1.0.6-dev é a versão mais recente disponível."* — build 6 contra os 6 publicados, a resposta certa. O nome mostrado é o `CFBundleShortVersionString` do build de aceite; a comparação do Sparkle é pelo `CFBundleVersion` (ADR-0007). O último item depende da publicação da v1.0.6.
+
 Build local `1.0.6-dev` com build number **6** — igual ao da v1.0.5 publicada.
 
-- [ ] O item aparece logo abaixo de "Preferências…".
-- [ ] O clique fecha o menu e abre a janela do Sparkle **na frente**.
-- [ ] Com o build igual ao publicado, o Sparkle diz que está atualizado.
+- [x] O item aparece logo abaixo de "Preferências…".
+- [x] O clique fecha o menu e abre a janela do Sparkle **na frente**.
+- [x] Com o build igual ao publicado, o Sparkle diz que está atualizado.
 - [ ] Depois de publicada a v1.0.6, o mesmo item a oferece — e a atualização instala com as permissões intactas.
 
 ## Implementação (2026-09-25)
