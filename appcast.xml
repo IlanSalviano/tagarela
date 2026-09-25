@@ -6,6 +6,17 @@
     <language>pt-BR</language>
     <!-- Items adicionados por scripts/appcast.sh a cada release -->
     <item>
+      <title>Versão 1.0.4</title>
+      <pubDate>Fri, 25 Sep 2026 01:17:25 +0000</pubDate>
+      <sparkle:version>5</sparkle:version>
+      <sparkle:shortVersionString>1.0.4</sparkle:shortVersionString>
+      <enclosure
+        url="https://github.com/IlanSalviano/tagarela/releases/download/v1.0.4/Tagarela-1.0.4.dmg"
+        sparkle:edSignature="GDHsVETK9TnZs8By98o+i86nzIqwWlqjxdGNNgELuiN/BhmQ+OEk6bo3RpUnazz4JvO1HqdjbnHED/I/E2mDBg=="
+        length="7272983"
+        type="application/octet-stream" />
+    </item>
+    <item>
       <title>Versão 1.0.3</title>
       <pubDate>Wed, 27 May 2026 04:56:03 +0000</pubDate>
       <sparkle:version>4</sparkle:version>
