@@ -33,6 +33,9 @@ struct TagarelaApp: App {
                 onOpenPreferences: {
                     container.openPreferences()
                 },
+                onOpenPermissions: {
+                    container.openPreferences(section: .permissoes)
+                },
                 loadedModelName: { [container] in container.transcriber.loadedModelName },
                 onboardingPending: container.showOnboarding)
             .environmentObject(container.appState)

@@ -3,8 +3,15 @@ import Foundation
 protocol PermissionService: AnyObject {
     func snapshot() -> PermissionsSnapshot
     func requestMicrophone() async -> Bool
+    /// Pede Acessibilidade: o macOS mostra o diálogo dele **e insere o app na
+    /// lista** dos Ajustes (sem isso, depois de um `tccutil reset` o usuário
+    /// teria de achar o app pelo "+"). Devolve se já está concedida.
+    @discardableResult func requestAccessibility() -> Bool
+    /// Pede Monitoramento de Entrada. O diálogo só aparece na primeira vez.
+    @discardableResult func requestInputMonitoring() -> Bool
     func openAccessibilitySettings()
     func openInputMonitoringSettings()
+    func openMicrophoneSettings()
 
     /// Stream que reemite snapshot quando algo muda (poll a cada 1s).
     ///

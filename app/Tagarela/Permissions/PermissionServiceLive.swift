@@ -61,6 +61,29 @@ final class PermissionServiceLive: PermissionService, @unchecked Sendable {
         await AVCaptureDevice.requestAccess(for: .audio)
     }
 
+    @discardableResult
+    func requestAccessibility() -> Bool {
+        // "AXTrustedCheckOptionPrompt" é o valor de `kAXTrustedCheckOptionPrompt`;
+        // a literal evita tocar na global C, que o modo estrito de concorrência
+        // do Swift trata como estado mutável compartilhado.
+        let options = ["AXTrustedCheckOptionPrompt": true] as CFDictionary
+        let trusted = AXIsProcessTrustedWithOptions(options)
+        Diag.notice(.permissions, "pedido de Acessibilidade (já concedida: \(trusted))")
+        return trusted
+    }
+
+    @discardableResult
+    func requestInputMonitoring() -> Bool {
+        let granted = IOHIDRequestAccess(kIOHIDRequestTypeListenEvent)
+        Diag.notice(.permissions, "pedido de Monitoramento de Entrada (concedido: \(granted))")
+        return granted
+    }
+
+    func openMicrophoneSettings() {
+        let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone")!
+        NSWorkspace.shared.open(url)
+    }
+
     func openAccessibilitySettings() {
         let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
         NSWorkspace.shared.open(url)

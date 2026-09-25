@@ -81,13 +81,13 @@ enum ToastKind: Equatable, Sendable {
             switch kind {
             case .microphone:
                 return String(localized: "toast.permission.microphone",
-                              defaultValue: "Microfone negado — abra Configurações.")
+                              defaultValue: "Microfone negado — veja Preferências › Permissões.")
             case .accessibility:
                 return String(localized: "toast.permission.accessibility",
-                              defaultValue: "Acessibilidade negada — o ditado está no histórico e na área de transferência.")
+                              defaultValue: "Sem Acessibilidade: o ditado ficou no clipboard e no histórico. Veja Preferências › Permissões.")
             case .inputMonitoring:
                 return String(localized: "toast.permission.inputMonitoring",
-                              defaultValue: "Input Monitoring negado — abra Configurações.")
+                              defaultValue: "Monitoramento de Entrada negado — veja Preferências › Permissões.")
             }
         case .captureFailed:
             return String(localized: "toast.capture.failed",
