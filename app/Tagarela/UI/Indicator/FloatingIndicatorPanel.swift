@@ -7,6 +7,16 @@ final class FloatingIndicatorPanel {
     /// Task pra preview com auto-hide após N segundos.
     private var previewTask: Task<Void, Never>?
 
+    /// O painel está mostrando o preview do seletor de indicador (centro da
+    /// tela), não uma gravação — a posição dele não deve ser herdada.
+    private var showingPreview = false
+
+    /// Frame atual — só para os testes observarem deriva.
+    var currentFrame: NSRect? { panel?.frame }
+
+    /// Simula o usuário arrastando o painel — só para testes.
+    func moveForTesting(to origin: NSPoint) { panel?.setFrameOrigin(origin) }
+
     /// Mostra (ou atualiza) panel com indicator da `variant` correspondente
     /// + toast opcional empilhado acima.
     func show(state: PipelineState,
@@ -27,17 +37,34 @@ final class FloatingIndicatorPanel {
         }
         let host = NSHostingController(rootView: root)
         host.view.layer?.backgroundColor = .clear
+
+        // Trocar o `contentViewController` redimensiona a janela e a desloca
+        // para cima (~21 pt por troca, medido em teste). Como isso acontece a
+        // cada `.stateChanged` — 12–25 vezes por segundo gravando —, sem
+        // compensação a pílula sobe até o topo da tela: foi o bug de campo de
+        // 2026-09-24, introduzido quando o 9f parou de reposicionar no cursor
+        // a cada tick.
+        //
+        // A regra agora: a posição que a janela tinha **antes** da troca é
+        // restaurada **depois**. Anula a deriva, não persegue o mouse, e não
+        // briga com o arrasto — a posição guardada já inclui o que o usuário
+        // arrastou.
+        let wasVisible = panel?.isVisible == true && !showingPreview
+        let origin = panel?.frame.origin
+        showingPreview = false
         panel?.contentViewController = host
-        // Reposicionar só na transição oculto → visível: `.stateChanged` chega
-        // 12–25×/s gravando, e reposicionar a cada tick fazia o indicador
-        // **seguir o mouse** e desfazia qualquer arrasto do usuário.
-        if panel?.isVisible != true { positionNearCursor() }
+        if wasVisible, let origin {
+            panel?.setFrameOrigin(origin)
+        } else {
+            positionNearCursor()
+        }
         panel?.orderFrontRegardless()
     }
 
     func hide() {
         previewTask?.cancel()
         previewTask = nil
+        showingPreview = false
         panel?.orderOut(nil)
     }
 
@@ -52,6 +79,7 @@ final class FloatingIndicatorPanel {
         host.view.layer?.backgroundColor = .clear
         panel?.contentViewController = host
         positionCenterScreen()
+        showingPreview = true
         panel?.orderFrontRegardless()
         previewTask?.cancel()
         previewTask = Task { [weak self] in
