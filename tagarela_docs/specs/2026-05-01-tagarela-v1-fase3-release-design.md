@@ -33,6 +33,9 @@ Itens enumerados em [`02-arquitetura/01-modulos-fase1.md:132`](../02-arquitetura
 | 1 | Distribuição: solo + ~5 conhecidos via DMG no GitHub Releases (repo público) | YAGNI — sem servidor próprio, sem CDN, sem MAS. |
 | 2 | Cert `Developer ID Application` novo (coexiste com `Apple Development` atual) | Required pra notarization + Gatekeeper aceitar binário em Macs de terceiros. |
 | 3 | Sparkle minimal (auto-check no launch + sheet nativa quando há update) | Zero UI custom; sem botão "Verificar atualizações". Sparkle desenha tudo. |
+
+> **Revisão 2026-09-25:** a decisão 3 valia "nesta fase" e foi revista a pedido do usuário — o menu ganha o item **"Buscar atualizações…"**. A checagem automática continua igual. Ver [design do item](./2026-09-25-tagarela-v1-buscar-atualizacoes-design.md).
+
 | 4 | Logging: botão "Abrir Console.app" em Preferências > Sobre | `os_log` já existe; arquivo persistido é over-engineering pra solo. |
 | 5 | Versionamento manual via `bump.sh patch\|minor\|major` | Bump é decisão deliberada; script garante consistência (project.yml + xcodegen + git tag). |
 | 6 | Pipeline = scripts modulares em bash | Debugabilidade > monolítico. Cada um chamável isolado. |
