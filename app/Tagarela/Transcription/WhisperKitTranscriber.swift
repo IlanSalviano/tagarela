@@ -71,6 +71,17 @@ final class WhisperKitTranscriber: Transcribing, @unchecked Sendable {
         Diag.notice(.transcribe, "reloaded model=\(name)")
     }
 
+    /// Idioma principal do app ("foco em português com regionalização").
+    static let primaryLanguage = "pt"
+
+    /// "Automático", neste app, significa **português ou inglês** — o seletor
+    /// só oferece os dois (ADR-0006). O Whisper escolhe entre ~99 idiomas, e
+    /// português se confunde com espanhol, galego, italiano e francês. A regra:
+    /// inglês se o Whisper disse inglês; português em qualquer outro caso.
+    static func resolveAutoLanguage(_ detected: String) -> String {
+        detected == "en" ? "en" : primaryLanguage
+    }
+
     private func instantiate(folder: URL, name: String) async throws {
         let config = WhisperKitConfig(
             modelFolder: folder.path,
@@ -99,15 +110,41 @@ final class WhisperKitTranscriber: Transcribing, @unchecked Sendable {
         // protocolo pra futura reintrodução com fix robusto.
         _ = initialPrompt
 
-        // language == nil → auto-detecção: TranscribeTask só detecta quando
-        // detectLanguage == true E language == nil E modelo multilíngue (ADR-0006).
-        // Idioma explícito (pt/en) mantém detectLanguage: false → path inalterado.
+        // Modo Automático (language == nil): a detecção é feita **à parte**,
+        // com o decoder limpo, e a transcrição roda com o idioma explícito.
+        //
+        // Não dá para deixar o WhisperKit detectar dentro do `transcribe`: no
+        // 0.18.0 o `TranscribeTask` pré-preenche o KV cache com `<|en|>`
+        // (`Constants.defaultLanguageCode`) **antes** de detectar, e a detecção
+        // lê esse cache. A escolha sai corrompida — em campo, quatro ditados em
+        // português viraram en, it, en, en (um de 32 s); no teste de
+        // integração, 9,6 s de português virou `fr`. O `detectLangauge` público
+        // monta o decoder do zero (`prepareDecoderInputs(withPrompt: [SOT])`),
+        // então não herda o viés. Custa um encoder a mais; a transcrição em si
+        // passa a seguir exatamente o caminho de idioma fixo, que é o que
+        // funcionou por meses com `pt`.
+        let effectiveLanguage: String
+        var autoNote = ""
+        if let language {
+            effectiveLanguage = language
+        } else {
+            do {
+                let detection = try await pipe.detectLangauge(audioArray: buffer.samples)
+                effectiveLanguage = Self.resolveAutoLanguage(detection.language)
+                autoNote = " auto=\(detection.language)→\(effectiveLanguage)"
+            } catch {
+                effectiveLanguage = Self.primaryLanguage
+                autoNote = " auto=falhou→\(effectiveLanguage)"
+                Diag.error(.transcribe, "detecção de idioma falhou: \(String(describing: error)) — usando \(effectiveLanguage)")
+            }
+        }
+
         let opts = DecodingOptions(
             verbose: false,
             task: .transcribe,
-            language: language,
+            language: effectiveLanguage,
             usePrefillPrompt: true,
-            detectLanguage: language == nil,
+            detectLanguage: false,
             withoutTimestamps: true,
             promptTokens: nil,
             noSpeechThreshold: nil
@@ -140,7 +177,7 @@ final class WhisperKitTranscriber: Transcribing, @unchecked Sendable {
 
             let modelName = self.loadedModelName ?? "?"
             let audioSec = String(format: "%.1f", buffer.durationSeconds)
-            let header = "model=\(modelName) audio=\(audioSec)s reqLang=\(language ?? "auto")"
+            let header = "model=\(modelName) audio=\(audioSec)s reqLang=\(language ?? "auto")\(autoNote)"
             if text.isEmpty {
                 Diag.error(.transcribe, "transcrição vazia — \(header) \(outcome.metricsLine)")
             } else {

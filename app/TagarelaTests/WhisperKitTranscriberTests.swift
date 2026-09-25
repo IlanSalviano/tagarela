@@ -59,7 +59,19 @@ final class WhisperKitTranscriberTests: XCTestCase {
         XCTAssertTrue(line.contains("lang=pt"))
         XCTAssertTrue(line.contains("nsp=0.020"))
     }
+
+    /// "Automático" = português ou inglês. Os erros clássicos do Whisper com
+    /// português curto (galego, espanhol, italiano, francês) caem em pt.
+    func test_resolveAutoLanguage_mapsToPortugueseOrEnglish() {
+        XCTAssertEqual(WhisperKitTranscriber.resolveAutoLanguage("pt"), "pt")
+        XCTAssertEqual(WhisperKitTranscriber.resolveAutoLanguage("en"), "en")
+        for confusion in ["gl", "es", "it", "fr", "ca", "la"] {
+            XCTAssertEqual(WhisperKitTranscriber.resolveAutoLanguage(confusion), "pt",
+                           "'\(confusion)' deveria cair em pt")
+        }
+    }
 }
+
 
 private final class FakeModelStore: WhisperModelStore, @unchecked Sendable {
     private let present: [String: URL]

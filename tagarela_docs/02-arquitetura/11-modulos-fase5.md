@@ -552,3 +552,54 @@ Resultados imediatos:
 
 - **Carga do modelo: 1,3 s** (`modelo 'large-v3_turbo' já em disco — carregando sem rede`), contra **13 s** na v1.0.3, que ia a `huggingface.co` mesmo com o modelo em disco. É a Tarefa 5 medida em campo.
 - **Input Monitoring precisou ser reconcedido** — assinatura diferente, designated requirement diferente. Microfone foi herdado. Esperado e avisado.
+
+---
+
+## Achados de campo 2 (2026-09-24) — pílula subindo e idioma errado
+
+Dois problemas relatados assim que o build local passou a ser usado de verdade.
+
+### A pílula subia até o topo da tela — regressão do 9f
+
+O 9f parou de reposicionar o painel no cursor a cada `.stateChanged`, para ele não
+perseguir o mouse. Mas cada `show()` ainda troca o `contentViewController` inteiro,
+e esse redimensionamento **desloca a janela para cima**. O `setFrame` a cada tick
+de antes mascarava a deriva; sem ele, ela se acumula 12–25 vezes por segundo até o
+topo da tela.
+
+A auditoria recomendava duas metades juntas — manter o controller **e** posicionar
+só na transição oculto → visível. O 9f fez só a segunda. A primeira (reaproveitar
+o `NSHostingController`) é justamente o que a 2c-cleanup tentou e reverteu por
+regressão em runtime, então não foi retomada aqui.
+
+**Teste vermelho com o sintoma exato:** `test_panelDoesNotDriftAcrossRepeatedUpdates`
+mediu **643 pt de subida em 30 atualizações** (y 725 → 1368, o topo da tela).
+
+**Conserto:** a posição que a janela tinha **antes** da troca de conteúdo é
+restaurada **depois**. Anula a deriva, não persegue o mouse e não briga com o
+arrasto — a posição guardada já inclui o que o usuário arrastou. O painel só vai
+ao cursor quando aparece. Um segundo teste simula o arrasto e verifica que ele
+gruda, e que ao reaparecer o painel volta para perto do cursor.
+
+Esta é exatamente a regressão que o aceite do Bloco E (item E2) existia para pegar
+antes do merge. Ela foi pega — em uso real, porque o build foi instalado antes do
+aceite. Era o risco aceito ao instalar.
+
+### Falei português e ele escreveu em inglês — defeito latente da Fase 4
+
+Não é regressão desta fase: o modo Automático **nunca funcionou para português**.
+O WhisperKit 0.18.0 pré-preenche o cache do decoder com `<|en|>` antes de detectar
+o idioma, e a detecção lê esse cache. Detalhe completo, causa no código e decisão
+revisada em [ADR-0006 — Revisão 2026-09-24](../04-decisoes/ADR-0006-multi-idioma-transcricao.md).
+
+**Vermelho com o modelo real:** 9,6 s de português sintetizado → `fr`.
+**Verde depois:** `pt`, com transcrição (não tradução).
+
+**Sobre a preferência:** está em `auto`; a auditoria de 7/set tinha visto `pt`
+explícito. **Não** foi a suíte de testes que trocou — verificado: os testes de
+preferência usam o domínio `tagarela.tests.preferences`, não o do app. A troca veio
+de fora (o usuário, provavelmente); com o conserto, o Automático passa a acertar.
+
+**Testes:** +4 (2 do painel, 1 do mapeamento de idioma, 1 de integração com o
+modelo real, pulado sem `TAGARELA_INTEGRATION=1`). Suíte **250 → 254**
+(253 verdes + 1 pulado); declarados = executados, sem testes órfãos.
