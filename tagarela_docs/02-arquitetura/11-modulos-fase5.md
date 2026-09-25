@@ -1,6 +1,6 @@
 ---
 data: 2026-09-07
-status: em execução (branch `fase-5-robustez`)
+status: implementado — mergeado na main (`7d1c9c0`) e publicado como v1.0.4 em 2026-09-25
 fase: 5-robustez-sessao-longa
 origem: specs/2026-09-07-tagarela-v1-fase5-robustez-sessao-longa-plan.md
 design: 02-arquitetura/10-auditoria-2026-09-07.md

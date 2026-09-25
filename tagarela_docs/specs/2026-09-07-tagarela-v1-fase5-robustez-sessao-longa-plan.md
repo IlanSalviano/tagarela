@@ -1,6 +1,6 @@
 ---
 data: 2026-09-07
-status: planejado
+status: implementado — v1.0.4 publicada em 2026-09-25; validação de campo (Tarefa 13) em curso
 fase: 5-robustez-sessao-longa
 goal: app continua transcrevendo após semanas no ar; quando falhar, diz por quê e se recupera sozinho
 origem: 02-arquitetura/10-auditoria-2026-09-07.md (§3 diagnóstico, §4 plano, §5 achados)
@@ -383,8 +383,8 @@ Código fechado em 2026-09-07; todos os scripts passam `bash -n`. **Smoke test n
   - **F — Diagnóstico:** menu mostra saúde; Exportar diagnóstico gera a pasta; Console/arquivo mostram `.notice` de um ditado.
   - **G — Não-regressão:** blocos essenciais das Fases 2a/2d/4 (estilos, Ollama com `num_ctx`, idioma auto/pt/en).
 - [ ] **Docs:** `02-arquitetura/11-modulos-fase5.md` (snapshot: módulos novos/modificados, decisões, contagem da suíte), `04-decisoes/ADR-0008-diagnostico-persistido-e-self-healing.md` (Contexto / Decisão / Consequências / Alternativas — inclui a política de restore do clipboard e "nunca injetar vazio"), `README.md` (índice + status), auditoria (`status:` → "fase 5 em execução/concluída").
-- [ ] **Merge** `fase-5-robustez` → `main` (`--no-ff`), suíte verde em `main`.
-- [ ] **Release** `./scripts/release.sh patch` → v1.0.4 (build 5).
+- [x] **Merge** `fase-5-robustez` → `main` (`--no-ff`), suíte verde em `main`. — 2026-09-25, merge `7d1c9c0`; suíte na main mesclada: 253 verdes + 1 pulado (integração).
+- [x] **Release** `./scripts/release.sh patch` → v1.0.4 (build 5). — **Publicada em 2026-09-25**: https://github.com/IlanSalviano/tagarela/releases/tag/v1.0.4. Verificado de fora: release pública com `Tagarela-1.0.4.dmg` (7,3 MB), DMG com HTTP 200, `appcast.xml` do raw da main anunciando `sparkle:version` 5. Dentro do DMG: assinado com o Developer ID novo, **DR idêntico ao da v1.0.3**, Gatekeeper `accepted · Notarized Developer ID`, staple válido, `SUPublicEDKey` novo. A primeira execução parou na etapa 6 sem publicar nada (tag precisava subir antes do `gh release create`); corrigido em `5e8569b` e a segunda execução passou inteira.
   - ⛔ **Bloqueado nesta máquina (verificado em 2026-09-24).** Correção de um registro anterior impreciso: o **certificado existe** — `developerID_application.cer` está na raiz do repo (untracked), é o `Developer ID Application: Ilan Salviano (22CZXFP6W7)`, SHA-1 `E42EE72295E4853378FBEF2E589FBC7D609884EB` (exatamente o que o `project.yml` exige no Release) e vale até 2031-05-02. O pipeline de release funcionou de verdade: as v1.0.0 a v1.0.3 estão publicadas com DMG e assinatura.
 
     O que falta é a **chave privada**, não o certificado. Enumerando as chaves privadas dos keychains destrancados, nenhuma tem o id `D04049B67121840BBEEFF44633931698D66C6DE2` (SHA-1 PKCS#1 da chave pública do cert, que é o formato do `kSecAttrApplicationLabel`). Sem a chave, o `.cer` sozinho não assina nada.
@@ -411,6 +411,7 @@ Código fechado em 2026-09-07; todos os scripts passam `bash -n`. **Smoke test n
 
     **Correção de registro:** uma busca ampla por `.p12`/chave do Sparkle feita em 2026-09-24 começava com `timeout`, comando que não existe no macOS; o erro ficou escondido por `2>/dev/null` e a busca nunca rodou. Refeita em 2026-09-25 sem esse defeito: de fato não há `.p12`, chave do Sparkle nem `.env` de release nesta máquina. Instalar em `/Applications`, confirmar update via Sparkle a partir da v1.0.3 (ADR-0007: `sparkle:version` = 5).
 - [ ] Desregistrar builds locais (`lsregister -u`), conferir permissões da release.
+  - Instalação da v1.0.4 nesta máquina: pendente, pelo usuário. Não dá para testar a atualização via Sparkle a partir da v1.0.3: a chave EdDSA foi trocada, então o app instalado não aceita o item novo — instalação manual única, como registrado acima.
 
 ---
 
