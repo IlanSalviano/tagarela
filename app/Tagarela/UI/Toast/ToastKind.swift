@@ -34,6 +34,10 @@ enum ToastKind: Equatable, Sendable {
     case injectionFailed
     case historySaveFailed
     case permissionDenied(kind: PermissionKind)
+    case captureFailed
+    case emptyTranscription
+    case transcriberRecovered
+    case transcriberNotReady
 
     var displayMessage: String {
         switch self {
@@ -65,8 +69,11 @@ enum ToastKind: Equatable, Sendable {
                               defaultValue: "Resposta malformada — usando texto cru.")
             }
         case .injectionFailed:
+            // O histórico é salvo antes da cola desde a Tarefa 4, então esta
+            // frase é verdadeira em todos os caminhos de falha — a anterior
+            // ("texto na área de transferência") era falsa nos dois.
             return String(localized: "toast.injection.failed",
-                          defaultValue: "Cola falhou — texto na área de transferência.")
+                          defaultValue: "Cola falhou — o ditado está salvo no histórico.")
         case .historySaveFailed:
             return String(localized: "toast.history.saveFailed",
                           defaultValue: "Histórico não salvou.")
@@ -77,11 +84,23 @@ enum ToastKind: Equatable, Sendable {
                               defaultValue: "Microfone negado — abra Configurações.")
             case .accessibility:
                 return String(localized: "toast.permission.accessibility",
-                              defaultValue: "Acessibilidade negada — abra Configurações.")
+                              defaultValue: "Acessibilidade negada — o ditado está no histórico e na área de transferência.")
             case .inputMonitoring:
                 return String(localized: "toast.permission.inputMonitoring",
                               defaultValue: "Input Monitoring negado — abra Configurações.")
             }
+        case .captureFailed:
+            return String(localized: "toast.capture.failed",
+                          defaultValue: "Não captei áudio do microfone. Confira o dispositivo de entrada.")
+        case .emptyTranscription:
+            return String(localized: "toast.transcription.empty",
+                          defaultValue: "Não entendi nada — tente de novo.")
+        case .transcriberRecovered:
+            return String(localized: "toast.transcriber.recovered",
+                          defaultValue: "Reconhecedor reiniciado.")
+        case .transcriberNotReady:
+            return String(localized: "toast.transcriber.notReady",
+                          defaultValue: "Ainda carregando o reconhecedor — tente em alguns segundos.")
         }
     }
 
@@ -91,6 +110,10 @@ enum ToastKind: Equatable, Sendable {
         case .injectionFailed:    return "doc.on.clipboard"
         case .historySaveFailed:  return "externaldrive.badge.xmark"
         case .permissionDenied:   return "lock.shield"
+        case .captureFailed:      return "mic.slash"
+        case .emptyTranscription: return "waveform.badge.exclamationmark"
+        case .transcriberRecovered: return "arrow.clockwise"
+        case .transcriberNotReady:  return "hourglass"
         }
     }
 
@@ -100,6 +123,10 @@ enum ToastKind: Equatable, Sendable {
         case .injectionFailed:    return .red
         case .historySaveFailed:  return .red
         case .permissionDenied:   return .red
+        case .captureFailed:      return .red
+        case .emptyTranscription: return .orange
+        case .transcriberRecovered: return .green
+        case .transcriberNotReady:  return .orange
         }
     }
 }

@@ -7,6 +7,7 @@ struct TagarelaApp: App {
     var body: some Scene {
         MenuBarExtra {
             MenuBarContent(
+                health: container.health,
                 customStore: container.customStyleStoreLive,
                 styleProvider: container.styleProvider,
                 recentsProvider: container.recentsProvider,
@@ -20,21 +21,20 @@ struct TagarelaApp: App {
                             hasKey = false
                         }
                         guard !hasKey else { return }
-                        container.keyPromptWindow.onCancel = {
-                            container.prefs.refinerKind = previous
-                        }
-                        container.keyPromptWindow.onSaved = {}
-                        container.keyPromptWindow.show()
+                        container.keyPromptWindow.show(
+                            onCancel: { container.prefs.refinerKind = previous },
+                            onSaved: {})
                     }
                 },
                 onExplicitConfigureKey: { [container] in
-                    container.keyPromptWindow.onCancel = {}  // sem rollback no caminho explícito
-                    container.keyPromptWindow.onSaved = {}
-                    container.keyPromptWindow.show()
+                    // Sem rollback no caminho explícito.
+                    container.keyPromptWindow.show(onCancel: {}, onSaved: {})
                 },
                 onOpenPreferences: {
                     container.openPreferences()
-                })
+                },
+                loadedModelName: { [container] in container.transcriber.loadedModelName },
+                onboardingPending: container.showOnboarding)
             .environmentObject(container.appState)
             .environmentObject(container.prefs)
         } label: {

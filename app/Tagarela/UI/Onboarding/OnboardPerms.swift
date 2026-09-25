@@ -28,7 +28,7 @@ struct OnboardPerms: View {
                 permCard(name: String(localized: "onboarding.perm.accessibility.name", defaultValue: "acessibilidade"),
                          status: snapshot.accessibility,
                          why: String(localized: "onboarding.perm.accessibility.why",
-                                     defaultValue: "necessário pra registrar o atalho global e simular ⌘V no app de destino."),
+                                     defaultValue: "pra colar o texto no app de destino, simulando ⌘V. o atalho global é o input monitoring, ali embaixo."),
                          onTap: onAccessibilityTap)
                 permCard(name: String(localized: "onboarding.perm.inputmonitoring.name", defaultValue: "input monitoring"),
                          status: snapshot.inputMonitoring,

@@ -23,9 +23,15 @@ final class OnboardingCoordinator: ObservableObject {
         self.transcriber = transcriber
         self.prefs = prefs
         self.permsSnapshot = permissionService.snapshot()
+        // `makeSnapshots()`: stream próprio. Com o `AsyncStream` compartilhado
+        // de antes, este consumidor e o do `AppContainer` dividiam os eventos e
+        // o checklist perdia metade das transições.
+        let stream = permissionService.makeSnapshots()
         Task { [weak self] in
-            guard let self else { return }
-            for await snap in self.permissionService.snapshots {
+            for await snap in stream {
+                // `self` resolvido por iteração: o `guard let self` fora do laço
+                // mantinha o coordinator vivo pela vida da Task.
+                guard let self else { return }
                 await MainActor.run { self.permsSnapshot = snap }
             }
         }

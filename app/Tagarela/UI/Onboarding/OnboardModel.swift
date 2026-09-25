@@ -37,7 +37,8 @@ struct OnboardModel: View {
                                      defaultValue: "falha: \(errorMessage) · tentar de novo"))
                             .font(DS.Font.mono(10))
                             .foregroundStyle(DS.Color.carmineDeep)
-                        Button("retry") { onRetry() }
+                        Button(String(localized: "onboarding.model.retry",
+                                      defaultValue: "tentar de novo")) { onRetry() }
                             .buttonStyle(.plain)
                             .font(DS.Font.mono(10, weight: .medium))
                             .foregroundStyle(DS.Color.carmine)

@@ -160,10 +160,12 @@ struct TranscriptionView: View {
     private func handleStateTransition(_ state: SwapState) {
         switch state {
         case .idle(let active):
-            // se acabei de mudar (vinha de .swapping), ofereço cleanup do antigo
+            // Só oferece o cleanup do modelo antigo. A persistência de
+            // `whisperModelName` mora no `AppContainer.swapActive`, que roda
+            // exatamente uma vez no sucesso do swap e não depende desta view
+            // continuar viva.
             if let last = lastActive, last != active, modelStore.isDownloaded(last) {
                 pendingCleanup = last
-                prefs.whisperModelName = active
             }
             lastActive = active
             errorSheetVisible = false
@@ -178,9 +180,15 @@ struct TranscriptionView: View {
 
     private func errorDescription(_ error: SwapError) -> String {
         switch error {
-        case .downloadFailed(let r): return "Falha ao baixar: \(r)"
-        case .loadFailed(let r):     return "Falha ao carregar: \(r)"
-        case .cancelled:             return "Cancelado."
+        case .downloadFailed(let r):
+            return String(localized: "preferences.transcription.swap.error.download",
+                          defaultValue: "Falha ao baixar: \(r)")
+        case .loadFailed(let r):
+            return String(localized: "preferences.transcription.swap.error.load",
+                          defaultValue: "Falha ao carregar: \(r)")
+        case .cancelled:
+            return String(localized: "preferences.transcription.swap.error.cancelled",
+                          defaultValue: "Cancelado.")
         }
     }
 

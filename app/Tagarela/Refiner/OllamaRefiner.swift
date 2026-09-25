@@ -24,7 +24,8 @@ final class OllamaRefiner: TextRefiner, @unchecked Sendable {
     var kind: RefinerKind { .ollama }
 
     func refine(_ rawText: String, style: Style) async throws -> String {
-        guard await healthChecker.isAvailable() else {
+        // A URL vem daqui: o checker fixava a dele no init e nunca atualizava.
+        guard await healthChecker.isAvailable(baseURL: baseURL) else {
             throw RefinerError.networkOffline
         }
         let systemTokens = TokenCounter.estimate(style.systemPrompt)
@@ -52,7 +53,15 @@ final class OllamaRefiner: TextRefiner, @unchecked Sendable {
                 ["role": "system", "content": style.systemPrompt],
                 ["role": "user",   "content": rawText],
             ],
-            "options": ["temperature": 0.3],
+            // Sem `num_ctx` o servidor usa o default dele (2048/4096), 8 a 30×
+            // menor que a janela real do modelo. O truncamento acontece no
+            // servidor, em silêncio, e **começa pelo system prompt** — o modelo
+            // perde a instrução "reescreva, não responda" e a saída vira uma
+            // resposta ao ditado (auditoria §5.4).
+            "options": [
+                "temperature": 0.3,
+                "num_ctx": RemoteRefinerConfig.contextWindow(for: model),
+            ],
         ]
         req.httpBody = try JSONSerialization.data(withJSONObject: payload)
 

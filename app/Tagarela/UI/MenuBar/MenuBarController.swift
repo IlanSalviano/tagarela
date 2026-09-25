@@ -3,6 +3,8 @@ import SwiftUI
 struct MenuBarContent: View {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var prefs: PreferencesStore
+    @Environment(\.openWindow) private var openWindow
+    @ObservedObject var health: PipelineHealth
     let customStore: CustomStyleStoreLive?  // nil quando container falha
     let styleProvider: StyleProvider
     let recentsProvider: RecentTranscriptionsProvider
@@ -10,6 +12,20 @@ struct MenuBarContent: View {
     var onSelectOpenAINeedsKey: (RefinerKind) -> Void = { _ in }
     var onExplicitConfigureKey: () -> Void = {}
     var onOpenPreferences: () -> Void = {}
+    /// Modelo Whisper carregado agora — resolvido em runtime porque muda com o swap.
+    var loadedModelName: () -> String? = { nil }
+    /// Onboarding fechado no ⌘W sem concluir deixava o app "zumbi": a hotkey e
+    /// o modelo nunca subiam e não havia como reabrir a janela (auditoria §5.3).
+    var onboardingPending: Bool = false
+
+    private var refinerLabel: String {
+        switch prefs.refinerKind {
+        case .ollama: return "ollama · \(prefs.ollamaModel)"
+        case .openai: return "openai · \(prefs.openAIModel)"
+        case .none:   return String(localized: "pipeline.sub.refining.none",
+                                    defaultValue: "sem refinador")
+        }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -25,7 +41,12 @@ struct MenuBarContent: View {
             .padding(.vertical, 12)
             .overlay(Divider().background(DS.Color.hairline), alignment: .bottom)
 
-            StateRow(state: appState.pipeline)
+            StateRow(state: appState.pipeline,
+                     health: health,
+                     loadedModelName: loadedModelName(),
+                     refinerLabel: refinerLabel,
+                     permissionsPending: !appState.permissionsAllGranted,
+                     modelLoading: !appState.whisperModelReady)
 
             Divider().background(DS.Color.hairline)
 
@@ -44,6 +65,25 @@ struct MenuBarContent: View {
 
             RecentTranscriptionsSubmenu(provider: recentsProvider,
                                          injector: injector)
+
+            if onboardingPending {
+                Button(action: {
+                    openWindow(id: "onboarding")
+                    NSApp.activate(ignoringOtherApps: true)
+                }) {
+                    HStack {
+                        Text(String(localized: "menubar.onboarding.resume",
+                                    defaultValue: "Concluir configuração…"))
+                            .font(DS.Font.mono(11))
+                            .foregroundStyle(DS.Color.carmine)
+                        Spacer()
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
 
             Button(action: onOpenPreferences) {
                 HStack {

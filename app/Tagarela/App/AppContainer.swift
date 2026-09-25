@@ -2,13 +2,14 @@ import SwiftUI
 import AppKit
 import AVFoundation
 import Combine
-import OSLog
 import SwiftData
 import Sparkle
 
 @MainActor
 final class AppContainer: ObservableObject {
     let appState = AppState()
+    let health = PipelineHealth()
+    private var isRecoveringTranscriber = false
     let permissions: PermissionService
     var transcriber: Transcribing
     let audio: AudioCapturing
@@ -61,7 +62,7 @@ final class AppContainer: ObservableObject {
             for candidate in ["large-v3", "medium", "small", "large-v3-turbo", "large-v3_turbo"] {
                 if migrationStore.isDownloaded(candidate) {
                     userDefaults.set(candidate, forKey: PreferencesKey.whisperModelName)
-                    Logger.tagarela.notice("migration: preserved existing model on disk: \(candidate, privacy: .public)")
+                    Diag.notice(.app, "migration: preserved existing model on disk: \(candidate)")
                     break
                 }
             }
@@ -216,7 +217,15 @@ final class AppContainer: ObservableObject {
                 let old = self.transcriber
                 self.transcriber = newActive
                 transcriberRef.current = newActive
-                Logger.tagarela.notice("AppContainer.transcriber swapped (old=\(old.loadedModelName ?? "nil", privacy: .public) → new=\(newActive.loadedModelName ?? "nil", privacy: .public))")
+                // Persistir aqui, e não na view: o `TranscriptionView` fazia
+                // isso dentro de um `if` que dependia do estado **da view**, e
+                // navegar para outra seção no meio do swap destruía a view — o
+                // swap terminava e ninguém persistia, então o launch seguinte
+                // carregava o modelo antigo em silêncio (auditoria §5.3).
+                if let name = newActive.loadedModelName {
+                    self.prefs.whisperModelName = name
+                }
+                Diag.notice(.app, "transcriber swapped (old=\(old.loadedModelName ?? "nil") → new=\(newActive.loadedModelName ?? "nil"))")
                 return old
             }
         )
@@ -262,26 +271,26 @@ final class AppContainer: ObservableObject {
     private func ensureMicPermission() {
         let status = AVCaptureDevice.authorizationStatus(for: .audio)
         let videoStatus = AVCaptureDevice.authorizationStatus(for: .video)
-        Logger.tagarela.info("mic status=\(status.rawValue, privacy: .public) video status=\(videoStatus.rawValue, privacy: .public) (0=notDetermined, 1=restricted, 2=denied, 3=authorized)")
+        Diag.info(.permissions, "mic status=\(status.rawValue) video status=\(videoStatus.rawValue) (0=notDetermined, 1=restricted, 2=denied, 3=authorized)")
         guard status != .authorized else { return }
 
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
-        Logger.tagarela.info("activationPolicy promoted to .regular pra prompt")
+        Diag.info(.permissions, "activationPolicy promoted to .regular pra prompt")
 
         Task {
             // Tentativa 0: video. C920 é camera+mic combinado; em macOS 26
             // o device pode exigir Camera grant pra liberar o audio também.
             let okVideo = await AVCaptureDevice.requestAccess(for: .video)
-            Logger.tagarela.info("video requestAccess -> \(okVideo, privacy: .public)")
+            Diag.info(.permissions, "video requestAccess -> \(okVideo)")
 
             // Tentativa 1: audio
             let ok1 = await AVCaptureDevice.requestAccess(for: .audio)
-            Logger.tagarela.info("mic requestAccess -> \(ok1, privacy: .public)")
+            Diag.info(.permissions, "mic requestAccess -> \(ok1)")
 
             if !ok1 {
                 // Tentativa 2: AVCaptureSession real, que é o caminho canônico
-                Logger.tagarela.info("tentando via AVCaptureSession")
+                Diag.info(.permissions, "tentando via AVCaptureSession")
                 let session = AVCaptureSession()
                 if let dev = AVCaptureDevice.default(for: .audio) {
                     do {
@@ -289,21 +298,21 @@ final class AppContainer: ObservableObject {
                         if session.canAddInput(input) {
                             session.addInput(input)
                             session.startRunning()
-                            Logger.tagarela.info("capture session running — popup deveria ter aparecido")
+                            Diag.info(.permissions, "capture session running — popup deveria ter aparecido")
                             try? await Task.sleep(nanoseconds: 200_000_000)
                             session.stopRunning()
                         }
                     } catch {
-                        Logger.tagarela.error("AVCaptureDeviceInput falhou: \(String(describing: error), privacy: .public)")
+                        Diag.error(.permissions, "AVCaptureDeviceInput falhou: \(String(describing: error))")
                     }
                 } else {
-                    Logger.tagarela.error("AVCaptureDevice.default(.audio) retornou nil")
+                    Diag.error(.permissions, "AVCaptureDevice.default(.audio) retornou nil")
                 }
             }
 
             await MainActor.run {
                 NSApp.setActivationPolicy(.accessory)
-                Logger.tagarela.info("activationPolicy back to .accessory")
+                Diag.info(.permissions, "activationPolicy back to .accessory")
             }
         }
     }
@@ -319,14 +328,20 @@ final class AppContainer: ObservableObject {
                     baseURL: URL(string: self?.prefs.ollamaBaseURL ?? "")
                         ?? URL(string: "http://localhost:11434")!)
             },
-            openAIKeyEditor: { [weak self] in self?.keyPromptWindow.show() },
+            openAIKeyEditor: { [weak self] in self?.keyPromptWindow.show(onCancel: {}, onSaved: {}) },
             healthChecker: healthChecker,
             indicatorPanel: indicatorPanel,
             keychain: keychain,
             historyStore: historyStore,
             injector: injector,
             swapCoordinator: swapCoordinator,
-            modelStore: modelStore)
+            modelStore: modelStore,
+            health: health,
+            loadedModelName: { [weak self] in self?.transcriber.loadedModelName },
+            modelDownloaded: { [weak self] in
+                guard let self else { return nil }
+                return self.modelStore.isDownloaded(self.prefs.whisperModelName)
+            })
         preferencesWindow.show(content: { AnyView(view) })
     }
 
@@ -344,15 +359,26 @@ final class AppContainer: ObservableObject {
 
     private func loadModelLogging(_ name: String) {
         let transcriber = self.transcriber
-        Task {
-            Logger.tagarela.info("loadModel('\(name, privacy: .public)') iniciando")
+        Task { @MainActor [weak self] in
+            self?.appState.whisperModelReady = false
+            let started = ContinuousClock.now
+            Diag.info(.transcribe, "loadModel('\(name)') iniciando")
             do {
                 try await transcriber.loadModel(name) { p in
-                    Logger.tagarela.info("download \(Int(p * 100), privacy: .public)%")
+                    Diag.info(.transcribe, "download \(Int(p * 100))%")
                 }
-                Logger.tagarela.info("modelo '\(name, privacy: .public)' carregado")
+                let elapsed = started.duration(to: .now)
+                let seconds = Double(elapsed.components.seconds)
+                    + Double(elapsed.components.attoseconds) / 1e18
+                self?.appState.whisperModelReady = true
+                // O tempo importa: num primeiro launch após upgrade de macOS o
+                // CoreML recompila o modelo para a ANE e isso passa de 90 s,
+                // contra ~13 s num launch normal. Sem o número no log, a
+                // diferença entre "lento" e "quebrado" é invisível.
+                Diag.notice(.transcribe, "modelo '\(name)' carregado em \(String(format: "%.1f", seconds))s")
             } catch {
-                Logger.tagarela.error("loadModel FALHOU: \(String(describing: error), privacy: .public)")
+                self?.appState.whisperModelReady = false
+                Diag.error(.transcribe, "loadModel FALHOU: \(String(describing: error))")
             }
         }
     }
@@ -360,9 +386,9 @@ final class AppContainer: ObservableObject {
     private func startHotkeyServiceLogging() {
         do {
             try hotkeyService.start()
-            Logger.tagarela.info("hotkey service started")
+            Diag.notice(.hotkey, "hotkey service started")
         } catch {
-            Logger.tagarela.error("hotkey service falhou ao iniciar: \(String(describing: error), privacy: .public)")
+            Diag.error(.hotkey, "hotkey service falhou ao iniciar: \(String(describing: error))")
         }
     }
 
@@ -372,9 +398,9 @@ final class AppContainer: ObservableObject {
         let coord = self.swapCoordinator
         Task {
             for await event in stream {
-                Logger.tagarela.info("hotkey event recebido: \(String(describing: event), privacy: .public)")
+                Diag.info(.hotkey, "hotkey event recebido: \(String(describing: event))")
                 if case .swapping = await coord.state {
-                    Logger.tagarela.info("hotkey ignored: swap in progress")
+                    Diag.info(.hotkey, "hotkey ignored: swap in progress")
                     continue
                 }
                 let pipelineEvent: PipelineEvent = (event == .toggle) ? .toggle : .cancel
@@ -392,19 +418,37 @@ final class AppContainer: ObservableObject {
                     switch event {
                     case .stateChanged(let s):
                         self.appState.pipeline = s
+                        self.health.noteState(s)
                         self.refreshIndicator(for: s)
                     case .errorOccurred(let msg):
-                        Logger.tagarela.error("pipeline error: \(msg, privacy: .public)")
+                        Diag.error(.pipeline, "pipeline error: \(msg)")
                     case .finished:
-                        break
+                        self.health.noteSuccess()
                     case .refinerFellBack(let reason):
                         self.toastCenter.show(Toast(kind: .refinerFellBack(reason: reason)))
                     case .injectionFailed:
+                        self.health.noteInjectionFailure()
                         self.toastCenter.show(Toast(kind: .injectionFailed))
                     case .historySaveFailed:
                         self.toastCenter.show(Toast(kind: .historySaveFailed))
                     case .permissionDenied(let kind):
                         self.toastCenter.show(Toast(kind: .permissionDenied(kind: kind)))
+                    case .captureFailed(let reason):
+                        // Os dois motivos entram em "curtos": a captura não
+                        // rendeu áudio utilizável. O log distingue qual foi.
+                        self.health.noteDiscardedShort()
+                        Diag.error(.pipeline, "captureFailed(\(reason))")
+                        self.toastCenter.show(Toast(kind: .captureFailed))
+                    case .emptyTranscription:
+                        self.health.noteEmptyTranscription()
+                        self.toastCenter.show(Toast(kind: .emptyTranscription))
+                    case .transcriberRecoveryRequested:
+                        self.recoverTranscriber()
+                    case .transcriberRecovered:
+                        self.health.noteRecovery()
+                        self.toastCenter.show(Toast(kind: .transcriberRecovered))
+                    case .transcriberNotReady:
+                        self.toastCenter.show(Toast(kind: .transcriberNotReady))
                     case .toggle, .cancel:
                         break
                     }
@@ -413,11 +457,61 @@ final class AppContainer: ObservableObject {
         }
     }
 
+    /// Recria o reconhecedor depois de dois vazios seguidos — a hipótese H2 da
+    /// auditoria é que o decoder degrada ao longo de uma sessão longa, e não há
+    /// métrica que distinga isso de "o usuário não falou".
+    ///
+    /// Usa `reload()`, que relê **do disco** — sem rede, e portanto sem depender
+    /// de `huggingface.co` estar de pé no momento em que o app está degradado.
+    private func recoverTranscriber() {
+        guard !isRecoveringTranscriber else {
+            Diag.info(.transcribe, "recuperação já em andamento — ignorando pedido")
+            return
+        }
+        isRecoveringTranscriber = true
+        let transcriber = self.transcriber
+        let pipeline = self.pipeline
+        Task { @MainActor [weak self] in
+            defer { self?.isRecoveringTranscriber = false }
+            do {
+                try await transcriber.reload()
+                await pipeline.noteTranscriberRecovered()
+            } catch {
+                Diag.error(.transcribe, "recriar o transcriber falhou: \(String(describing: error))")
+            }
+        }
+    }
+
     private func wirePermissionsToAppState() {
-        let stream = permissions.snapshots
+        let stream = permissions.makeSnapshots()
         Task { [weak self] in
+            var lastAttempt: ContinuousClock.Instant?
             for await snap in stream {
                 guard let self else { return }
+                // Input Monitoring concedido e nenhum tap vivo: a hotkey está
+                // morta (S4 da auditoria §3.4) — sobe de novo. `start()` é
+                // idempotente.
+                //
+                // Checagem por ESTADO, não por transição. A versão por
+                // transição partia de `previous == nil`, então o primeiro
+                // snapshot de todo launch contava como "voltou a granted" e
+                // reiniciava o tap à toa — e foi essa linha, lida no log em
+                // campo, que fez parecer validado um re-start ao vivo que não
+                // tinha acontecido. De bônus, cobre qualquer outro motivo de
+                // tap morto com a permissão em dia. Tentativas a cada 10 s no
+                // máximo, para uma falha persistente não inundar o log.
+                let tapMissing = await MainActor.run {
+                    snap.inputMonitoring == .granted && !self.hotkeyService.isTapEnabled
+                }
+                let throttled = lastAttempt.map { $0.duration(to: .now) < .seconds(10) } ?? false
+                if tapMissing, !throttled {
+                    lastAttempt = .now
+                    await MainActor.run {
+                        Diag.notice(.hotkey, "Input Monitoring concedido e nenhum tap ativo — iniciando a hotkey")
+                        do { try self.hotkeyService.start() }
+                        catch { Diag.error(.hotkey, "start falhou: \(String(describing: error))") }
+                    }
+                }
                 await MainActor.run {
                     self.appState.permissionsAllGranted = snap.allGranted
                 }
@@ -443,10 +537,6 @@ final class AppContainer: ObservableObject {
             onCancel: { Task { await pipelineRef.handle(.cancel) } },
             onToastDismiss: { toastCenterRef.dismiss() })
     }
-}
-
-extension Logger {
-    static let tagarela = Logger(subsystem: "com.tagarela", category: "App")
 }
 
 /// Holder mutável compartilhado entre AppContainer e PipelineCoordinator.

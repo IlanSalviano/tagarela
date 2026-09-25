@@ -146,4 +146,32 @@ final class OllamaRefinerTests: XCTestCase {
             XCTAssertEqual(e, .malformedResponse)
         } catch { XCTFail("wrong error: \(error)") }
     }
+
+    /// Sem `num_ctx` o servidor usa o default dele (2048/4096), 8 a 30× menor
+    /// que a janela real do modelo. O truncamento acontece no servidor, em
+    /// silêncio, e começa pelo **system prompt** — o modelo perde a instrução
+    /// "reescreva, não responda" e devolve uma resposta ao ditado (§5.4).
+    func test_chatPayloadCarriesNumCtxForTheModel() async throws {
+        nonisolated(unsafe) var body: [String: Any]?
+        MockURLProtocol.responder = { [self] req in
+            if req.url?.path.hasSuffix("/api/tags") == true {
+                return (httpResp(200, path: "/api/tags"), Data())
+            }
+            let data = req.httpBody ?? req.httpBodyStream.map { stream -> Data in
+                stream.open()
+                defer { stream.close() }
+                var buffer = [UInt8](repeating: 0, count: 64_000)
+                let read = stream.read(&buffer, maxLength: buffer.count)
+                return Data(buffer[0..<max(0, read)])
+            } ?? Data()
+            body = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+            return (httpResp(200), successBody("refinado"))
+        }
+        let (refiner, _) = makeRefiner()
+        _ = try await refiner.refine("oi", style: BuiltInStyles.conversaInformal)
+
+        let options = try XCTUnwrap(body?["options"] as? [String: Any], "payload sem options")
+        XCTAssertEqual(options["num_ctx"] as? Int,
+                       RemoteRefinerConfig.contextWindow(for: "qwen3.5:9b-nvfp4"))
+    }
 }

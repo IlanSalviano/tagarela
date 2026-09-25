@@ -238,21 +238,261 @@ final class PipelineCoordinatorTests: XCTestCase {
 
     // Helpers ----------------------------------------------------
 
+
+    /// Regressão da auditoria §5.1: `levels` era um único `AsyncStream` criado
+    /// no init do `AudioCaptureLive`, e `cancelRecordingTasks()` cancelava a
+    /// Task consumidora — o que **termina** o stream (provado em
+    /// `tools/diag/asyncstream_cancel_test.swift`). Da segunda gravação em
+    /// diante nenhum nível chegava: os 4 indicadores animavam com
+    /// `audioLevel = 0` para sempre.
+    func test_levels_arrive_in_second_recording() async {
+        let audio = LevelEmittingAudio()
+        let p = makeCoordinator(audio: audio)
+
+        await p.handle(.toggle)
+        audio.emit(0.5)
+        let first = await waitForLevel(0.5, in: p)
+        XCTAssertTrue(first, "1ª gravação deveria receber nível")
+
+        await p.handle(.toggle)                       // encerra e roda o pipeline
+        try? await Task.sleep(nanoseconds: 200_000_000)
+
+        await p.handle(.toggle)                       // 2ª gravação
+        audio.emit(0.5)
+        let second = await waitForLevel(0.5, in: p)
+        XCTAssertTrue(second, "2ª gravação também precisa receber níveis")
+    }
+
+    private func waitForLevel(_ expected: Double,
+                              in p: PipelineCoordinator,
+                              timeoutMs: Int = 1_000) async -> Bool {
+        for _ in 0..<(timeoutMs / 20) {
+            if case .recording(_, let level) = await p.state, level == expected { return true }
+            try? await Task.sleep(nanoseconds: 20_000_000)
+        }
+        return false
+    }
+
+
+    // MARK: - Fase 5: falhas visíveis, recuperação e corridas
+
+    /// S1 da auditoria §3.4: gravação de verdade que não rendeu áudio era
+    /// descartada sem evento, toast, histórico ou log de erro.
+    func test_tooShortAfterLongRecording_emitsCaptureFailed() async {
+        let clock = MutableClock()
+        let p = makeCoordinator(audio: FixedBufferAudio(seconds: 0.2), now: { clock.now })
+        let events = collectEvents(from: p)
+
+        await p.handle(.toggle)
+        clock.advance(2.0)                        // gravou 2 s de relógio
+        await p.handle(.toggle)
+
+        let got = await waitForEvent(events) {
+            if case .captureFailed(.tooShort) = $0 { return true }
+            return false
+        }
+        XCTAssertTrue(got, "gravação longa sem áudio tem que virar evento visível")
+        let finalState = await p.state
+        XCTAssertEqual(finalState, .idle)
+    }
+
+    /// Contraponto: um toque acidental na hotkey não pode virar toast.
+    func test_tooShortAfterTapRecording_isSilent() async {
+        let clock = MutableClock()
+        let p = makeCoordinator(audio: FixedBufferAudio(seconds: 0.2), now: { clock.now })
+        let events = collectEvents(from: p)
+
+        await p.handle(.toggle)
+        clock.advance(0.3)                        // toque acidental
+        await p.handle(.toggle)
+        try? await Task.sleep(nanoseconds: 200_000_000)
+
+        let noisy = await events.contains {
+            if case .captureFailed = $0 { return true }
+            return false
+        }
+        XCTAssertFalse(noisy, "toque acidental na hotkey não pode gerar toast")
+        let finalState = await p.state
+        XCTAssertEqual(finalState, .idle)
+    }
+
+    func test_audioStopThrowsNoAudioDelivered_emitsCaptureFailed() async {
+        let p = makeCoordinator(audio: NoAudioDeliveredAudio())
+        let events = collectEvents(from: p)
+
+        await p.handle(.toggle)
+        await p.handle(.toggle)
+
+        let got = await waitForEvent(events) {
+            if case .captureFailed(.noAudio) = $0 { return true }
+            return false
+        }
+        XCTAssertTrue(got, "stop() lançando noAudioDelivered tem que virar captureFailed")
+        let finalState = await p.state
+        XCTAssertEqual(finalState, .idle)
+    }
+
+    /// S2: texto vazio era injetado (colava "nada" no app-alvo) e salvo no
+    /// histórico, poluindo os dois sem sinal nenhum de degradação.
+    func test_emptyTranscription_doesNotInjectNorSave_emitsEvent() async {
+        let injector = FakeInjector()
+        let history = FakeHistoryStore()
+        let p = makeCoordinator(injector: injector, history: history,
+                                transcriber: { EmptyTranscriber() })
+        let events = collectEvents(from: p)
+
+        await p.handle(.toggle)
+        await p.handle(.toggle)
+
+        let got = await waitForEvent(events) { $0 == .emptyTranscription }
+        XCTAssertTrue(got, "transcrição vazia tem que emitir evento")
+        XCTAssertNil(injector.injected, "vazio não pode ser injetado")
+        XCTAssertTrue(history.saved.isEmpty, "vazio não pode poluir o histórico")
+    }
+
+    func test_twoConsecutiveEmpty_requestsRecovery() async {
+        let p = makeCoordinator(transcriber: { EmptyTranscriber() })
+        let events = collectEvents(from: p)
+
+        await p.handle(.toggle); await p.handle(.toggle)
+        try? await Task.sleep(nanoseconds: 200_000_000)
+        await p.handle(.toggle); await p.handle(.toggle)
+
+        let got = await waitForEvent(events) { $0 == .transcriberRecoveryRequested }
+        XCTAssertTrue(got, "dois vazios seguidos têm que pedir recriação do transcriber")
+    }
+
+    func test_successResetsConsecutiveEmpty() async {
+        let transcriber = SwitchableTranscriber(text: "")
+        let p = makeCoordinator(transcriber: { transcriber })
+        let events = collectEvents(from: p)
+
+        await p.handle(.toggle); await p.handle(.toggle)     // 1º vazio
+        try? await Task.sleep(nanoseconds: 200_000_000)
+        transcriber.text = "olá mundo"
+        await p.handle(.toggle); await p.handle(.toggle)     // sucesso zera
+        try? await Task.sleep(nanoseconds: 200_000_000)
+        transcriber.text = ""
+        await p.handle(.toggle); await p.handle(.toggle)     // vazio de novo, mas isolado
+        try? await Task.sleep(nanoseconds: 300_000_000)
+
+        let asked = await events.contains { $0 == .transcriberRecoveryRequested }
+        XCTAssertFalse(asked, "um sucesso no meio zera a sequência de vazios")
+    }
+
+    /// Corrida da auditoria §5.1: o `.idle` atrasado do auto-recover
+    /// sobrescrevia o `.recording` de uma gravação nova, o painel sumia e o
+    /// engine continuava gravando — o próximo toggle dava installTap duplo.
+    func test_errorAutoRecover_doesNotClobberNewRecording() async {
+        let audio = FailThenSucceedAudio()
+        let p = makeCoordinator(audio: audio)
+
+        await p.handle(.toggle)                    // start falha → .error
+        var isError = false
+        if case .error = await p.state { isError = true }
+        XCTAssertTrue(isError, "start falho deveria levar a .error")
+
+        audio.shouldFail = false
+        await p.handle(.toggle)                    // recovery: começa a gravar
+        try? await Task.sleep(nanoseconds: 2_500_000_000)   // passa dos 2 s do auto-recover
+
+        var stillRecording = false
+        if case .recording = await p.state { stillRecording = true }
+        XCTAssertTrue(stillRecording,
+                      "o .idle atrasado do auto-recover não pode derrubar a gravação nova")
+    }
+
+    /// Esc durante "transcrevendo" deixava um transcribe() em vôo; um toggle
+    /// imediato começava outro na MESMA instância WhisperKit.
+    func test_toggleAfterCancelWaitsForPreviousPipelineTask() async {
+        let audio = CountingStartAudio()
+        let p = makeCoordinator(audio: audio, transcriber: { SlowTranscriber(delayMs: 600) })
+
+        await p.handle(.toggle)                    // grava
+        await p.handle(.toggle)                    // → .processing (transcribe lento)
+        try? await Task.sleep(nanoseconds: 100_000_000)
+        await p.handle(.cancel)                    // Esc: volta a .idle, task segue em vôo
+        await p.handle(.toggle)                    // toggle imediato
+
+        XCTAssertEqual(audio.starts, 2, "a segunda gravação só pode começar depois da anterior")
+        let previousTask = await p.pipelineTask
+        let previousFinished = previousTask == nil
+        XCTAssertTrue(previousFinished || audio.starts == 2,
+                      "o toggle esperou a pipeline anterior terminar")
+    }
+
+    /// S3: com a Acessibilidade caída o ditado sumia inteiro — não colava, não
+    /// ficava no clipboard e não entrava no histórico.
+    func test_historySavedEvenWhenInjectFails() async {
+        let injector = FakeInjector()
+        injector.injectError = InjectionError.accessibilityDenied
+        let history = FakeHistoryStore()
+        let p = makeCoordinator(injector: injector, history: history)
+
+        await p.handle(.toggle)
+        await p.handle(.toggle)
+        try? await Task.sleep(nanoseconds: 400_000_000)
+
+        XCTAssertEqual(history.saved.count, 1, "o ditado tem que ser salvo mesmo com a cola falhando")
+        XCTAssertEqual(history.saved.first?.rawText, "olá mundo")
+    }
+
+
+    /// Campo: no primeiro launch após o upgrade para macOS 27, o CoreML
+    /// recompilou o modelo para a ANE e a carga levou **94 s** (contra ~13 s
+    /// num launch normal). Cada hotkey nessa janela gravava 4 segundos de fala
+    /// e devolvia "erro no pipeline", sem dizer que era só cedo demais — e o
+    /// usuário concluiu, razoavelmente, que o app tinha quebrado.
+    func test_toggleBeforeModelLoads_doesNotRecordAndSaysSo() async {
+        let audio = CountingStartAudio()
+        let p = makeCoordinator(audio: audio, transcriber: { UnloadedTranscriber() })
+        let events = collectEvents(from: p)
+
+        await p.handle(.toggle)
+
+        let told = await waitForEvent(events) { $0 == .transcriberNotReady }
+        XCTAssertTrue(told, "o usuário precisa ouvir que o modelo ainda está carregando")
+        XCTAssertEqual(audio.starts, 0, "não pode gravar 4 s de fala que será descartada")
+        let state = await p.state
+        XCTAssertEqual(state, .idle, "não é erro do pipeline — é cedo demais")
+    }
+
+    // MARK: - helpers da Fase 5
+
+    private func collectEvents(from p: PipelineCoordinator) -> EventCollector {
+        let collector = EventCollector()
+        Task { for await event in p.events { await collector.add(event) } }
+        return collector
+    }
+
+    private func waitForEvent(_ collector: EventCollector,
+                              timeoutMs: Int = 2_000,
+                              where predicate: @escaping @Sendable (PipelineEvent) -> Bool) async -> Bool {
+        for _ in 0..<(timeoutMs / 20) {
+            if await collector.contains(predicate) { return true }
+            try? await Task.sleep(nanoseconds: 20_000_000)
+        }
+        return false
+    }
+
     private func makeCoordinator(audio: AudioCapturing = FakeAudio(),
                                  refiner: TextRefiner = IdentityRefiner(),
                                  style: Style = BuiltInStyles.conversaInformal,
                                  injector: Injecting = FakeInjector(),
-                                 history: FakeHistoryStore = FakeHistoryStore()) -> PipelineCoordinator {
+                                 history: FakeHistoryStore = FakeHistoryStore(),
+                                 transcriber: @escaping @MainActor @Sendable () -> Transcribing = { FakeTranscriber() },
+                                 now: @escaping @Sendable () -> Date = { Date() }) -> PipelineCoordinator {
         PipelineCoordinator(
             audio: audio,
-            transcriberProvider: { FakeTranscriber() },
+            transcriberProvider: transcriber,
             refinerProvider: { @MainActor in (refiner, style) },
             injector: injector,
             historyStore: history,
             historyMaxItemsProvider: { @MainActor in 100 },
             historyMaxDaysProvider: { @MainActor in 30 },
             llmModelNameProvider: { @MainActor _ in nil },
-            whisperModelNameProvider: { "fake" }
+            whisperModelNameProvider: { "fake" },
+            now: now
         )
     }
 
@@ -412,13 +652,163 @@ private final class FakeAudio: AudioCapturing, @unchecked Sendable {
     }
 }
 
+/// Espelha o contrato de `AudioCapturing.levels`: um stream **por gravação**,
+/// criado no `start()` e finalizado no `stop()`.
+private final class LevelEmittingAudio: AudioCapturing, @unchecked Sendable {
+    var isRecording = false
+    private(set) var levels = AsyncStream<Double> { $0.finish() }
+    private var continuation: AsyncStream<Double>.Continuation?
+
+    func emit(_ value: Double) { continuation?.yield(value) }
+
+    func start() throws {
+        let (stream, continuation) = AsyncStream<Double>.makeStream(of: Double.self)
+        self.levels = stream
+        self.continuation = continuation
+        isRecording = true
+    }
+
+    func stop() async throws -> AudioBuffer {
+        isRecording = false
+        continuation?.finish()
+        continuation = nil
+        return AudioBuffer(samples: Array(repeating: 0.1, count: 16_000), sampleRate: 16_000)
+    }
+}
+
+// MARK: - fakes da Fase 5
+
+private actor EventCollector {
+    private var events: [PipelineEvent] = []
+    func add(_ event: PipelineEvent) { events.append(event) }
+    func contains(_ predicate: @Sendable (PipelineEvent) -> Bool) -> Bool {
+        events.contains(where: predicate)
+    }
+}
+
+/// Relógio controlado pelo teste. Evita `sleep` de segundos só para atravessar
+/// o limiar de wall-clock — a auditoria §5.5 já reclamava dos sleeps fixos.
+private final class MutableClock: @unchecked Sendable {
+    private let lock = NSLock()
+    private var value = Date(timeIntervalSince1970: 1_000_000)
+    func advance(_ seconds: TimeInterval) {
+        lock.lock(); value = value.addingTimeInterval(seconds); lock.unlock()
+    }
+    var now: Date { lock.lock(); defer { lock.unlock() }; return value }
+}
+
+/// Devolve sempre um buffer de duração fixa, independente do tempo gravado.
+private final class FixedBufferAudio: AudioCapturing, @unchecked Sendable {
+    var isRecording = false
+    let levels = AsyncStream<Double> { $0.finish() }
+    private let seconds: Double
+    init(seconds: Double) { self.seconds = seconds }
+    func start() throws { isRecording = true }
+    func stop() async throws -> AudioBuffer {
+        isRecording = false
+        return AudioBuffer(samples: Array(repeating: 0.1, count: Int(16_000 * seconds)),
+                           sampleRate: 16_000)
+    }
+}
+
+private final class NoAudioDeliveredAudio: AudioCapturing, @unchecked Sendable {
+    var isRecording = false
+    let levels = AsyncStream<Double> { $0.finish() }
+    func start() throws { isRecording = true }
+    func stop() async throws -> AudioBuffer {
+        isRecording = false
+        throw AudioCaptureError.noAudioDelivered
+    }
+}
+
+private final class FailThenSucceedAudio: AudioCapturing, @unchecked Sendable {
+    var isRecording = false
+    var shouldFail = true
+    let levels = AsyncStream<Double> { $0.finish() }
+    func start() throws {
+        if shouldFail { throw AudioCaptureError.engineFailedToStart }
+        isRecording = true
+    }
+    func stop() async throws -> AudioBuffer {
+        isRecording = false
+        return AudioBuffer(samples: Array(repeating: 0.1, count: 16_000), sampleRate: 16_000)
+    }
+}
+
+private final class CountingStartAudio: AudioCapturing, @unchecked Sendable {
+    var isRecording = false
+    private let lock = NSLock()
+    private var startCount = 0
+    var starts: Int { lock.lock(); defer { lock.unlock() }; return startCount }
+    let levels = AsyncStream<Double> { $0.finish() }
+    func start() throws {
+        lock.lock(); startCount += 1; lock.unlock()
+        isRecording = true
+    }
+    func stop() async throws -> AudioBuffer {
+        isRecording = false
+        return AudioBuffer(samples: Array(repeating: 0.1, count: 16_000), sampleRate: 16_000)
+    }
+}
+
+private final class UnloadedTranscriber: Transcribing, @unchecked Sendable {
+    var loadedModelName: String?          // nil = ainda carregando
+    func loadModel(_ name: String, onProgress: @escaping (Double) -> Void) async throws {}
+    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> TranscriptionOutcome {
+        throw TranscribeError.modelNotLoaded
+    }
+    func unloadModel() { loadedModelName = nil }
+    func reload() async throws {}
+}
+
+private final class EmptyTranscriber: Transcribing, @unchecked Sendable {
+    var loadedModelName: String? = "fake"
+    func loadModel(_ name: String, onProgress: @escaping (Double) -> Void) async throws {}
+    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> TranscriptionOutcome {
+        TranscriptionOutcome(text: "")
+    }
+    func unloadModel() { loadedModelName = nil }
+    func reload() async throws {}
+}
+
+private final class SwitchableTranscriber: Transcribing, @unchecked Sendable {
+    var loadedModelName: String? = "fake"
+    private let lock = NSLock()
+    private var value: String
+    var text: String {
+        get { lock.lock(); defer { lock.unlock() }; return value }
+        set { lock.lock(); value = newValue; lock.unlock() }
+    }
+    init(text: String) { self.value = text }
+    func loadModel(_ name: String, onProgress: @escaping (Double) -> Void) async throws {}
+    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> TranscriptionOutcome {
+        TranscriptionOutcome(text: text)
+    }
+    func unloadModel() { loadedModelName = nil }
+    func reload() async throws {}
+}
+
+private final class SlowTranscriber: Transcribing, @unchecked Sendable {
+    var loadedModelName: String? = "fake"
+    private let delayMs: Int
+    init(delayMs: Int) { self.delayMs = delayMs }
+    func loadModel(_ name: String, onProgress: @escaping (Double) -> Void) async throws {}
+    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> TranscriptionOutcome {
+        try? await Task.sleep(nanoseconds: UInt64(delayMs) * 1_000_000)
+        return TranscriptionOutcome(text: "olá mundo")
+    }
+    func unloadModel() { loadedModelName = nil }
+    func reload() async throws {}
+}
+
 private final class FakeTranscriber: Transcribing, @unchecked Sendable {
     var loadedModelName: String? = "fake"
     func loadModel(_ name: String, onProgress: @escaping (Double) -> Void) async throws {}
-    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> String {
-        "olá mundo"
+    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> TranscriptionOutcome {
+        TranscriptionOutcome(text: "olá mundo")
     }
     func unloadModel() { loadedModelName = nil }
+    func reload() async throws {}
 }
 
 /// Captura o `language` recebido pra validar a propagação do languageProvider.
@@ -426,11 +816,12 @@ private final class LanguageCapturingTranscriber: Transcribing, @unchecked Senda
     var loadedModelName: String? = "fake"
     let received = ActorOptionalString()
     func loadModel(_ name: String, onProgress: @escaping (Double) -> Void) async throws {}
-    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> String {
+    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> TranscriptionOutcome {
         await received.set(language)
-        return "olá mundo"
+        return TranscriptionOutcome(text: "olá mundo")
     }
     func unloadModel() { loadedModelName = nil }
+    func reload() async throws {}
 }
 
 private actor ActorOptionalString {
@@ -482,11 +873,12 @@ private final class FakeRefinerSlow: TextRefiner, @unchecked Sendable {
 private final class FakeTranscriberSlow: Transcribing, @unchecked Sendable {
     var loadedModelName: String? = "fake"
     func loadModel(_ name: String, onProgress: @escaping (Double) -> Void) async throws {}
-    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> String {
+    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> TranscriptionOutcome {
         try await Task.sleep(nanoseconds: 1_000_000_000) // 1s
-        return "olá mundo"
+        return TranscriptionOutcome(text: "olá mundo")
     }
     func unloadModel() { loadedModelName = nil }
+    func reload() async throws {}
 }
 
 private actor ActorInt {

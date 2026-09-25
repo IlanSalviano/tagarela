@@ -14,6 +14,14 @@ protocol HotkeyService: AnyObject {
     func start() throws
 
     func stop()
+
+    /// `true` quando o tap existe e está habilitado. Alimenta o snapshot da
+    /// exportação de diagnóstico e o watchdog.
+    var isTapEnabled: Bool { get }
+}
+
+extension HotkeyService {
+    var isTapEnabled: Bool { false }
 }
 
 enum HotkeyServiceError: Error, Equatable {

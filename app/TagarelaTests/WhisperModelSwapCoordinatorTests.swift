@@ -202,6 +202,7 @@ final class WhisperModelSwapCoordinatorTests: XCTestCase {
     }
 }
 
+
 private final class FakeT: Transcribing, @unchecked Sendable {
     var loadedModelName: String?
     var loadError: Error?
@@ -228,11 +229,52 @@ private final class FakeT: Transcribing, @unchecked Sendable {
         loadedModelName = name
     }
 
-    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> String {
-        ""
+    func transcribe(buffer: AudioBuffer, language: String?, initialPrompt: String?) async throws -> TranscriptionOutcome {
+        TranscriptionOutcome(text: "")
     }
 
     func unloadModel() {
         loadedModelName = nil
     }
+
+    func reload() async throws {}
+}
+
+// MARK: - Fase 5: persistência do swap
+
+extension WhisperModelSwapCoordinatorTests {
+    /// Auditoria §5.3: `prefs.whisperModelName` só era persistido dentro de um
+    /// `if` que dependia do estado **da view** (`TranscriptionView`). Navegar
+    /// para outra seção no meio do swap destruía a view, o swap terminava e
+    /// ninguém persistia — o launch seguinte carregava o modelo antigo em
+    /// silêncio. A persistência mudou para o `swapActive`, que roda exatamente
+    /// uma vez no sucesso, independente de qualquer view continuar viva.
+    @MainActor
+    func test_swapActive_runsExactlyOnceOnSuccess_carryingTheNewModel() async {
+        let persisted = NameBox()
+        let coordinator = WhisperModelSwapCoordinator(
+            initialActive: "large-v3_turbo",
+            stagingFactory: { FakeT(name: "medium") },
+            swapActive: { newActive in
+                persisted.record(newActive.loadedModelName)
+                return FakeT(name: "large-v3_turbo")
+            })
+
+        coordinator.requestSwap(target: "medium")
+        for _ in 0..<200 where coordinator.state != .idle(active: "medium") {
+            try? await Task.sleep(nanoseconds: 10_000_000)
+        }
+
+        XCTAssertEqual(coordinator.state, .idle(active: "medium"))
+        XCTAssertEqual(persisted.calls, 1, "swapActive tem que rodar exatamente uma vez")
+        XCTAssertEqual(persisted.last, "medium",
+                       "o nome persistido é o do modelo que passou a ser o ativo")
+    }
+}
+
+@MainActor
+private final class NameBox {
+    private(set) var calls = 0
+    private(set) var last: String?
+    func record(_ name: String?) { calls += 1; last = name }
 }

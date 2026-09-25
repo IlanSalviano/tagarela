@@ -25,7 +25,8 @@ struct HistoryEntryView: View {
             .font(.caption)
 
             if !entry.rawText.isEmpty && entry.rawText != entry.refinedText {
-                Text("cru: \(entry.rawText.prefix(200))")
+                Text(String(localized: "history.entry.rawPrefix",
+                            defaultValue: "cru: \(String(entry.rawText.prefix(200)))"))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .lineLimit(2)

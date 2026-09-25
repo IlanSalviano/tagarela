@@ -3,7 +3,14 @@
 # release.sh initial|patch|minor|major
 #
 # Orquestrador: bump (se não-initial) → build → sign → notarize → dmg →
-#               appcast → gh release create → git push --follow-tags
+#               tag → gh release (upload do DMG) → verifica HTTP 200 →
+#               appcast + commit → git push --follow-tags
+#
+# A ORDEM IMPORTA. Até a Fase 5, o appcast.xml era commitado e pushado ANTES
+# do `gh release create` subir o DMG. Como o feed do Sparkle é o raw do main,
+# qualquer falha do gh (auth, rede) — ou só a janela entre push e upload —
+# deixava todo cliente vendo um item novo e tomando 404 a cada checagem, até
+# alguém consertar à mão. E o rerun travava, porque tag e commit já existiam.
 #
 # initial: pula bump.sh (pra v1.0.0 onde MARKETING_VERSION já está
 #          editado em project.yml).
@@ -50,9 +57,22 @@ if [ "$current_branch" != "main" ]; then
 fi
 
 # 1. Bump (se aplicável)
+#
+# Idempotente: se o HEAD já é um commit de bump SEM tag correspondente, é uma
+# tentativa anterior que morreu depois do bump. Reaproveita em vez de bumpar de
+# novo — senão `release.sh patch` duas vezes ia de 1.0.4 direto pra 1.0.5, sem
+# nenhuma release publicada no meio.
 if [ "$1" != "initial" ]; then
     echo "===== 1/7 bump ====="
-    "$SCRIPTS/bump.sh" "$1"
+    head_subject=$(git log -1 --pretty=%s)
+    pending_version=$(grep -E '^\s*MARKETING_VERSION:' "$REPO_ROOT/app/project.yml" \
+        | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
+    if [[ "$head_subject" == "chore(release): bump "* ]] \
+        && ! git rev-parse "v$pending_version" >/dev/null 2>&1; then
+        echo "release.sh: HEAD já é o bump de v$pending_version e não há tag — reaproveitando"
+    else
+        "$SCRIPTS/bump.sh" "$1"
+    fi
 fi
 
 # 2. Build
@@ -71,17 +91,54 @@ echo "===== 4/7 notarize ====="
 echo "===== 5/7 dmg ====="
 "$SCRIPTS/dmg.sh"
 
-# 6. Appcast
-echo "===== 6/7 appcast ====="
-"$SCRIPTS/appcast.sh"
-
 # Lê versão atual
 version=$(grep -E '^\s*MARKETING_VERSION:' "$REPO_ROOT/app/project.yml" | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
 DMG_PATH="$REPO_ROOT/build/release/Tagarela-$version.dmg"
+DMG_NAME="$(basename "$DMG_PATH")"
 
-# Cria git tag anotada (lightweight não é pegada por --follow-tags)
-echo "===== 7/7 tag + push + gh release ====="
+# Mesma derivação do appcast.sh — aqui é preciso antes de chamá-lo, pra montar
+# a URL que vai ser verificada.
+GITHUB_USER=$(git remote get-url origin 2>/dev/null | sed -E 's|.*github.com[:/]([^/]+)/.*|\1|' || echo "")
+if [ -z "$GITHUB_USER" ]; then
+    echo "erro: não consegui detectar GITHUB_USER do remote 'origin'"
+    exit 1
+fi
+
+rollback_hint() {
+    echo ""
+    echo "===== FALHOU depois da tag — como voltar ====="
+    echo "  git tag -d v$version"
+    echo "  git push --delete origin v$version   # só se a tag já subiu"
+    echo "  gh release delete v$version --yes    # só se a release foi criada"
+    echo ""
+    echo "  O appcast.xml NÃO foi commitado, então nenhum cliente Sparkle viu"
+    echo "  um item apontando pra um DMG que não existe. Pode rodar de novo:"
+    echo "  o bump é reaproveitado."
+}
+
+# 6. Tag + release + upload do DMG (antes do appcast — ver cabeçalho)
+echo "===== 6/7 tag + gh release ====="
 git tag -a "v$version" -m "tagarela $version"
+trap rollback_hint ERR
+
+gh release create "v$version" "$DMG_PATH" \
+    --title "tagarela $version" \
+    --generate-notes
+
+DMG_URL="https://github.com/$GITHUB_USER/tagarela/releases/download/v$version/$DMG_NAME"
+echo "release.sh: confirmando que o DMG está acessível…"
+if ! curl -sSfI --retry 5 --retry-delay 2 --retry-all-errors "$DMG_URL" >/dev/null; then
+    echo "erro: $DMG_URL não respondeu 200."
+    echo "      O appcast NÃO foi gerado — nenhum cliente vai tomar 404."
+    exit 1
+fi
+echo "release.sh: DMG confirmado em $DMG_URL"
+
+# 7. Appcast — só agora que o binário existe e responde
+echo "===== 7/7 appcast + push ====="
+"$SCRIPTS/appcast.sh"
+git add appcast.xml
+git commit -m "chore(release): appcast.xml v$version"
 
 # Push commits + tag. Fall back pra --set-upstream se branch atual
 # ainda não tem tracking remoto (primeiro push após gh repo create).
@@ -90,11 +147,7 @@ if ! git push --follow-tags 2>/dev/null; then
     git push --set-upstream origin "$current_branch"
     git push origin "v$version"
 fi
-
-# gh release create
-gh release create "v$version" "$DMG_PATH" \
-    --title "tagarela $version" \
-    --generate-notes
+trap - ERR
 
 echo ""
 echo "release.sh: v$version publicado"

@@ -7,6 +7,16 @@ final class FloatingIndicatorPanel {
     /// Task pra preview com auto-hide após N segundos.
     private var previewTask: Task<Void, Never>?
 
+    /// O painel está mostrando o preview do seletor de indicador (centro da
+    /// tela), não uma gravação — a posição dele não deve ser herdada.
+    private var showingPreview = false
+
+    /// Frame atual — só para os testes observarem deriva.
+    var currentFrame: NSRect? { panel?.frame }
+
+    /// Simula o usuário arrastando o painel — só para testes.
+    func moveForTesting(to origin: NSPoint) { panel?.setFrameOrigin(origin) }
+
     /// Mostra (ou atualiza) panel com indicator da `variant` correspondente
     /// + toast opcional empilhado acima.
     func show(state: PipelineState,
@@ -15,6 +25,10 @@ final class FloatingIndicatorPanel {
               onCancel: @escaping () -> Void,
               onToastDismiss: @escaping () -> Void) {
         ensurePanel()
+        // Um preview de 3 s em vôo escondia uma gravação real quando expirava.
+        previewTask?.cancel()
+        previewTask = nil
+
         let root = VStack(spacing: 8) {
             if let toast {
                 ToastView(kind: toast.kind, onDismiss: onToastDismiss)
@@ -23,14 +37,34 @@ final class FloatingIndicatorPanel {
         }
         let host = NSHostingController(rootView: root)
         host.view.layer?.backgroundColor = .clear
+
+        // Trocar o `contentViewController` redimensiona a janela e a desloca
+        // para cima (~21 pt por troca, medido em teste). Como isso acontece a
+        // cada `.stateChanged` — 12–25 vezes por segundo gravando —, sem
+        // compensação a pílula sobe até o topo da tela: foi o bug de campo de
+        // 2026-09-24, introduzido quando o 9f parou de reposicionar no cursor
+        // a cada tick.
+        //
+        // A regra agora: a posição que a janela tinha **antes** da troca é
+        // restaurada **depois**. Anula a deriva, não persegue o mouse, e não
+        // briga com o arrasto — a posição guardada já inclui o que o usuário
+        // arrastou.
+        let wasVisible = panel?.isVisible == true && !showingPreview
+        let origin = panel?.frame.origin
+        showingPreview = false
         panel?.contentViewController = host
-        positionNearCursor()
+        if wasVisible, let origin {
+            panel?.setFrameOrigin(origin)
+        } else {
+            positionNearCursor()
+        }
         panel?.orderFrontRegardless()
     }
 
     func hide() {
         previewTask?.cancel()
         previewTask = nil
+        showingPreview = false
         panel?.orderOut(nil)
     }
 
@@ -45,6 +79,7 @@ final class FloatingIndicatorPanel {
         host.view.layer?.backgroundColor = .clear
         panel?.contentViewController = host
         positionCenterScreen()
+        showingPreview = true
         panel?.orderFrontRegardless()
         previewTask?.cancel()
         previewTask = Task { [weak self] in
@@ -67,7 +102,9 @@ final class FloatingIndicatorPanel {
         p.isMovableByWindowBackground = true
         p.backgroundColor = .clear
         p.hasShadow = false
-        p.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
+        // `.fullScreenAuxiliary`: sem ela, ditar num app em tela cheia não
+        // mostrava indicador nem toasts (auditoria §5.3).
+        p.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle, .fullScreenAuxiliary]
         self.panel = p
     }
 

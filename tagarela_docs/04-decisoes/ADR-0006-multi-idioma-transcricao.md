@@ -73,3 +73,75 @@ seleciona "Português" no picker.
 Se a latência ou o misdetect em ditado curto incomodar no uso real, reconsiderar o default
 (auto → pt) ou expor o picker também no onboarding. Catálogo de idiomas é extensível pelo
 enum `TranscriptionLanguage`.
+
+---
+
+## Revisão 2026-09-24 — o modo Automático nunca funcionou para português
+
+**O que aconteceu.** Em campo, com a preferência em Automático, quatro ditados em
+português foram detectados como `en`, `it`, `en` e `en` — um deles com **32
+segundos**. Frase curta explica errar em 1,8 s; não explica errar em 32 s de fala
+clara. Não era o trade-off de "misdetect em ditado curto" registrado acima: era
+defeito.
+
+**Causa (lida no código do WhisperKit 0.18.0).** Com `usePrefillPrompt: true` e
+`usePrefillCache: true` (os dois são default), o `TranscribeTask` pré-preenche o KV
+cache do decoder **antes** de detectar o idioma. Com `language == nil`, o
+pré-preenchimento usa `Constants.defaultLanguageCode`, que é `"en"`:
+
+```swift
+// TextDecoder.prefillDecoderInputs
+let languageTokenString = "<|\(options.language ?? Constants.defaultLanguageCode)|>"
+```
+
+A detecção roda depois, sobre esse mesmo cache já contendo `<|en|>`. O resultado
+não é "sempre inglês" — é uma escolha corrompida: `en`, `it` e, no teste de
+integração, **9,6 s de português sintetizado detectados como `fr`**.
+
+Isso explica também o aceite da Fase 4 ter ficado `ok-parcial` com **só o inglês**
+confirmado no Automático: o viés favorece inglês, então o caso que passou era o que
+o bug deixava passar. O português nunca foi confirmado em modo Automático.
+
+**Decisão revisada.** O `WhisperKitTranscriber` não delega mais a detecção ao
+`transcribe`:
+
+1. Em Automático, chama o `detectLangauge(audioArray:)` público, que monta o
+   decoder do zero (`prepareDecoderInputs(withPrompt: [SOT])`) e portanto não herda
+   o viés.
+2. Resolve o resultado para o conjunto que o app oferece: **inglês se o Whisper
+   disse inglês, português em qualquer outro caso.** O seletor só tem pt e en, e as
+   confusões clássicas do Whisper com português são galego, espanhol, italiano e
+   francês.
+3. Transcreve com o idioma **explícito** e `detectLanguage: false` — exatamente o
+   caminho de idioma fixo, que funcionou por meses com `pt`.
+
+**Custo:** uma passada de encoder a mais por ditado em modo Automático. A API
+pública só devolve o idioma vencedor (não a distribuição), por isso a restrição a
+pt/en é por regra, não por argmax sobre as probabilidades.
+
+**Verificado com o modelo real.** `LanguageDetectionIntegrationTests` sintetiza fala
+em português com o `say` do macOS e roda o `large-v3_turbo` de verdade — vermelho
+antes (`fr`), verde depois (`pt`, com a palavra "português" na transcrição, ou seja,
+transcrição e não tradução). Roda só com `TAGARELA_INTEGRATION=1`, porque carrega o
+modelo de 3 GB.
+
+**O que isso muda na seção "Como revisitar".** A dúvida sobre trocar o default para
+`pt` deixa de ser necessária por causa de misdetect — o Automático agora acerta o
+português. Continua valendo revisitar se o encoder extra pesar na latência.
+
+**Confirmado em campo (2026-09-25),** com o build local `1.0.4-fase5.1`:
+
+| áudio | detecção | logprob | wall | destino |
+|---|---|---|---|---|
+| 6,0 s | `auto=pt→pt` | −0,052 | 1521 ms | Claude desktop |
+| 5,3 s | `auto=en→en` | −0,145 | 1156 ms | Claude desktop |
+
+Dois dados úteis para o futuro:
+
+- **O logprob denuncia idioma errado.** Com o idioma certo, −0,05 a −0,15; nos
+  ditados de 2026-09-24 com o idioma corrompido, −0,25 a −0,58. Se um dia a
+  detecção limpa também errar, um `avgLogprob` baixo em modo Automático é um bom
+  gatilho para retentar com o outro idioma.
+- **A passada extra de encoder não pesou:** 1,2–1,5 s para 5–6 s de áudio, igual
+  ou melhor que os ditados de antes do conserto (1,3–1,9 s para 3,6–3,9 s).
+  A preocupação de latência da seção "Como revisitar" fica, por ora, sem motivo.
