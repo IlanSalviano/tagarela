@@ -1,6 +1,6 @@
 ---
 data: 2026-09-25
-status: implementado (branch `fix-permissoes`) — aceite manual pendente
+status: implementado e aceito (2026-09-25) — publicado na v1.0.5
 origem: relato de campo do usuário após instalar a v1.0.4
 ---
 
@@ -95,16 +95,18 @@ implementado.
 
 ## Aceite manual
 
+**Resultado: `ok` (2026-09-25).** Executado pelo usuário no build local `1.0.5-dev` (Developer ID, mesma identidade da v1.0.4), com as três permissões zeradas via `tccutil`: "Funcionou tudo."
+
 Com o app fechado, zerar as três permissões
 (`tccutil reset Microphone|ListenEvent|Accessibility com.tagarela.Tagarela`) e
 abrir o app:
 
-- [ ] Os três pedidos aparecem: microfone, Monitoramento de Entrada e Acessibilidade.
-- [ ] Depois de conceder a Acessibilidade pelo diálogo, o Tagarela **já está na lista** dos Ajustes (sem "+").
-- [ ] O menu mostra "permissões pendentes — resolver…" enquanto faltar alguma; o clique abre Preferências **na seção Permissões**.
-- [ ] A seção mostra o estado certo de cada uma e muda ao vivo ao conceder.
-- [ ] O botão de cada permissão faltante leva ao painel exato dos Ajustes.
-- [ ] Com as três concedidas, o aviso some do menu e um ditado cola normalmente.
+- [x] Os três pedidos aparecem: microfone, Monitoramento de Entrada e Acessibilidade.
+- [x] Depois de conceder a Acessibilidade pelo diálogo, o Tagarela **já está na lista** dos Ajustes (sem "+").
+- [x] O menu mostra "permissões pendentes — resolver…" enquanto faltar alguma; o clique abre Preferências **na seção Permissões**.
+- [x] A seção mostra o estado certo de cada uma e muda ao vivo ao conceder.
+- [x] O botão de cada permissão faltante leva ao painel exato dos Ajustes.
+- [x] Com as três concedidas, o aviso some do menu e um ditado cola normalmente.
 
 ## Implementação (2026-09-25)
 
