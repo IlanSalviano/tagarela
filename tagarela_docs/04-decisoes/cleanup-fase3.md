@@ -100,7 +100,14 @@ microfone fica para a próxima atualização sem suíte rodada no meio.
   área de transferência do usuário no app da frente. O pasteboard dos testes é
   privado (nome aleatório); a área de transferência real não é tocada.
 
-### Follow-up de código (proposto, não aplicado)
+### Follow-up de código — aplicado em 2026-09-25
+
+Aplicado pelo [host de testes inerte](../specs/2026-09-24-tagarela-v1-host-de-testes-inerte-design.md),
+que achou uma segunda fonte de janela: o teste do exportador de diagnóstico
+abria o `inputNode`, e o coreaudiod pedia o microfone em nome do host — a
+segunda janela de cada suíte (às 23:09:14, por exemplo). Verificado no log do
+TCC durante a suíte: nenhuma janela, nenhum pedido real de microfone, nenhum ⌘V
+real. A lista abaixo é a proposta original:
 
 1. Sob XCTest, o `AppContainer` pula os efeitos de launch (`ensureMicPermission`,
    `requestAccessibilityIfMissing`, atalho, carga do modelo). Ataca a causa: o host

@@ -27,6 +27,7 @@
 		297819BA5A957F06C5FE0F1F /* ShortcutsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F959F346FC72FDBA5B0A3C0 /* ShortcutsView.swift */; };
 		29AE01905EAC0648F69BBE3E /* OnboardModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7123EDA993F7879F2D0F4FA3 /* OnboardModel.swift */; };
 		2A3C2873638E4A39E896CD0C /* PreferencesStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A9046134AA822B8003E250 /* PreferencesStoreTests.swift */; };
+		2B6DFA88E676055B894F130D /* RuntimeEnvironmentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74E2D00C09068A239CBB8620 /* RuntimeEnvironmentTests.swift */; };
 		2B7F14B658D2BAFB03ADD4ED /* Preferences+Defaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B1FA7FFEA9114C2D12839AC /* Preferences+Defaults.swift */; };
 		2B919407065D87FB44E9485B /* InjectorLive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E3AF30F1AE5DEAA3522590D /* InjectorLive.swift */; };
 		2BBF8EC6FCFEC7A3A6078C11 /* CustomStyleStoreNoop.swift in Sources */ = {isa = PBXBuildFile; fileRef = F225C2D8AD43FF9F2BF1BF19 /* CustomStyleStoreNoop.swift */; };
@@ -141,6 +142,7 @@
 		D44AC44AFA2D08CC9A8111F5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0B2194D608A5F68AEE4F7C69 /* Assets.xcassets */; };
 		D4777567135F37A0CAF1FA00 /* HistoryStoreNoop.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5AAD7252267D4B8F9699DFF /* HistoryStoreNoop.swift */; };
 		D6011D4EA9B97BB8CD07EFE1 /* RefinerErrorMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4B465BEE19AB4757FF27B58 /* RefinerErrorMapper.swift */; };
+		D641906897AE5B3388F707A7 /* RuntimeEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCF04798ADED8B56A6368D3F /* RuntimeEnvironment.swift */; };
 		D6CA20473667604E696778CF /* OpenAIEndpointTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE27CF1064741F7D47CA0DCB /* OpenAIEndpointTests.swift */; };
 		D7813EF2C32E29BBEF8E8FC9 /* CustomStyleEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDEA894F73814D4A6AA45078 /* CustomStyleEditSheet.swift */; };
 		E132445401CE971C386D1610 /* IdentityRefiner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89E2D30E8BD941C39FE3D792 /* IdentityRefiner.swift */; };
@@ -232,6 +234,7 @@
 		7123EDA993F7879F2D0F4FA3 /* OnboardModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardModel.swift; sourceTree = "<group>"; };
 		727AD7A472BE6C196EAA6002 /* TagarelaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TagarelaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		72D87FE39418F9229E42065B /* Toast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Toast.swift; sourceTree = "<group>"; };
+		74E2D00C09068A239CBB8620 /* RuntimeEnvironmentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeEnvironmentTests.swift; sourceTree = "<group>"; };
 		79FC0A41CA3D1963B33D77BF /* RefinerOpenAIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefinerOpenAIView.swift; sourceTree = "<group>"; };
 		7B1F1FCA91D0C01F7247F1C3 /* OpenAIEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIEndpoint.swift; sourceTree = "<group>"; };
 		7B1FA7FFEA9114C2D12839AC /* Preferences+Defaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Preferences+Defaults.swift"; sourceTree = "<group>"; };
@@ -306,6 +309,7 @@
 		D6F94E64AE4AEE7F0E13BD05 /* ToastKindTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastKindTests.swift; sourceTree = "<group>"; };
 		D894F0B01F61EDB4629B66F6 /* IndicatorOrb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndicatorOrb.swift; sourceTree = "<group>"; };
 		D935115B6E9C71348D73E53F /* AudioCapturing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioCapturing.swift; sourceTree = "<group>"; };
+		DCF04798ADED8B56A6368D3F /* RuntimeEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeEnvironment.swift; sourceTree = "<group>"; };
 		DD31E2B52177A74935D9866F /* CustomStyleStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomStyleStore.swift; sourceTree = "<group>"; };
 		DE73111E4EDD7B767831A15E /* Diag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Diag.swift; sourceTree = "<group>"; };
 		DFE9E378E1E9AFBC5ACCCFC0 /* Transcription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transcription.swift; sourceTree = "<group>"; };
@@ -500,6 +504,7 @@
 				08409FB81EE882100E04E4CF /* RefinerFactoryTests.swift */,
 				000437DA8749B2E09CBA9DC3 /* RefinerFallbackReasonTests.swift */,
 				E68546BC2AA01D348444B929 /* RemoteRefinerConfigTests.swift */,
+				74E2D00C09068A239CBB8620 /* RuntimeEnvironmentTests.swift */,
 				85CFBE0BCC471B3A68F474EC /* StyleProviderTests.swift */,
 				8E9B177C502566925C655290 /* StyleTests.swift */,
 				16D36018E93C09CC0C61C99B /* ToastCenterTests.swift */,
@@ -535,6 +540,7 @@
 				E67AC40A1677F04D206698D8 /* AppState.swift */,
 				577C1B427FAD78AC22239258 /* CheckForUpdatesModel.swift */,
 				8C20EC8B0FE33918F8535AA0 /* PreferencesWindow.swift */,
+				DCF04798ADED8B56A6368D3F /* RuntimeEnvironment.swift */,
 				6AA232DBB32229FCAA0AC660 /* TagarelaApp.swift */,
 			);
 			path = App;
@@ -917,6 +923,7 @@
 				6A9EB8E08A71F8CE5E515E78 /* RefinerOllamaView.swift in Sources */,
 				CE4AAD082C51712AA9D3CD4A /* RefinerOpenAIView.swift in Sources */,
 				F11CF8F05C71CAC179EAEA5D /* RemoteRefinerConfig.swift in Sources */,
+				D641906897AE5B3388F707A7 /* RuntimeEnvironment.swift in Sources */,
 				297819BA5A957F06C5FE0F1F /* ShortcutsView.swift in Sources */,
 				9B791DDD20F7F9797B8BCF92 /* StateRow.swift in Sources */,
 				D3B91FA9784977324C183175 /* Style.swift in Sources */,
@@ -984,6 +991,7 @@
 				BD64F87722132F46B9A177A1 /* RefinerFactoryTests.swift in Sources */,
 				4EF650A9698551F6B9D9497D /* RefinerFallbackReasonTests.swift in Sources */,
 				81323C2BE4C6733126B398E0 /* RemoteRefinerConfigTests.swift in Sources */,
+				2B6DFA88E676055B894F130D /* RuntimeEnvironmentTests.swift in Sources */,
 				49B0A36CF4734B4B42AD0B42 /* StyleProviderTests.swift in Sources */,
 				8FECD110F77CE391093D0C4E /* StyleTests.swift in Sources */,
 				EFA552262CE858E2BA967417 /* ToastCenterTests.swift in Sources */,

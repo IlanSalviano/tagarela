@@ -7,13 +7,29 @@ final class InjectorLive: Injecting, @unchecked Sendable {
     private let restoreDelayNanoseconds: UInt64
     private let axTrusted: @Sendable () -> Bool
     private let pasteboard: NSPasteboard
+    private let postPaste: @Sendable () -> Void
 
     init(restoreDelayNanoseconds: UInt64 = 400_000_000,
          axTrusted: @escaping @Sendable () -> Bool = { AXIsProcessTrusted() },
-         pasteboard: NSPasteboard = .general) {
+         pasteboard: NSPasteboard = .general,
+         postPaste: @escaping @Sendable () -> Void = { InjectorLive.postCommandV() }) {
         self.restoreDelayNanoseconds = restoreDelayNanoseconds
         self.axTrusted = axTrusted
         self.pasteboard = pasteboard
+        self.postPaste = postPaste
+    }
+
+    /// Posts a real ⌘V to the session. Injectable so the suite never sends a
+    /// keystroke to whatever app the user has in front: the test host posted
+    /// it for real, and only TCC denying it `PostEvent` kept it from pasting.
+    static func postCommandV() {
+        let src = CGEventSource(stateID: .hidSystemState)
+        let vDown = CGEvent(keyboardEventSource: src, virtualKey: 0x09, keyDown: true)
+        vDown?.flags = .maskCommand
+        let vUp = CGEvent(keyboardEventSource: src, virtualKey: 0x09, keyDown: false)
+        vUp?.flags = .maskCommand
+        vDown?.post(tap: .cgAnnotatedSessionEventTap)
+        vUp?.post(tap: .cgAnnotatedSessionEventTap)
     }
 
     func frontmostBundleID() async -> String? {
@@ -48,13 +64,7 @@ final class InjectorLive: Injecting, @unchecked Sendable {
         }
 
         // 3. Simula ⌘V
-        let src = CGEventSource(stateID: .hidSystemState)
-        let vDown = CGEvent(keyboardEventSource: src, virtualKey: 0x09, keyDown: true)
-        vDown?.flags = .maskCommand
-        let vUp = CGEvent(keyboardEventSource: src, virtualKey: 0x09, keyDown: false)
-        vUp?.flags = .maskCommand
-        vDown?.post(tap: .cgAnnotatedSessionEventTap)
-        vUp?.post(tap: .cgAnnotatedSessionEventTap)
+        postPaste()
         Diag.notice(.inject, "pasted to \(frontBundleID ?? "?") chars=\(text.count)")
 
         // 4. Restauração — ver `scheduleRestore`.

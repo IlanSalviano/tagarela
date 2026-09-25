@@ -41,7 +41,7 @@ Anotadas em commits e [`cleanup-fase1.md`](../04-decisoes/cleanup-fase1.md):
 - **Software peak-normalize gain (até 20×)** — C920 entrega peak ~0.07 em fala normal; sem boost, Whisper transcreve como `...`. Aplicado depois do resample. Item 4 do `cleanup-fase1`.
 - **Stderr instrumentation em runtime** — `FileHandle.standardError.write(...)` em vários módulos foi crítico durante o stress test. Deve virar `Logger.tagarela` antes da Fase 2 (cleanup-fase1 item 3).
 - **TCC permissions injetadas via SQL** — popups nativos de Mic/Camera nunca apareceram pra Tagarela com signing Apple Development + LSUIElement + USB-only mic (C920). Workaround: `INSERT INTO ~/Library/.../TCC.db SELECT ... csreq FROM access WHERE client = 'com.tagarela.Tagarela'`, clonando o BLOB de assinatura de uma entry pré-existente. Detalhes no item 6 do cleanup-fase1.
-- **NSCameraUsageDescription adicionado** ao Info.plist mesmo o app não usar câmera — porque webcams USB combinadas (C920) podem exigir Camera grant pra liberar o áudio.
+- **NSCameraUsageDescription adicionado** ao Info.plist mesmo o app não usar câmera — porque webcams USB combinadas (C920) podem exigir Camera grant pra liberar o áudio. **Removido em 2026-09-25**, junto com o pedido de câmera: sem o entitlement `com.apple.security.device.camera`, o hardened runtime negava o pedido em silêncio (auditoria §5.3; [host de testes inerte](../specs/2026-09-24-tagarela-v1-host-de-testes-inerte-design.md)).
 
 ## Cobertura de testes (XCTest)
 
