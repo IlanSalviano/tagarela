@@ -35,7 +35,8 @@ enum DiagnosticsExporter {
     static func export(_ context: Context = Context(),
                        log: DiagnosticsLog = .shared,
                        destination: URL? = nil,
-                       reveal: Bool = true) throws -> URL {
+                       reveal: Bool = true,
+                       audioInput: @MainActor () -> [String] = DiagnosticsExporter.liveAudioInput) throws -> URL {
         let fm = FileManager.default
         let stamp = DateFormatter()
         stamp.dateFormat = "yyyy-MM-dd-HHmmss"
@@ -52,8 +53,8 @@ enum DiagnosticsExporter {
         }
 
         // 2. Retrato do estado.
-        try snapshot(context).write(to: folder.appendingPathComponent("snapshot.txt"),
-                                    atomically: true, encoding: .utf8)
+        try snapshot(context, audioInput: audioInput)
+            .write(to: folder.appendingPathComponent("snapshot.txt"), atomically: true, encoding: .utf8)
 
         // 3. vmmap — best-effort: falha (ou demora) não pode impedir a exportação.
         if let vmmap = runVmmap() {
@@ -66,7 +67,8 @@ enum DiagnosticsExporter {
         return folder
     }
 
-    static func snapshot(_ context: Context) -> String {
+    static func snapshot(_ context: Context,
+                         audioInput: @MainActor () -> [String] = DiagnosticsExporter.liveAudioInput) -> String {
         var out: [String] = []
         func section(_ title: String) { out.append(""); out.append("## \(title)") }
 
@@ -114,10 +116,7 @@ enum DiagnosticsExporter {
         }
 
         section("áudio")
-        let engine = AVAudioEngine()
-        let format = engine.inputNode.outputFormat(forBus: 0)
-        out.append("inputNode: \(format.sampleRate)Hz / \(format.channelCount)ch")
-        out.append("device de entrada default: \(defaultInputDeviceName())")
+        out.append(contentsOf: audioInput())
 
         section("permissões")
         out.append("AXIsProcessTrusted (Acessibilidade): \(AXIsProcessTrusted())")
@@ -134,6 +133,16 @@ enum DiagnosticsExporter {
     }
 
     // MARK: - sondagens
+
+    /// The input format the capture tap will see. Opening `inputNode` makes
+    /// coreaudiod check the microphone permission for this process — in the
+    /// test host that meant a permission prompt, so tests pass their own probe.
+    static func liveAudioInput() -> [String] {
+        let engine = AVAudioEngine()
+        let format = engine.inputNode.outputFormat(forBus: 0)
+        return ["inputNode: \(format.sampleRate)Hz / \(format.channelCount)ch",
+                "device de entrada default: \(defaultInputDeviceName())"]
+    }
 
     private static func defaultInputDeviceName() -> String {
         var deviceID = AudioDeviceID(0)

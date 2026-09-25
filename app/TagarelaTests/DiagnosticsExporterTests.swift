@@ -19,15 +19,22 @@ final class DiagnosticsExporterTests: XCTestCase {
                                     clock: { Date(timeIntervalSince1970: 3_600) })
         health.noteEmptyTranscription()
 
+        // The live probe opens the default input, and coreaudiod then checks the
+        // microphone for the test host — a permission prompt on the user's
+        // machine. The suite passes its own probe.
         let folder = try DiagnosticsExporter.export(
             .init(health: health, loadedModelName: "large-v3_turbo", modelDownloaded: true),
-            log: log, destination: tmp, reveal: false)
+            log: log, destination: tmp, reveal: false,
+            audioInput: { ["inputNode: 48000.0Hz / 1ch (sonda de teste)"] })
 
         XCTAssertTrue(fm.fileExists(atPath: folder.appendingPathComponent("tagarela.log").path),
                       "log rotativo tem que ser copiado")
         let snapshot = try String(contentsOf: folder.appendingPathComponent("snapshot.txt"),
                                   encoding: .utf8)
         XCTAssertTrue(snapshot.contains("## saúde"))
+        XCTAssertTrue(snapshot.contains("## áudio"))
+        XCTAssertTrue(snapshot.contains("inputNode: 48000.0Hz / 1ch (sonda de teste)"),
+                      "a exportação usa a sonda que recebe")
         XCTAssertTrue(snapshot.contains("## permissões"))
         XCTAssertTrue(snapshot.contains("## event taps deste processo"))
         XCTAssertTrue(snapshot.contains("uptime do app: 1h 0m"), "veio:\n\(snapshot)")

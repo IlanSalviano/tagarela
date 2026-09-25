@@ -235,7 +235,11 @@ final class AppContainer: ObservableObject {
 
         wireHotkeyToPipeline()
         wirePipelineToAppState()
-        wirePermissionsToAppState()
+        // The permission watcher starts the hotkey on its own once Input
+        // Monitoring is granted — not something the test host may do.
+        if !RuntimeEnvironment.isRunningTests {
+            wirePermissionsToAppState()
+        }
         wireHealthCheckerInvalidation(prefs: prefs, healthChecker: healthChecker)
         // NOTE: fire-and-forget. Se o user dispara hotkey muito cedo (antes do
         // fetch completar) e o style selecionado for custom, styleProvider
@@ -255,7 +259,12 @@ final class AppContainer: ObservableObject {
             }
             .store(in: &cancellables)
 
-        if !showOnboarding {
+        if RuntimeEnvironment.isRunningTests {
+            // Test host: no permission prompts, no hotkey, no model load. A
+            // granted microphone prompt here moved the grant away from the
+            // release (see `RuntimeEnvironment`).
+            Diag.info(.app, "test host: launch effects skipped")
+        } else if !showOnboarding {
             ensureMicPermission()
             startHotkeyServiceLogging()
             requestAccessibilityIfMissing()
@@ -289,20 +298,16 @@ final class AppContainer: ObservableObject {
 
     private func ensureMicPermission() {
         let status = AVCaptureDevice.authorizationStatus(for: .audio)
-        let videoStatus = AVCaptureDevice.authorizationStatus(for: .video)
-        Diag.info(.permissions, "mic status=\(status.rawValue) video status=\(videoStatus.rawValue) (0=notDetermined, 1=restricted, 2=denied, 3=authorized)")
+        Diag.info(.permissions, "mic status=\(status.rawValue) (0=notDetermined, 1=restricted, 2=denied, 3=authorized)")
         guard status != .authorized else { return }
 
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
         Diag.info(.permissions, "activationPolicy promoted to .regular pra prompt")
 
+        // No camera request here anymore: without the camera entitlement the
+        // hardened runtime denied it silently (audit §5.3; TCC authReason=5).
         Task {
-            // Tentativa 0: video. C920 é camera+mic combinado; em macOS 26
-            // o device pode exigir Camera grant pra liberar o audio também.
-            let okVideo = await AVCaptureDevice.requestAccess(for: .video)
-            Diag.info(.permissions, "video requestAccess -> \(okVideo)")
-
             // Tentativa 1: audio
             let ok1 = await AVCaptureDevice.requestAccess(for: .audio)
             Diag.info(.permissions, "mic requestAccess -> \(ok1)")

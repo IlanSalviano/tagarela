@@ -1,6 +1,6 @@
 ---
 data: 2026-09-24
-status: em implementação (branch `fix-host-de-testes-inerte`)
+status: implementado e verificado pelos logs (2026-09-25)
 origem: aceite da v1.0.6 — o microfone foi pedido de novo depois da atualização
 resolve: follow-up da *Reincidência em 2026-09-24* no cleanup-fase3; parte do achado de câmera da auditoria §5.2/§5.3
 ---
@@ -73,11 +73,13 @@ testes, e a release pede de volta no launch seguinte — foi o que aconteceu às
   existindo mas sem uso, e verdes depois de ligado.
 - Durante cada execução da suíte, no log do TCC: **nenhum**
   `AUTHREQ_PROMPTING` cujo binário seja o do DerivedData, **nenhum** pedido de
-  microfone não-preflight do host de testes, e nenhum pedido do coreaudiod em
-  nome dele.
+  microfone não-preflight do host de testes, nenhum pedido do coreaudiod em
+  nome dele e — depois de ligado o `postPaste` — **nenhum** pedido `PostEvent`
+  dele, que é o rastro de um ⌘V real.
 - No log unificado do host de testes: a linha `test host: launch effects
-  skipped`, e nenhuma de `loaded model`, `pedido de Acessibilidade`, `hotkey
-  service` ou `pasted to`.
+  skipped`, e nenhuma de `loaded model`, `pedido de Acessibilidade` ou `hotkey
+  service`. (A linha `pasted to` continua aparecendo nos testes do injetor: ela
+  é logada depois do envio, real ou falso — por isso o ⌘V se confere no TCC.)
 
 Sem aceite manual: um pedido do host de testes é condição para ele tomar a
 concessão, e a ausência de pedidos se lê no log com mais certeza do que uma
@@ -103,3 +105,47 @@ depois da suíte — o usuário vê no próximo launch.
    índice.
 8. Merge na `main` (`--no-ff`), suíte na main mesclada, `lsregister -u` no app
    do DerivedData, push.
+
+## Implementação (2026-09-25)
+
+- `App/RuntimeEnvironment.swift` (novo) com `isRunningTests`; o `Diag` passou
+  a usá-lo no lugar da cópia privada.
+- `AppContainer`: sob testes, loga `test host: launch effects skipped` e não
+  roda os efeitos de launch nem o observador de permissões. O
+  `ensureMicPermission` perdeu o pedido de câmera, e o `Info.plist` perdeu o
+  `NSCameraUsageDescription`.
+- `TagarelaApp`: `shouldOpenOnboarding` é falso sob testes.
+- `DiagnosticsExporter`: `export`/`snapshot` recebem `audioInput:` (padrão
+  `liveAudioInput()`, a sondagem de antes).
+- `InjectorLive`: recebe `postPaste:` (padrão `postCommandV()`, o `CGEvent` de
+  antes).
+- Testes: `RuntimeEnvironmentTests` (novo); `InjectorTests` com o registrador
+  em todos os casos, mais `test_pasteIsSentExactlyOnceWhenAccessibilityGranted`
+  e a verificação de zero ⌘V sem Acessibilidade; `DiagnosticsExporterTests`
+  passa a sonda falsa e confere que ela foi usada. Suíte **257 → 259**, verde
+  (mais 1 pulado, a integração de idioma, que só roda com
+  `TAGARELA_INTEGRATION=1`).
+
+**Execução vermelha (2026-09-24, 23:49–23:50)**, com o `postPaste` já existindo
+mas sem uso: falhou só `test_pasteIsSentExactlyOnceWhenAccessibilityGranted`
+(`0` ≠ `1`). No log do TCC, **nenhuma janela**; o host de testes fez só
+consultas (preflight), o microfone respondeu *desconhecido* — a concessão
+continuava com a release — e o coreaudiod não pediu nada em nome dele. O único
+pedido real foi o `PostEvent` do ⌘V ainda verdadeiro, negado.
+
+**Execução verde (2026-09-25, 18:59–19:00):** 259 passam. No log do TCC,
+**nenhuma janela**, **nenhum** pedido de microfone não-preflight, **nenhum**
+pedido do coreaudiod em nome do host e **nenhum** `PostEvent` — o host só
+consultou Acessibilidade, Contatos, Monitoramento de Entrada e Microfone. No log
+unificado do host: a linha da guarda, e nenhuma de `loaded model`, `pedido de
+Acessibilidade` ou `hotkey service`.
+
+**Divergências do design:**
+- O critério "nenhum `pasted to` no log do host" estava errado: a linha é logada
+  depois do envio, real ou falso. A prova do ⌘V ficou no TCC (nenhum
+  `PostEvent`), e o critério foi corrigido acima.
+- O build acusa `reference to captured var 'self' in concurrently-executing
+  code` no `scheduleRestore` do `InjectorLive`. Esse código não mudou, e o
+  warning já aparece em oito logs de build anteriores a esta mudança, sempre que o arquivo é
+  recompilado. Fica com os warnings do Swift 6, no backlog P2 do plano da Fase
+  5.

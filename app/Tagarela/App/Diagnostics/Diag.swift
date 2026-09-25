@@ -53,12 +53,8 @@ enum Diag {
     /// apareciam em `~/Library/Logs/Tagarela/tagarela.log` sem nunca terem
     /// acontecido em uso real. Numa fase inteira construída para que esse
     /// arquivo seja a evidência, isso envenenaria a próxima investigação.
-    private static let isRunningTests: Bool =
-        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
-            || NSClassFromString("XCTestCase") != nil
-
     private static func persist(level: String, category: Category, message: String) {
-        guard !isRunningTests else { return }
+        guard !RuntimeEnvironment.isRunningTests else { return }
         DiagnosticsLog.shared.append(level: level, category: category.rawValue, message: message)
     }
 

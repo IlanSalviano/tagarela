@@ -114,6 +114,9 @@ preferências **sem segredos**, formato do `inputNode` e nome do device de entra
 default, `AXIsProcessTrusted`, `IOHIDCheckAccess`, status do microfone, e os
 event taps **do próprio processo** (responde "a hotkey ainda está viva?" sem
 expor os taps de outros apps). A API key mora no Keychain e não é lida.
+(Desde 2026-09-25 a sondagem de áudio é parâmetro de `export`/`snapshot`: abrir
+o `inputNode` faz o coreaudiod checar o microfone, e no host de testes isso
+virava janela de permissão — a suíte passa uma sonda falsa.)
 
 **Menu (`StateRow`)** ganha a linha de saúde abaixo do sub-label, só depois do
 primeiro ditado da sessão. De passagem, os sub-labels que a auditoria §5.3
@@ -555,6 +558,11 @@ ocorreram. `Diag` agora detecta execução sob XCTest
 (`XCTestConfigurationFilePath` ou presença de `XCTestCase`) e pula a escrita em
 arquivo. Verificado: o log ficou em 1966 linhas antes e depois de uma execução
 completa da suíte.
+
+Desde 2026-09-25 essa checagem mora em `RuntimeEnvironment.isRunningTests` e
+também desliga, no host de testes, os efeitos de launch do `AppContainer`
+(pedidos de permissão, hotkey, carga do modelo) — ver [host de testes
+inerte](../specs/2026-09-24-tagarela-v1-host-de-testes-inerte-design.md).
 
 ### Build local instalado
 

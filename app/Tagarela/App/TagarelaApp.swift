@@ -45,8 +45,10 @@ struct TagarelaApp: App {
             .environmentObject(container.appState)
             .environmentObject(container.prefs)
         } label: {
+            // The test host never opens onboarding (see `RuntimeEnvironment`).
             StatusBarIcon(appState: container.appState,
-                          shouldOpenOnboarding: container.showOnboarding)
+                          shouldOpenOnboarding: container.showOnboarding
+                              && !RuntimeEnvironment.isRunningTests)
         }
         .menuBarExtraStyle(.window)
 
