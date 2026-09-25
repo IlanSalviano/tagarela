@@ -117,27 +117,31 @@ feliz.
       de milissegundos descartada em silêncio.
 - [ ] **C4 — Esc cancela** durante gravação e durante "transcrevendo".
 
-**Resultado: parcial (2026-09-24), validado em produção por acidente.**
+**Resultado: C2 confirmado; C1, C3 e C4 pendentes (revisto em 2026-09-24).**
 
-Ao instalar o build local da Fase 5, a assinatura mudou (Apple Development em
-vez do Developer ID) e o Input Monitoring caiu — o designated requirement é
-outro. O `tccutil reset ListenEvent com.tagarela.Tagarela` respondeu
-**"Successfully reset" duas vezes**, confirmando ao vivo a duplicação de
-registros TCC que o [`cleanup-fase3`](../../04-decisoes/cleanup-fase3.md)
-descreve.
+> ⚠️ **Correção de um registro anterior.** Uma versão deste bloco afirmou que o
+> re-start da hotkey ao reconceder Input Monitoring (o mecanismo do C1) tinha sido
+> "validado em produção por acidente", com base nesta linha do log:
+>
+> ```
+> 23:51:22.721 NOTICE [hotkey] Input Monitoring voltou a granted — reiniciando o tap
+> ```
+>
+> **Estava errado.** Aquilo foi um **launch novo**, não o app vivo detectando uma
+> transição: o observador comparava com o snapshot anterior, que começa `nil`, então
+> o primeiro snapshot de *todo* launch contava como "voltou a granted". A hotkey
+> subiu no startup comum porque a permissão já estava concedida. O defeito do
+> observador foi corrigido — a checagem agora é por estado ("permissão concedida e
+> nenhum tap ativo"), não por transição —, mas o **C1 continua sem validação**.
 
-Depois de reconceder, com o app **já rodando**, o log registrou:
+O que de fato foi observado em 2026-09-24, ao instalar o build local:
 
-```
-23:51:22.721 NOTICE [hotkey] Input Monitoring voltou a granted — reiniciando o tap
-23:51:22.722 NOTICE [hotkey] started for right ⌥
-```
-
-Ou seja: o observador de permissões do `AppContainer` (Tarefa 7) detectou a
-transição e reergueu o tap **sem relaunch**, que é precisamente o mecanismo que
-o C1 existe para testar. Não é o C1 literal — a permissão caiu por troca de
-assinatura, não por revogação manual — mas o caminho de código exercitado é o
-mesmo, e em produção.
+- A assinatura mudou (Apple Development no lugar do Developer ID) e o Input
+  Monitoring caiu — o designated requirement é outro.
+- `tccutil reset ListenEvent com.tagarela.Tagarela` respondeu **"Successfully
+  reset" duas vezes** — e o mesmo para `Accessibility` —, confirmando ao vivo a
+  duplicação de registros TCC do [`cleanup-fase3`](../../04-decisoes/cleanup-fase3.md).
+- **C2 confirmado:** um tap só, `enabled=YES`.
 
 **C1, C3 e C4 seguem pendentes** de execução deliberada.
 

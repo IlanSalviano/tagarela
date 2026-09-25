@@ -485,20 +485,33 @@ final class AppContainer: ObservableObject {
     private func wirePermissionsToAppState() {
         let stream = permissions.makeSnapshots()
         Task { [weak self] in
-            var previous: PermissionsSnapshot?
+            var lastAttempt: ContinuousClock.Instant?
             for await snap in stream {
                 guard let self else { return }
-                // Input Monitoring reconcedido: o tap antigo foi invalidado e
-                // não avisa ninguém — a hotkey ficaria morta até o relaunch
-                // (S4 da auditoria §3.4). `start()` é idempotente.
-                if previous?.inputMonitoring != .granted, snap.inputMonitoring == .granted {
+                // Input Monitoring concedido e nenhum tap vivo: a hotkey está
+                // morta (S4 da auditoria §3.4) — sobe de novo. `start()` é
+                // idempotente.
+                //
+                // Checagem por ESTADO, não por transição. A versão por
+                // transição partia de `previous == nil`, então o primeiro
+                // snapshot de todo launch contava como "voltou a granted" e
+                // reiniciava o tap à toa — e foi essa linha, lida no log em
+                // campo, que fez parecer validado um re-start ao vivo que não
+                // tinha acontecido. De bônus, cobre qualquer outro motivo de
+                // tap morto com a permissão em dia. Tentativas a cada 10 s no
+                // máximo, para uma falha persistente não inundar o log.
+                let tapMissing = await MainActor.run {
+                    snap.inputMonitoring == .granted && !self.hotkeyService.isTapEnabled
+                }
+                let throttled = lastAttempt.map { $0.duration(to: .now) < .seconds(10) } ?? false
+                if tapMissing, !throttled {
+                    lastAttempt = .now
                     await MainActor.run {
-                        Diag.notice(.hotkey, "Input Monitoring voltou a granted — reiniciando o tap")
+                        Diag.notice(.hotkey, "Input Monitoring concedido e nenhum tap ativo — iniciando a hotkey")
                         do { try self.hotkeyService.start() }
-                        catch { Diag.error(.hotkey, "re-start falhou: \(String(describing: error))") }
+                        catch { Diag.error(.hotkey, "start falhou: \(String(describing: error))") }
                     }
                 }
-                previous = snap
                 await MainActor.run {
                     self.appState.permissionsAllGranted = snap.allGranted
                 }
