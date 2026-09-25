@@ -12,16 +12,17 @@ struct PreferencesRoot: View {
     let injector: Injecting
     let swapCoordinator: WhisperModelSwapCoordinator
     let modelStore: WhisperModelStore
+    @ObservedObject var navigator: PreferencesNavigator
+    let permissions: PermissionService
     var health: PipelineHealth?
     var loadedModelName: () -> String? = { nil }
     var modelDownloaded: () -> Bool? = { nil }
 
-    @State private var selection: PrefsSection = .geral
-
     var body: some View {
         NavigationSplitView {
-            List(selection: $selection) {
+            List(selection: $navigator.selection) {
                 NavigationLink(value: PrefsSection.geral) { Label(PrefsSection.geral.label, systemImage: "gearshape") }
+                NavigationLink(value: PrefsSection.permissoes) { Label(PrefsSection.permissoes.label, systemImage: "lock.shield") }
                 NavigationLink(value: PrefsSection.transcricao) { Label(PrefsSection.transcricao.label, systemImage: "mic.and.signal.meter") }
 
                 Section(header: Text(String(localized: "preferences.section.refiner.group", defaultValue: "Refiner"))) {
@@ -39,8 +40,9 @@ struct PreferencesRoot: View {
             }
             .navigationSplitViewColumnWidth(min: 180, ideal: 200, max: 240)
         } detail: {
-            switch selection {
+            switch navigator.selection {
             case .geral:         GeneralView(prefs: prefs, indicatorPanel: indicatorPanel)
+            case .permissoes:    PermissionsView(service: permissions)
             case .transcricao:
                 TranscriptionView(prefs: prefs,
                                   swapCoordinator: swapCoordinator,

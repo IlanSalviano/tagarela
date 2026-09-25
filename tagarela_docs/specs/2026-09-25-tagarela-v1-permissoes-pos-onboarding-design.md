@@ -1,6 +1,6 @@
 ---
 data: 2026-09-25
-status: em implementação (branch `fix-permissoes`)
+status: implementado (branch `fix-permissoes`) — aceite manual pendente
 origem: relato de campo do usuário após instalar a v1.0.4
 ---
 
@@ -105,3 +105,19 @@ abrir o app:
 - [ ] A seção mostra o estado certo de cada uma e muda ao vivo ao conceder.
 - [ ] O botão de cada permissão faltante leva ao painel exato dos Ajustes.
 - [ ] Com as três concedidas, o aviso some do menu e um ditado cola normalmente.
+
+## Implementação (2026-09-25)
+
+Os seis passos do plano entraram como desenhados. Notas:
+
+- **`PermissionAction`** é o único pedaço com lógica própria — +4 testes. O resto
+  é chamada de API do sistema e SwiftUI, coberto pelo aceite manual.
+- O pedido de Acessibilidade usa a literal `"AXTrustedCheckOptionPrompt"` no lugar
+  da global C `kAXTrustedCheckOptionPrompt`, que o modo estrito de concorrência do
+  Swift trata como estado mutável compartilhado.
+- A seção fica logo abaixo de **Geral**: é para onde o usuário vai quando algo
+  quebra, então precisa estar à vista.
+- Pedidos de Acessibilidade e de Monitoramento de Entrada agora deixam linha
+  `.notice` no log de diagnóstico.
+
+Suíte 253 → **257**, verde.

@@ -12,6 +12,7 @@ struct MenuBarContent: View {
     var onSelectOpenAINeedsKey: (RefinerKind) -> Void = { _ in }
     var onExplicitConfigureKey: () -> Void = {}
     var onOpenPreferences: () -> Void = {}
+    var onOpenPermissions: () -> Void = {}
     /// Modelo Whisper carregado agora — resolvido em runtime porque muda com o swap.
     var loadedModelName: () -> String? = { nil }
     /// Onboarding fechado no ⌘W sem concluir deixava o app "zumbi": a hotkey e
@@ -46,6 +47,7 @@ struct MenuBarContent: View {
                      loadedModelName: loadedModelName(),
                      refinerLabel: refinerLabel,
                      permissionsPending: !appState.permissionsAllGranted,
+                     onResolvePermissions: onOpenPermissions,
                      modelLoading: !appState.whisperModelReady)
 
             Divider().background(DS.Color.hairline)

@@ -9,6 +9,7 @@ import Sparkle
 final class AppContainer: ObservableObject {
     let appState = AppState()
     let health = PipelineHealth()
+    let preferencesNavigator = PreferencesNavigator()
     private var isRecoveringTranscriber = false
     let permissions: PermissionService
     var transcriber: Transcribing
@@ -255,7 +256,23 @@ final class AppContainer: ObservableObject {
         if !showOnboarding {
             ensureMicPermission()
             startHotkeyServiceLogging()
+            requestAccessibilityIfMissing()
             loadModelLogging(prefs.whisperModelName)
+        }
+    }
+
+    /// Das três permissões, a Acessibilidade era a única que o app nunca
+    /// pedia: só consultava, e o usuário descobria que faltava quando o
+    /// primeiro ditado não colava (relato de campo, 2026-09-25). O pedido
+    /// mostra o diálogo do macOS e põe o app na lista dos Ajustes. O atraso
+    /// curto evita que ele apareça no mesmo instante do pedido de microfone.
+    private func requestAccessibilityIfMissing() {
+        guard permissions.snapshot().accessibility != .granted else { return }
+        let permissions = self.permissions
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 1_500_000_000)
+            guard permissions.snapshot().accessibility != .granted else { return }
+            permissions.requestAccessibility()
         }
     }
 
@@ -317,8 +334,11 @@ final class AppContainer: ObservableObject {
         }
     }
 
+    /// `section` abre a janela direto numa seção — o aviso "permissões
+    /// pendentes" do menu usa isso para cair em Permissões.
     @MainActor
-    func openPreferences() {
+    func openPreferences(section: PrefsSection? = nil) {
+        if let section { preferencesNavigator.selection = section }
         let view = PreferencesRoot(
             prefs: prefs,
             customStore: customStyleStore,
@@ -336,6 +356,8 @@ final class AppContainer: ObservableObject {
             injector: injector,
             swapCoordinator: swapCoordinator,
             modelStore: modelStore,
+            navigator: preferencesNavigator,
+            permissions: permissions,
             health: health,
             loadedModelName: { [weak self] in self?.transcriber.loadedModelName },
             modelDownloaded: { [weak self] in

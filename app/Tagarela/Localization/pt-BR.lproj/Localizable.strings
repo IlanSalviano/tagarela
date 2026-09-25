@@ -40,7 +40,7 @@
 "pipeline.sub.refining.unknown"    = "refinador";
 "pipeline.sub.refining.none"       = "sem refinador";
 "menubar.health.summary"  = "%lld ditados · %lld vazios · %lld curtos · %@";
-"menubar.permissions.pending" = "permissões pendentes — abra Preferências";
+"menubar.permissions.pending" = "permissões pendentes — resolver…";
 "menubar.onboarding.resume"   = "Concluir configuração…";
 
 // Onboarding — Welcome (passo 1)
@@ -277,6 +277,25 @@
 "toast.refiner.malformedResponse"      = "Resposta malformada — usando texto cru.";
 "toast.injection.failed"               = "Cola falhou — o ditado está salvo no histórico.";
 "toast.history.saveFailed"             = "Histórico não salvou.";
-"toast.permission.microphone"          = "Microfone negado — abra Configurações.";
-"toast.permission.accessibility"       = "Acessibilidade negada — o ditado está no histórico e na área de transferência.";
-"toast.permission.inputMonitoring"     = "Input Monitoring negado — abra Configurações.";
+"toast.permission.microphone"          = "Microfone negado — veja Preferências › Permissões.";
+"toast.permission.accessibility"       = "Sem Acessibilidade: o ditado ficou no clipboard e no histórico. Veja Preferências › Permissões.";
+"toast.permission.inputMonitoring"     = "Monitoramento de Entrada negado — veja Preferências › Permissões.";
+
+/* Preferências › Permissões — relato de campo de 2026-09-25: depois do
+   onboarding não havia lugar no app para resolver permissões. */
+"preferences.section.permissoes"      = "Permissões";
+"permissions.intro"                   = "O tagarela precisa de três permissões do macOS. Sem qualquer uma delas, uma parte do ditado para de funcionar.";
+"permissions.footer"                  = "O estado aqui atualiza sozinho quando você concede algo nos Ajustes.";
+"permissions.microphone.title"        = "Microfone";
+"permissions.microphone.purpose"      = "Pra ouvir o que você dita. O áudio nunca é salvo.";
+"permissions.inputMonitoring.title"   = "Monitoramento de Entrada";
+"permissions.inputMonitoring.purpose" = "Pra perceber a tecla ⌥ direito com qualquer app em primeiro plano. Sem ela, o atalho não funciona.";
+"permissions.accessibility.title"     = "Acessibilidade";
+"permissions.accessibility.purpose"   = "Pra colar o texto onde está o cursor (⌘V). Sem ela, o ditado fica só no clipboard e no histórico.";
+"permissions.accessibility.hint"      = "Nos Ajustes do macOS 27 ela pode aparecer como “Device Control and Data Access”.";
+"permissions.status.granted"          = "concedida";
+"permissions.status.denied"           = "negada";
+"permissions.status.needed"           = "falta conceder";
+"permissions.action.request"          = "Pedir acesso";
+"permissions.action.grant"            = "Conceder…";
+"permissions.action.openSettings"     = "Abrir Ajustes";

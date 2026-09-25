@@ -78,6 +78,8 @@ Identidade, tokens, tipografia, cores, copy pt-BR, catálogo de componentes e bu
 - [`2026-05-27-tagarela-v1-fase4-multi-idioma-design.md`](./specs/2026-05-27-tagarela-v1-fase4-multi-idioma-design.md) — design da Fase 4 (idioma de transcrição configurável + auto-detecção default). **Status: implementado** (suíte 186 verde; aceite manual pendente). Decisão em ADR-0006.
 - [`2026-09-07-tagarela-v1-fase5-robustez-sessao-longa-plan.md`](./specs/2026-09-07-tagarela-v1-fase5-robustez-sessao-longa-plan.md) — plano da Fase 5 (robustez em sessão longa), escrito para ser retomado em outro chat. O "design" é a [auditoria de 2026-09-07](./02-arquitetura/10-auditoria-2026-09-07.md). **Status: v1.0.4 publicada; validação de campo em curso.** 13 tarefas: diagnóstico persistido (`Diag` + arquivo rotativo + `PipelineHealth` + exportação), captura de áudio self-healing, pipeline com falhas visíveis e recovery do transcriber, métricas + carga local do modelo, permissões multicast, hotkey com watchdog, injeção sem perda, correções pontuais, localização, ordem do appcast no release, aceite + v1.0.4, validação em campo. Inclui a **Regra de coexistência de builds** (não rodar o host de testes com a release aberta).
 
+- [`2026-09-25-tagarela-v1-permissoes-pos-onboarding-design.md`](./specs/2026-09-25-tagarela-v1-permissoes-pos-onboarding-design.md) — relato de campo após a v1.0.4: só o microfone era pedido, e os avisos mandavam para Preferências, onde não havia nada sobre permissões. Pedido explícito de Acessibilidade, seção **Preferências › Permissões** com estado ao vivo e um botão por permissão, e o aviso do menu virando atalho para ela. **Status: implementado, aceite manual pendente.**
+
 ---
 
 ## Convenções
