@@ -397,7 +397,17 @@ Código fechado em 2026-09-07; todos os scripts passam `bash -n`. **Smoke test n
     | Chave EdDSA do Sparkle (`~/.tagarela-release/`) | ❌ ausente |
     | `mtbflow-ci.keychain-db` | 🔒 trancado — não inspecionado |
 
-    Caminhos: importar o `.p12` (cert + chave) exportado da máquina onde o par foi gerado; ou verificar o keychain `mtbflow-ci`, que está trancado e pode conter a chave; ou cortar a release na outra máquina. Os três secrets do `.env` (Apple ID, app-specific password, caminho da chave EdDSA) precisam ser recriados de qualquer forma. Instalar em `/Applications`, confirmar update via Sparkle a partir da v1.0.3 (ADR-0007: `sparkle:version` = 5).
+    Caminhos: importar o `.p12` (cert + chave) exportado da máquina onde o par foi gerado; ou verificar o keychain `mtbflow-ci`, que está trancado e pode conter a chave; ou cortar a release na outra máquina. Os três secrets do `.env` (Apple ID, app-specific password, caminho da chave EdDSA) precisam ser recriados de qualquer forma.
+
+    **Atualização 2026-09-25 — certificado resolvido, com um certificado novo.** O keychain `mtbflow-ci` foi aberto pelo usuário: contém um **Apple Distribution** (marcas `…6.1.7`/`…6.1.4`, App Store), não um Developer ID (`…6.1.13`) — não serve. Emitido então um **Developer ID Application novo**, SHA-1 `3CAA2CE08BADECE2D96068A105494273F064C7B2`, válido até 2031-09-17, chave privada `Ilan Melo Salviano` no keychain de login; CSR e `.cer` guardados em `/Volumes/Brain/Dev/.certs/`.
+
+    O ponto que tornou isso seguro: o designated requirement da v1.0.3 **não** fixa o certificado, só o tipo e o time — `certificate leaf[field.1.2.840.113635.100.6.1.13] and certificate leaf[subject.OU] = "22CZXFP6W7"`. Um app assinado com o certificado novo foi verificado com **DR idêntico** ao da v1.0.3, então permissões de TCC e compatibilidade de assinatura do Sparkle se mantêm. O certificado antigo **não** foi revogado: os DMGs v1.0.0–v1.0.3 publicados foram assinados com ele.
+
+    `project.yml` (Release) aponta para o hash novo; `~/.tagarela-release.env` criado (600) com `APPLE_TEAM_ID` e `DEVELOPER_ID_APP_SHA1`.
+
+    **Ainda com o usuário** (o modo automático do agente bloqueia gravação de chave privada em keychain, e senhas não são digitadas pelo agente): gerar a chave EdDSA nova do Sparkle (`generate_keys`, e exportá-la para `~/.tagarela-release/`), preencher `APPLE_ID` e `APPLE_APP_SPECIFIC_PASSWORD` no `.env`, e exportar o backup `.p12` do Developer ID novo. Depois: `SUPublicEDKey` novo no `Info.plist`. Consequência da chave nova do Sparkle: o app instalado espera a chave antiga, então a v1.0.4 é instalada **uma vez à mão** pelo DMG; dali em diante o Sparkle volta a funcionar.
+
+    **Correção de registro:** uma busca ampla por `.p12`/chave do Sparkle feita em 2026-09-24 começava com `timeout`, comando que não existe no macOS; o erro ficou escondido por `2>/dev/null` e a busca nunca rodou. Refeita em 2026-09-25 sem esse defeito: de fato não há `.p12`, chave do Sparkle nem `.env` de release nesta máquina. Instalar em `/Applications`, confirmar update via Sparkle a partir da v1.0.3 (ADR-0007: `sparkle:version` = 5).
 - [ ] Desregistrar builds locais (`lsregister -u`), conferir permissões da release.
 
 ---
