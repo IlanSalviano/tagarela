@@ -70,7 +70,7 @@ if [ "$1" != "initial" ]; then
     # A tag que importa é a do GitHub: uma tentativa que morreu entre criar a
     # tag local e publicar deixa a tag só aqui, e olhar a local faria bumpar
     # de novo (1.0.4 → 1.0.5 sem release no meio) — bug da primeira execução
-    # real, 2026-09-25.
+    # real, 2026-09-24.
     if [[ "$head_subject" == "chore(release): bump "* ]] \
         && ! git ls-remote --exit-code --tags origin "refs/tags/v$pending_version" >/dev/null 2>&1; then
         echo "release.sh: HEAD já é o bump de v$pending_version e a tag não está no GitHub — reaproveitando"
@@ -137,7 +137,7 @@ trap rollback_hint ERR
 
 # O `gh release create` exige a tag já no GitHub (sem ela, recusa com "tag
 # exists locally but has not been pushed" — foi o que derrubou a primeira
-# execução real, 2026-09-25). Sobe SÓ a tag: a main, com o appcast, continua
+# execução real, 2026-09-24). Sobe SÓ a tag: a main, com o appcast, continua
 # indo só no fim, depois de o DMG estar comprovadamente no ar. Tag no remoto
 # não afeta cliente nenhum — o Sparkle lê o appcast da main.
 git push origin "refs/tags/v$version"

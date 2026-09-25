@@ -1,6 +1,6 @@
 ---
-data: 2026-09-25
-status: implementado e aceito (2026-09-25) — publicado na v1.0.5
+data: 2026-09-24
+status: implementado e aceito (2026-09-24) — publicado na v1.0.5
 origem: relato de campo do usuário após instalar a v1.0.4
 ---
 
@@ -8,7 +8,7 @@ origem: relato de campo do usuário após instalar a v1.0.4
 
 ## Contexto
 
-Relato de campo, 2026-09-25, logo após instalar a v1.0.4 com as permissões
+Relato de campo, 2026-09-24, logo após instalar a v1.0.4 com as permissões
 zeradas (a assinatura mudou do build local para o Developer ID):
 
 > "O processo de pedir as permissões ainda não está legal… não pede todas. A de
@@ -95,7 +95,7 @@ implementado.
 
 ## Aceite manual
 
-**Resultado: `ok` (2026-09-25).** Executado pelo usuário no build local `1.0.5-dev` (Developer ID, mesma identidade da v1.0.4), com as três permissões zeradas via `tccutil`: "Funcionou tudo."
+**Resultado: `ok` (2026-09-24).** Executado pelo usuário no build local `1.0.5-dev` (Developer ID, mesma identidade da v1.0.4), com as três permissões zeradas via `tccutil`: "Funcionou tudo."
 
 Com o app fechado, zerar as três permissões
 (`tccutil reset Microphone|ListenEvent|Accessibility com.tagarela.Tagarela`) e
@@ -108,7 +108,7 @@ abrir o app:
 - [x] O botão de cada permissão faltante leva ao painel exato dos Ajustes.
 - [x] Com as três concedidas, o aviso some do menu e um ditado cola normalmente.
 
-## Implementação (2026-09-25)
+## Implementação (2026-09-24)
 
 Os seis passos do plano entraram como desenhados. Notas:
 
@@ -124,7 +124,7 @@ Os seis passos do plano entraram como desenhados. Notas:
 
 Suíte 253 → **257**, verde.
 
-## Publicação — v1.0.5 (2026-09-25)
+## Publicação — v1.0.5 (2026-09-24)
 
 https://github.com/IlanSalviano/tagarela/releases/tag/v1.0.5 — o `release.sh`
 passou as sete etapas **de primeira**, confirmando o conserto da ordem

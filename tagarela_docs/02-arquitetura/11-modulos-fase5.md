@@ -1,6 +1,6 @@
 ---
 data: 2026-09-07
-status: implementado — mergeado na main (`7d1c9c0`) e publicado como v1.0.4 em 2026-09-25
+status: implementado — mergeado na main (`7d1c9c0`) e publicado como v1.0.4 em 2026-09-24
 fase: 5-robustez-sessao-longa
 origem: specs/2026-09-07-tagarela-v1-fase5-robustez-sessao-longa-plan.md
 design: 02-arquitetura/10-auditoria-2026-09-07.md
@@ -481,7 +481,7 @@ aceite manual, antes da v1.0.4.
 
 Todos os scripts passam `bash -n`.
 
-**Primeira execução real (2026-09-25) — dois bugs, pegos do jeito seguro.** O
+**Primeira execução real (2026-09-24) — dois bugs, pegos do jeito seguro.** O
 `release.sh patch` passou por bump, build, assinatura, notarização (`Accepted`)
 e DMG, e parou na etapa 6: o `gh release create` exige a tag **já no GitHub**, e
 a reordenação tinha movido todo push para o fim. Nada foi publicado — sem release,
@@ -621,7 +621,7 @@ de fora (o usuário, provavelmente); com o conserto, o Automático passa a acert
 modelo real, pulado sem `TAGARELA_INTEGRATION=1`). Suíte **250 → 254**
 (253 verdes + 1 pulado); declarados = executados, sem testes órfãos.
 
-**Confirmado em campo (2026-09-25):** o usuário ditou em português no modo
+**Confirmado em campo (2026-09-24):** o usuário ditou em português no modo
 Automático e o log registrou `auto=pt→pt`, logprob −0,052, 1,5 s para 6 s de
 áudio, colado no Claude desktop. Detalhe e números em
 [ADR-0006](../04-decisoes/ADR-0006-multi-idioma-transcricao.md).

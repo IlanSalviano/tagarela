@@ -197,7 +197,7 @@ final class AppContainer: ObservableObject {
 
         // Sparkle: checagem automática no launch + a cada SUScheduledCheckInterval
         // (24h), e o item "Buscar atualizações…" do menu para checar na hora
-        // (revisão de 2026-09-25 da decisão nº 3 da Fase 3).
+        // (revisão de 2026-09-24 da decisão nº 3 da Fase 3).
         // Inicializado aqui (antes do reassign de swapCoordinator com [weak self])
         // pra que todas as stored properties estejam atribuídas antes de qualquer
         // closure capturar `self`.
@@ -265,7 +265,7 @@ final class AppContainer: ObservableObject {
 
     /// Das três permissões, a Acessibilidade era a única que o app nunca
     /// pedia: só consultava, e o usuário descobria que faltava quando o
-    /// primeiro ditado não colava (relato de campo, 2026-09-25). O pedido
+    /// primeiro ditado não colava (relato de campo, 2026-09-24). O pedido
     /// mostra o diálogo do macOS e põe o app na lista dos Ajustes. O atraso
     /// curto evita que ele apareça no mesmo instante do pedido de microfone.
     private func requestAccessibilityIfMissing() {

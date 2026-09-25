@@ -4,7 +4,7 @@ import Foundation
 ///
 /// Existe porque depois do onboarding não havia lugar nenhum no app para
 /// resolver permissões, e os avisos mandavam o usuário "abrir as Preferências",
-/// onde não havia nada (relato de campo, 2026-09-25). A regra: todo estado leva
+/// onde não havia nada (relato de campo, 2026-09-24). A regra: todo estado leva
 /// a um lugar onde dá para resolver.
 enum PermissionAction: Equatable {
     /// Concedida — sem botão.

@@ -129,7 +129,7 @@ modelo de 3 GB.
 `pt` deixa de ser necessária por causa de misdetect — o Automático agora acerta o
 português. Continua valendo revisitar se o encoder extra pesar na latência.
 
-**Confirmado em campo (2026-09-25),** com o build local `1.0.4-fase5.1`:
+**Confirmado em campo (2026-09-24),** com o build local `1.0.4-fase5.1`:
 
 | áudio | detecção | logprob | wall | destino |
 |---|---|---|---|---|

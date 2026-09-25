@@ -282,7 +282,7 @@
 "toast.permission.accessibility"       = "Sem Acessibilidade: o ditado ficou no clipboard e no histórico. Veja Preferências › Permissões.";
 "toast.permission.inputMonitoring"     = "Monitoramento de Entrada negado — veja Preferências › Permissões.";
 
-/* Preferências › Permissões — relato de campo de 2026-09-25: depois do
+/* Preferências › Permissões — relato de campo de 2026-09-24: depois do
    onboarding não havia lugar no app para resolver permissões. */
 "preferences.section.permissoes"      = "Permissões";
 "permissions.intro"                   = "O tagarela precisa de três permissões do macOS. Sem qualquer uma delas, uma parte do ditado para de funcionar.";

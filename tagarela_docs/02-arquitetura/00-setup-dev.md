@@ -28,6 +28,8 @@ Onboard de um novo Mac pra trabalhar no tagarela. Pra usar o app empacotado, bas
 
 **Nunca abrir builds locais (`build/release/*`, `app/build/`, DerivedData) enquanto a release oficial estiver em `/Applications/Tagarela.app`.** Mesmo bundle id (`com.tagarela.Tagarela`) com Designated Requirements distintos (Apple Development vs Developer ID, ou re-assinaturas diferentes) cria registros TCC fantasma. Sintoma: a cada launch o macOS pede mic + Documents de novo, e Accessibility é revogada (paste para de funcionar).
 
+**`xcodebuild test` também conta.** O host de testes é o app inteiro: no launch, pede o microfone e, aprovado, fica com a concessão — o próximo launch da release pede de novo. Nesta máquina, depois de rodar a suíte, espere um pedido de microfone ao reabrir a release; basta permitir (medido em 2026-09-24 — ver *Reincidência em 2026-09-24* no `cleanup-fase3.md`).
+
 Se acontecer, ver remediação completa em [`../04-decisoes/cleanup-fase3.md`](../04-decisoes/cleanup-fase3.md): `tccutil reset All com.tagarela.Tagarela` + `lsregister -u <path>` por cada cópia rival + reabrir só a `/Applications/Tagarela.app` + reconceder Accessibility/Input Monitoring.
 
 Regra prática: depois de rodar `scripts/build.sh` ou `scripts/release.sh`, **não dar `open` no .app gerado** — copiar pra `/Applications/` e abrir de lá, ou apagar os artifacts locais (`rm -rf build/ app/build/`).

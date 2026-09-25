@@ -42,3 +42,81 @@ Em cima disso, o **Sparkle auto-update** v1.0.0 → v1.0.1 substituiu o binário
 - **Detectar duplicatas no startup** via `LSCopyApplicationURLsForBundleIdentifier` e avisar se houver mais de uma cópia do `com.tagarela.Tagarela` no disco.
 
 Revisitar em 2026-05-16 se reincidir.
+
+## Reincidência em 2026-09-24 — só o microfone
+
+### Sintoma
+
+A v1.0.6 chegou pelo item "Buscar atualizações…" (Sparkle) e, no primeiro launch,
+o macOS pediu o **Microfone** de novo, embora a identidade de assinatura seja a do
+build que ela substituiu (o `1.0.6-dev` de aceite, Developer ID — DR idêntico). Monitoramento de Entrada e Acessibilidade vieram concedidos
+sem pedido, e a cola funcionou.
+
+### Evidência (log do TCC, 22:30–23:40)
+
+`/usr/bin/log show --predicate 'subsystem == "com.apple.TCC"'`. Cada janela exibida
+aparece como `AUTHREQ_PROMPTING`; o resultado, como `AUTHREQ_RESULT` (`authValue`
+2 = permitido, 1 = desconhecido, 0 = negado; `authReason` 2 = consentimento do
+usuário). O `pid` do pedido e o `binary_path` dizem qual cópia pediu.
+
+- **10 launches pediram o microfone com janela**: 6 de builds locais no DerivedData
+  (host de testes e build de aceite) e 4 da `/Applications`.
+- **Toda** janela da `/Applications` veio logo depois de um launch no DerivedData.
+  Quatro launches seguidos da `/Applications` (22:43–22:45) não pediram nada.
+- 23:09:13 — o host de testes do `xcodebuild test` (pid 78310; no log dele, os
+  próprios testes rodando) pede o microfone, e a janela é aprovada.
+- 23:20:19 — a v1.0.6 recém-atualizada consulta (preflight) e recebe
+  `authValue=1`: a concessão já não era dela. Pede, janela, aprovada às 23:20:21.
+- No mesmo launch da 1.0.6, `ListenEvent`, `Accessibility` e `PostEvent` voltaram
+  `authValue=2` direto, sem janela.
+
+### Mecanismo
+
+O log mostra que a concessão de microfone do bundle id vale para a assinatura de
+**quem aprovou a última janela**. O host de testes é o app inteiro, assinado com a
+Apple Development desta máquina. Como o onboarding já foi feito (os `UserDefaults`
+são os mesmos da release, pelo bundle id), o `AppContainer` roda
+`ensureMicPermission()` no launch, pede o microfone e, aprovado, fica com a
+concessão. O próximo launch da release pede de volta.
+
+Monitoramento de Entrada e Acessibilidade não caem porque, nesses dois, o host de
+testes não ganha janela: o pedido é negado na hora (`authReason=5`) e o registro da
+release fica intacto.
+
+Conclusão: **quem derruba o microfone é o `xcodebuild test`, não a atualização.**
+Sem build local no meio — a situação de qualquer usuário —, a identidade igual
+basta, como já basta hoje para as outras duas permissões. A prova direta para o
+microfone fica para a próxima atualização sem suíte rodada no meio.
+
+### O que mais o host de testes faz no launch (mesmo log, pid 78310)
+
+- Carrega o modelo Whisper de verdade (`large-v3_turbo`, 5,9 s) a cada execução
+  da suíte.
+- Pede Acessibilidade e tenta ligar o atalho (negado).
+- Os testes do `InjectorLive` com `axTrusted: { true }` enviam um **Cmd+V real**
+  (`CGEvent` na sessão) ao app da frente — às 23:09:22 era o app do Claude. Não
+  colou nada porque o TCC nega `PostEvent` ao host de testes (negação registrada
+  15 ms antes). Se o build de Debug um dia ganhar essa permissão, a suíte colaria a
+  área de transferência do usuário no app da frente. O pasteboard dos testes é
+  privado (nome aleatório); a área de transferência real não é tocada.
+
+### Follow-up de código (proposto, não aplicado)
+
+1. Sob XCTest, o `AppContainer` pula os efeitos de launch (`ensureMicPermission`,
+   `requestAccessibilityIfMissing`, atalho, carga do modelo). Ataca a causa: o host
+   de testes para de tomar a concessão do microfone, de abrir janelas durante a
+   suíte e de carregar o modelo à toa.
+2. Injetar no `InjectorLive` o envio do Cmd+V, para os testes nunca postarem
+   evento real.
+3. `ensureMicPermission()` pede a **câmera** antes do microfone ("tentativa 0",
+   hipótese antiga de webcam C920). O TCC nega na hora (`authReason=5`), sem janela.
+   Candidato a remoção.
+
+### Como conferir de novo
+
+```bash
+/usr/bin/log show --predicate 'subsystem == "com.apple.TCC"' --last 1h --style compact | grep AUTHREQ_PROMPTING | grep -i tagarela
+```
+
+Cada linha é uma janela exibida; o `binary_path` diz se foi a `/Applications` ou
+uma cópia local.
