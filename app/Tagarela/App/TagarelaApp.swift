@@ -8,6 +8,7 @@ struct TagarelaApp: App {
         MenuBarExtra {
             MenuBarContent(
                 health: container.health,
+                updates: container.updates,
                 customStore: container.customStyleStoreLive,
                 styleProvider: container.styleProvider,
                 recentsProvider: container.recentsProvider,
@@ -35,6 +36,9 @@ struct TagarelaApp: App {
                 },
                 onOpenPermissions: {
                     container.openPreferences(section: .permissoes)
+                },
+                onCheckForUpdates: {
+                    container.checkForUpdates()
                 },
                 loadedModelName: { [container] in container.transcriber.loadedModelName },
                 onboardingPending: container.showOnboarding)

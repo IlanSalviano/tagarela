@@ -1,6 +1,6 @@
 ---
 data: 2026-09-25
-status: em implementação (branch `feat-buscar-atualizacoes`)
+status: implementado (branch `feat-buscar-atualizacoes`) — aceite manual pendente
 origem: pedido do usuário após publicar a v1.0.5
 revisa: decisão nº 3 do design da Fase 3 (Sparkle minimal)
 ---
@@ -41,3 +41,16 @@ Build local `1.0.6-dev` com build number **6** — igual ao da v1.0.5 publicada.
 - [ ] O clique fecha o menu e abre a janela do Sparkle **na frente**.
 - [ ] Com o build igual ao publicado, o Sparkle diz que está atualizado.
 - [ ] Depois de publicada a v1.0.6, o mesmo item a oferece — e a atualização instala com as permissões intactas.
+
+## Implementação (2026-09-25)
+
+- `CheckForUpdatesModel` (`@MainActor`) observa `canCheckForUpdates` via
+  `publisher(for:)` e repassa o pedido ao `SPUUpdater`. Sem teste unitário: é um
+  repasse fino para o Sparkle, que não tem como ser simulado sem o próprio
+  Sparkle; coberto pelo aceite manual.
+- `PreferencesWindow.dismissMenuBarExtraPopover()` virou `internal` para ser
+  reaproveitado pelo item.
+- Suíte continua em **257**, verde. (Uma primeira execução falhou no
+  `CopySwiftLibs` apontando para o toolchain do Metal montado pelo sistema em
+  `/var/run/com.apple.security.cryptexd/…`: o asset foi remontado durante o
+  build. Transitório — a segunda passou sem mudança nenhuma.)
