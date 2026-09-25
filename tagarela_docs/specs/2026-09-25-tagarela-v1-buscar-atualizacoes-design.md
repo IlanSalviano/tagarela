@@ -1,6 +1,6 @@
 ---
 data: 2026-09-25
-status: implementado e aceito (2026-09-25)
+status: implementado, aceito e publicado na v1.0.6 (2026-09-25)
 origem: pedido do usuário após publicar a v1.0.5
 revisa: decisão nº 3 do design da Fase 3 (Sparkle minimal)
 ---
@@ -56,3 +56,14 @@ Build local `1.0.6-dev` com build number **6** — igual ao da v1.0.5 publicada.
   `CopySwiftLibs` apontando para o toolchain do Metal montado pelo sistema em
   `/var/run/com.apple.security.cryptexd/…`: o asset foi remontado durante o
   build. Transitório — a segunda passou sem mudança nenhuma.)
+
+## Publicação — v1.0.6 (2026-09-25)
+
+https://github.com/IlanSalviano/tagarela/releases/tag/v1.0.6 — `release.sh`
+de primeira, as sete etapas. Verificado como nas anteriores: release pública,
+DMG com HTTP 200, `appcast` do raw da main em `sparkle:version` 7, assinatura
+EdDSA **válida** com a `SUPublicEDKey` do app instalado sobre o DMG baixado do
+GitHub, e por dentro 1.0.6 (build 7), Developer ID, DR idêntico ao do app
+instalado, Gatekeeper `accepted · Notarized Developer ID`, staple válido.
+
+Falta o último item do aceite: o usuário receber a v1.0.6 pelo próprio item.
