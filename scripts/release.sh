@@ -67,9 +67,13 @@ if [ "$1" != "initial" ]; then
     head_subject=$(git log -1 --pretty=%s)
     pending_version=$(grep -E '^\s*MARKETING_VERSION:' "$REPO_ROOT/app/project.yml" \
         | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
+    # A tag que importa é a do GitHub: uma tentativa que morreu entre criar a
+    # tag local e publicar deixa a tag só aqui, e olhar a local faria bumpar
+    # de novo (1.0.4 → 1.0.5 sem release no meio) — bug da primeira execução
+    # real, 2026-09-25.
     if [[ "$head_subject" == "chore(release): bump "* ]] \
-        && ! git rev-parse "v$pending_version" >/dev/null 2>&1; then
-        echo "release.sh: HEAD já é o bump de v$pending_version e não há tag — reaproveitando"
+        && ! git ls-remote --exit-code --tags origin "refs/tags/v$pending_version" >/dev/null 2>&1; then
+        echo "release.sh: HEAD já é o bump de v$pending_version e a tag não está no GitHub — reaproveitando"
     else
         "$SCRIPTS/bump.sh" "$1"
     fi
@@ -118,8 +122,25 @@ rollback_hint() {
 
 # 6. Tag + release + upload do DMG (antes do appcast — ver cabeçalho)
 echo "===== 6/7 tag + gh release ====="
-git tag -a "v$version" -m "tagarela $version"
+# Tag de uma tentativa anterior que morreu antes de publicar: reaproveita se
+# aponta para o HEAD; apontando para outro commit é estado inesperado — para.
+if git rev-parse -q --verify "refs/tags/v$version" >/dev/null; then
+    if [ "$(git rev-list -n1 "v$version")" != "$(git rev-parse HEAD)" ]; then
+        echo "erro: a tag v$version já existe e não aponta para o HEAD — resolva à mão"
+        exit 1
+    fi
+    echo "release.sh: tag v$version já existe no HEAD — reaproveitando"
+else
+    git tag -a "v$version" -m "tagarela $version"
+fi
 trap rollback_hint ERR
+
+# O `gh release create` exige a tag já no GitHub (sem ela, recusa com "tag
+# exists locally but has not been pushed" — foi o que derrubou a primeira
+# execução real, 2026-09-25). Sobe SÓ a tag: a main, com o appcast, continua
+# indo só no fim, depois de o DMG estar comprovadamente no ar. Tag no remoto
+# não afeta cliente nenhum — o Sparkle lê o appcast da main.
+git push origin "refs/tags/v$version"
 
 gh release create "v$version" "$DMG_PATH" \
     --title "tagarela $version" \

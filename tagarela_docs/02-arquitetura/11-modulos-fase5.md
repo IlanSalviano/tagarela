@@ -481,6 +481,23 @@ aceite manual, antes da v1.0.4.
 
 Todos os scripts passam `bash -n`.
 
+**Primeira execução real (2026-09-25) — dois bugs, pegos do jeito seguro.** O
+`release.sh patch` passou por bump, build, assinatura, notarização (`Accepted`)
+e DMG, e parou na etapa 6: o `gh release create` exige a tag **já no GitHub**, e
+a reordenação tinha movido todo push para o fim. Nada foi publicado — sem release,
+sem push, sem appcast —, que é exatamente a garantia que a reordenação existia
+para dar. O rollback impresso estava correto.
+
+A falha revelou um segundo bug: o reaproveitamento do bump (11c) olhava a tag
+**local**, que a tentativa tinha criado — rodar de novo pularia para 1.0.5.
+Correções: a etapa 6 sobe **só a tag** antes do `gh release create` (a main, com
+o appcast, continua indo só no fim; tag no remoto não afeta cliente nenhum), e
+reaproveita uma tag local que aponte para o HEAD; o reaproveitamento do bump
+passa a olhar a tag **no GitHub**. O commit de bump da tentativa, que nunca
+subiu, foi descartado para o conserto entrar antes dele na história.
+
+Era o que o ensaio com release de rascunho, pulado, teria encontrado.
+
 ---
 
 ## Achado de campo (2026-09-24) — "o app parou de funcionar" era o modelo carregando
