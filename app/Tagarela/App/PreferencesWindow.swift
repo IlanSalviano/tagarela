@@ -37,7 +37,7 @@ final class PreferencesWindow {
     /// Fecha o popover do `MenuBarExtra(style: .window)` se estiver visível.
     /// SwiftUI não expõe API pra isso — identificamos a janela pelo nome da classe interna.
     /// Mesmo helper usado em `OpenAIKeyPromptWindow`.
-    private static func dismissMenuBarExtraPopover() {
+    static func dismissMenuBarExtraPopover() {
         for window in NSApp.windows where window.isVisible {
             let typeName = String(describing: type(of: window))
             if typeName.contains("MenuBarExtra") || typeName.contains("NSStatusBarWindow") {

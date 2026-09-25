@@ -5,6 +5,7 @@ struct MenuBarContent: View {
     @EnvironmentObject var prefs: PreferencesStore
     @Environment(\.openWindow) private var openWindow
     @ObservedObject var health: PipelineHealth
+    @ObservedObject var updates: CheckForUpdatesModel
     let customStore: CustomStyleStoreLive?  // nil quando container falha
     let styleProvider: StyleProvider
     let recentsProvider: RecentTranscriptionsProvider
@@ -13,6 +14,7 @@ struct MenuBarContent: View {
     var onExplicitConfigureKey: () -> Void = {}
     var onOpenPreferences: () -> Void = {}
     var onOpenPermissions: () -> Void = {}
+    var onCheckForUpdates: () -> Void = {}
     /// Modelo Whisper carregado agora — resolvido em runtime porque muda com o swap.
     var loadedModelName: () -> String? = { nil }
     /// Onboarding fechado no ⌘W sem concluir deixava o app "zumbi": a hotkey e
@@ -99,6 +101,23 @@ struct MenuBarContent: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+
+            Button(action: onCheckForUpdates) {
+                HStack {
+                    Text(String(localized: "menubar.checkForUpdates",
+                                defaultValue: "Buscar atualizações…"))
+                        .font(DS.Font.mono(11))
+                        .foregroundStyle(DS.Color.ink3)
+                    Spacer()
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            // Desabilitado enquanto o Sparkle já está checando.
+            .disabled(!updates.canCheckForUpdates)
+            .opacity(updates.canCheckForUpdates ? 1 : 0.4)
 
             Divider().background(DS.Color.hairline)
             Button(action: { NSApp.terminate(nil) }) {

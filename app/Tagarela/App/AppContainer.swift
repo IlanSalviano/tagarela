@@ -36,6 +36,7 @@ final class AppContainer: ObservableObject {
     let preferencesWindow = PreferencesWindow()
     let toastCenter = ToastCenter()
     let updaterController: SPUStandardUpdaterController
+    let updates: CheckForUpdatesModel
     /// T9: `swapActive` troca o ponteiro real do transcriber neste container
     /// (e atualiza o `TranscriberRef` compartilhado com o pipeline). Inicializado
     /// em duas fases no init: stub primeiro (pra satisfazer ordem de init),
@@ -194,9 +195,9 @@ final class AppContainer: ObservableObject {
             }
         )
 
-        // Sparkle minimal: auto-check no launch + a cada SUScheduledCheckInterval (24h).
-        // Sheet nativa de update aparece quando feed lista versão > atual.
-        // Sem UI manual de "Verificar atualizações" nesta fase.
+        // Sparkle: checagem automática no launch + a cada SUScheduledCheckInterval
+        // (24h), e o item "Buscar atualizações…" do menu para checar na hora
+        // (revisão de 2026-09-25 da decisão nº 3 da Fase 3).
         // Inicializado aqui (antes do reassign de swapCoordinator com [weak self])
         // pra que todas as stored properties estejam atribuídas antes de qualquer
         // closure capturar `self`.
@@ -205,6 +206,7 @@ final class AppContainer: ObservableObject {
             updaterDelegate: nil,
             userDriverDelegate: nil
         )
+        self.updates = CheckForUpdatesModel(updater: updaterController.updater)
 
         // T9: instala o coordinator real, com swapActive que troca o ponteiro
         // `self.transcriber` em runtime. Substitui o stub criado acima. Coordinator
@@ -332,6 +334,17 @@ final class AppContainer: ObservableObject {
                 Diag.info(.permissions, "activationPolicy back to .accessory")
             }
         }
+    }
+
+    /// Fecha o menu e ativa o app antes de chamar o Sparkle: num app de barra
+    /// de menu, a janela dele pode abrir atrás de tudo — o mesmo cuidado que as
+    /// Preferências já tomam.
+    @MainActor
+    func checkForUpdates() {
+        PreferencesWindow.dismissMenuBarExtraPopover()
+        NSApp.activate(ignoringOtherApps: true)
+        Diag.notice(.app, "checagem de atualização pedida pelo menu")
+        updates.checkForUpdates()
     }
 
     /// `section` abre a janela direto numa seção — o aviso "permissões
