@@ -467,8 +467,8 @@ Checklist em `tagarela_docs/03-funcionalidades/checklists/fase2b3-manual.md`. Es
 
 ### Convenções do aceite
 
-- Build em Release + instalar em `~/Applications/Tagarela.app` (não rodar do Xcode). Ver [memory: ambiente_macos](file:///Users/tars/.claude/projects/-Users-tars-Dev-tagarela/memory/ambiente_macos.md).
-- Condução bloco-a-bloco, marcando `[x]` conforme passa. Ver [memory: workflow_aceite_manual](file:///Users/tars/.claude/projects/-Users-tars-Dev-tagarela/memory/workflow_aceite_manual.md).
+- Build em Release + instalar em `~/Applications/Tagarela.app` (não rodar do Xcode). Ver memória `ambiente_macos`.
+- Condução bloco-a-bloco, marcando `[x]` conforme passa. Ver memória `workflow_aceite_manual`.
 - Achados que não bloqueiam viram `tagarela_docs/04-decisoes/cleanup-fase2b3.md` ao fim.
 
 ---
