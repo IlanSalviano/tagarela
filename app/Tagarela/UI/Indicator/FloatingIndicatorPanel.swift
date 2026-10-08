@@ -14,6 +14,9 @@ final class FloatingIndicatorPanel {
     /// Frame atual — só para os testes observarem deriva.
     var currentFrame: NSRect? { panel?.frame }
 
+    /// Se há árvore SwiftUI montada no painel — só para os testes.
+    var hasContent: Bool { panel?.contentViewController != nil }
+
     /// Simula o usuário arrastando o painel — só para testes.
     func moveForTesting(to origin: NSPoint) { panel?.setFrameOrigin(origin) }
 
@@ -66,6 +69,12 @@ final class FloatingIndicatorPanel {
         previewTask = nil
         showingPreview = false
         panel?.orderOut(nil)
+        // `orderOut` só esconde a janela: o SwiftUI continua vivo dentro dela, e
+        // o `TimelineView` das ondas (12 Hz) e os `.repeatForever()` de pulso
+        // seguem rodando em idle, mantendo o main thread em layout/commit do
+        // Core Animation o tempo todo (CPU alta em idle, 2026-10-08). Soltar o
+        // conteúdo derruba a árvore; o próximo `show()` monta uma nova.
+        panel?.contentViewController = nil
     }
 
     /// Mostra a `variant` em estado fake por `durationSec` segundos. Usado

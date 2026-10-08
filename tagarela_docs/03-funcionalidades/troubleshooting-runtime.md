@@ -102,3 +102,25 @@ pra propagar; a máquina pega na próxima checagem (launch ou 24h).
 Na máquina antiga, forçar uma checagem (relaunch do app) e verificar que o prompt de update
 aparece. Alternativamente, comparar `CFBundleVersion` instalado (`< 4`) com o
 `sparkle:version` do appcast (`4`).
+
+---
+
+## CPU alta em idle (18–30% num MacBook Air M5)
+
+**Data:** 2026-10-08 (v1.0.6).
+
+### Sintoma
+
+Tagarela parado, sem ditado, ocupando 18–30% de CPU no Activity Monitor de um MacBook Air M5 (64 idle wake-ups/s). No Mac mini o mesmo build ficava em ~3%.
+
+### Diagnóstico
+
+`sample` do app ocioso mostrou o main thread em `TimelineView.UpdateFilter.updateValue`, `NSHostingView.layout` e `CA::Transaction::commit`. `FloatingIndicatorPanel.hide()` só fazia `orderOut(nil)`: a janela some, mas o `NSHostingController` continua montado, e o `TimelineView` dos `WaveBars` (12 Hz) e os `.repeatForever()` de pulso dos indicadores seguem rodando. **Hipótese forte, não confirmada no Air** — falta um `sample` de lá.
+
+### Remediação
+
+`hide()` passa a soltar o `contentViewController` (`nil`); o próximo `show()` monta outra árvore. Teste: `test_hideTearsDownContent_andShowRebuildsIt`.
+
+### Como confirmar
+
+No Air, com o app ocioso: `sample Tagarela 5 -file ~/Desktop/tagarela-sample.txt` — `TimelineView`/`NSHostingView.layout` não devem mais aparecer. Se a CPU seguir alta, os próximos suspeitos são o poll de permissões a 1 s e um `AVAudioEngine` vivo fora da gravação.

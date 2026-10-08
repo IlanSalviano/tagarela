@@ -39,6 +39,20 @@ final class FloatingIndicatorPanelTests: XCTestCase {
         XCTAssertEqual(last.origin.x, first.origin.x, accuracy: 1)
     }
 
+    /// CPU alta em idle (2026-10-08): `orderOut` não desmonta o SwiftUI, então as
+    /// animações contínuas seguiam rodando com o painel escondido.
+    func test_hideTearsDownContent_andShowRebuildsIt() {
+        let panel = FloatingIndicatorPanel()
+        defer { panel.hide() }
+
+        tick(panel, 0)
+        XCTAssertTrue(panel.hasContent)
+        panel.hide()
+        XCTAssertFalse(panel.hasContent, "o conteúdo precisa ser solto no hide()")
+        tick(panel, 1)
+        XCTAssertTrue(panel.hasContent)
+    }
+
     /// Os outros dois requisitos do 9f, que o conserto da deriva não pode
     /// quebrar: arrasto gruda, e o painel só vai ao cursor quando aparece.
     func test_userDragSticks_andPanelReappearsNearCursor() async throws {
