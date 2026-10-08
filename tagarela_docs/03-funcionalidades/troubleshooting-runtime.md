@@ -123,7 +123,7 @@ Tagarela parado, sem ditado, ocupando 18–30% de CPU no Activity Monitor de um 
 
 ### Resultado no Air (v1.0.7)
 
-`sample` ocioso: main thread 4267/4267 amostras em `mach_msg2_trap` (parado), sem `WaveBars`/`TimelineView` na pilha. **Ressalva:** o sample foi tirado ~73 s após o launch, possivelmente antes do primeiro ditado — o caminho `hide()` pós-gravação não necessariamente foi exercitado. Repetir depois de alguns ditados.
+`sample` ocioso: main thread 4267/4267 amostras em `mach_msg2_trap` (parado), sem `WaveBars`/`TimelineView` na pilha. O ditado foi feito antes do `sample`, então o caminho `hide()` pós-gravação foi exercitado. **Confirmado.**
 
 ### Como confirmar
 
