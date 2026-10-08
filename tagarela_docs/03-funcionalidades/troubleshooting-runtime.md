@@ -107,7 +107,7 @@ aparece. Alternativamente, comparar `CFBundleVersion` instalado (`< 4`) com o
 
 ## CPU alta em idle (18–30% num MacBook Air M5)
 
-**Data:** 2026-10-08 (v1.0.6).
+**Data:** 2026-10-08 (v1.0.6; corrigido na v1.0.7).
 
 ### Sintoma
 
@@ -115,11 +115,15 @@ Tagarela parado, sem ditado, ocupando 18–30% de CPU no Activity Monitor de um 
 
 ### Diagnóstico
 
-`sample` do app ocioso mostrou o main thread em `TimelineView.UpdateFilter.updateValue`, `NSHostingView.layout` e `CA::Transaction::commit`. `FloatingIndicatorPanel.hide()` só fazia `orderOut(nil)`: a janela some, mas o `NSHostingController` continua montado, e o `TimelineView` dos `WaveBars` (12 Hz) e os `.repeatForever()` de pulso dos indicadores seguem rodando. **Hipótese forte, não confirmada no Air** — falta um `sample` de lá.
+`sample` do app ocioso mostrou o main thread em `TimelineView.UpdateFilter.updateValue`, `NSHostingView.layout` e `CA::Transaction::commit`. `FloatingIndicatorPanel.hide()` só fazia `orderOut(nil)`: a janela some, mas o `NSHostingController` continua montado, e o `TimelineView` dos `WaveBars` (12 Hz) e os `.repeatForever()` de pulso dos indicadores seguem rodando. O `sample` do Air (v1.0.6, ocioso há horas) confirmou: main thread ocupado em ~26% das amostras, quase tudo layout SwiftUI (`StackLayout`/`sizeThatFits`) do `HStack` de `WaveBars.body`, acordado pelo display link.
 
 ### Remediação
 
-`hide()` passa a soltar o `contentViewController` (`nil`); o próximo `show()` monta outra árvore. Teste: `test_hideTearsDownContent_andShowRebuildsIt`.
+`hide()` passa a soltar o `contentViewController` (`nil`); o próximo `show()` monta outra árvore. Teste: `test_hideTearsDownContent_andShowRebuildsIt` (compilado, **não executado** — host de testes sem certificado e release aberta). Publicado na v1.0.7.
+
+### Resultado no Air (v1.0.7)
+
+`sample` ocioso: main thread 4267/4267 amostras em `mach_msg2_trap` (parado), sem `WaveBars`/`TimelineView` na pilha. **Ressalva:** o sample foi tirado ~73 s após o launch, possivelmente antes do primeiro ditado — o caminho `hide()` pós-gravação não necessariamente foi exercitado. Repetir depois de alguns ditados.
 
 ### Como confirmar
 
